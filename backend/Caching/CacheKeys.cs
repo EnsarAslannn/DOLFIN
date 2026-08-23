@@ -43,6 +43,10 @@ namespace api.Caching
             );
         }
 
+        // Cached portfolios embed the stock price, so anything that moves a
+        // price has to expire every user's entry -- not just the trader's.
+        public const string PortfolioTag = "portfolio:all";
+
         public static string PortfolioByUser(string userId) => $"portfolio:user:{userId}";
     }
 }

@@ -144,6 +144,7 @@ namespace api.Repository
             }
             await InvalidateTrendsAsync();
             await InvalidateListAsync();
+            await InvalidatePortfoliosAsync();
 
             return updated;
         }
@@ -162,11 +163,41 @@ namespace api.Repository
             return deleted;
         }
 
+        // The simulation rewrites every row, so each per-stock key has to go
+        // individually -- only the list is tagged and removable in one call.
+        public async Task<int> UpdatePricesAsync(Func<Stock, decimal> nextPrice)
+        {
+            var touched = new List<Stock>();
+
+            var count = await _inner.UpdatePricesAsync(stock =>
+            {
+                touched.Add(stock);
+                return nextPrice(stock);
+            });
+
+            foreach (var stock in touched)
+            {
+                await SafeRemoveAsync(CacheKeys.StockById(stock.Id));
+                await InvalidateSymbolAsync(stock.Symbol);
+            }
+
+            await InvalidateTrendsAsync();
+            await InvalidateListAsync();
+            await InvalidatePortfoliosAsync();
+
+            return count;
+        }
+
         public Task InvalidateStockAsync(int stockId) => SafeRemoveAsync(CacheKeys.StockById(stockId));
 
         public Task InvalidateTrendsAsync() => SafeRemoveAsync(CacheKeys.StockTrends);
 
         private Task InvalidateListAsync() => SafeRemoveByTagAsync(CacheKeys.StockListTag);
+
+        // A held position is cached with the price it was worth at read time,
+        // so a price change makes every cached portfolio wrong, not only the
+        // one belonging to the trader -- unrealized P/L is computed off it.
+        private Task InvalidatePortfoliosAsync() => SafeRemoveByTagAsync(CacheKeys.PortfolioTag);
 
         private Task InvalidateSymbolAsync(string? symbol) =>
             string.IsNullOrWhiteSpace(symbol) ? Task.CompletedTask : SafeRemoveAsync(CacheKeys.StockBySymbol(symbol));
