@@ -1,4 +1,6 @@
 using api.Dtos;
+using api.Dtos.Portfolio;
+using api.Helpers;
 using api.Models;
 
 namespace api.Interfaces
@@ -10,5 +12,6 @@ namespace api.Interfaces
         Task<object> SellStockAsync(AppUser user, string symbol, int quantity);
         Task<object> DepositFundsAsync(AppUser user, decimal amount);
         Task<object> WithdrawFundsAsync(AppUser user, decimal amount);
+        Task<List<TransactionDto>> GetTransactionHistoryAsync(AppUser user, TransactionQueryObject query);
     }
 }

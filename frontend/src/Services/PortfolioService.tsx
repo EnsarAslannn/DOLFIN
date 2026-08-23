@@ -1,5 +1,5 @@
 import axiosInstance from "../Helpers/AxiosInstance"
-import type { PortfolioGet } from "../Models/Portfolio"
+import type { PortfolioGet, PortfolioMetrics, Transaction } from "../Models/Portfolio"
 import { handleError } from "../Helpers/ErrorHandler"
 
 export const portfolioAddAPI = async (symbol: string, quantity: number) => {
@@ -53,6 +53,26 @@ export const portfolioWithdrawAPI = async (amount: number) => {
             "portfolio/withdraw",
             { amount }
         )
+        return data
+    } catch (error) {
+        handleError(error)
+    }
+}
+
+export const portfolioMetricsAPI = async () => {
+    try {
+        const data = await axiosInstance.get<PortfolioMetrics>("portfolio/metrics")
+        return data
+    } catch (error) {
+        handleError(error)
+    }
+}
+
+export const portfolioTransactionsAPI = async (pageNumber = 1, pageSize = 20) => {
+    try {
+        const data = await axiosInstance.get<Transaction[]>("portfolio/transactions", {
+            params: { pageNumber, pageSize },
+        })
         return data
     } catch (error) {
         handleError(error)
