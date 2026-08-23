@@ -8,6 +8,8 @@ import {
     portfolioGetAPI,
     portfolioDepositAPI,
     portfolioWithdrawAPI,
+    portfolioMetricsAPI,
+    portfolioTransactionsAPI,
 } from "./PortfolioService"
 
 vi.mock("../Helpers/AxiosInstance", () => ({
@@ -64,12 +66,38 @@ describe("PortfolioService", () => {
             expect(post).toHaveBeenCalledWith("portfolio/withdraw", { amount: 75 })
         })
 
+        it("reads performance through GET portfolio/metrics", async () => {
+            await portfolioMetricsAPI()
+
+            expect(get).toHaveBeenCalledWith("portfolio/metrics")
+        })
+
+        // Paging goes through axios params rather than a hand-built query
+        // string, so the server's validator sees pageNumber/pageSize by name.
+        it("reads history through GET portfolio/transactions with default paging", async () => {
+            await portfolioTransactionsAPI()
+
+            expect(get).toHaveBeenCalledWith("portfolio/transactions", {
+                params: { pageNumber: 1, pageSize: 20 },
+            })
+        })
+
+        it("passes an explicit page through to portfolio/transactions", async () => {
+            await portfolioTransactionsAPI(3, 5)
+
+            expect(get).toHaveBeenCalledWith("portfolio/transactions", {
+                params: { pageNumber: 3, pageSize: 5 },
+            })
+        })
+
         it.each([
             ["portfolioAddAPI", () => portfolioAddAPI("AAPL", 1)],
             ["portfolioSellAPI", () => portfolioSellAPI("AAPL", 1)],
             ["portfolioDepositAPI", () => portfolioDepositAPI(1)],
             ["portfolioWithdrawAPI", () => portfolioWithdrawAPI(1)],
             ["portfolioGetAPI", () => portfolioGetAPI()],
+            ["portfolioMetricsAPI", () => portfolioMetricsAPI()],
+            ["portfolioTransactionsAPI", () => portfolioTransactionsAPI()],
         ])("never sends a leading slash from %s", async (_name, call) => {
             await call()
 
@@ -98,6 +126,8 @@ describe("PortfolioService", () => {
             ["portfolioGetAPI", () => portfolioGetAPI()],
             ["portfolioDepositAPI", () => portfolioDepositAPI(1)],
             ["portfolioWithdrawAPI", () => portfolioWithdrawAPI(1)],
+            ["portfolioMetricsAPI", () => portfolioMetricsAPI()],
+            ["portfolioTransactionsAPI", () => portfolioTransactionsAPI()],
         ]
 
         it.each(failures)("%s resolves to undefined instead of rejecting", async (_name, call) => {

@@ -1,6 +1,9 @@
 using api.Caching;
 using api.Dtos;
+using api.Dtos.Portfolio;
+using api.Helpers;
 using api.Interfaces;
+using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -282,6 +285,14 @@ namespace api.Service
 
             await InvalidatePortfolioCacheAsync(user.Id);
             return result;
+        }
+
+        // Deliberately uncached: every trade, deposit and withdrawal appends a
+        // row, so a cached page would be stale the moment it mattered.
+        public async Task<List<TransactionDto>> GetTransactionHistoryAsync(AppUser user, TransactionQueryObject query)
+        {
+            var transactions = await _transactionRepo.GetByUserAsync(user.Id, query);
+            return transactions.Select(t => t.ToTransactionDto()).ToList();
         }
     }
 }

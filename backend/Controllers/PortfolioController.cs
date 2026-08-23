@@ -1,6 +1,7 @@
 using api.Dtos;
 using api.Dtos.Portfolio;
 using api.Extensions;
+using api.Helpers;
 using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -108,6 +109,30 @@ namespace api.Controllers
 
             var recommendation = await _rebalancingService.GetRecommendationAsync(appUser);
             return Ok(recommendation);
+        }
+
+        /// <summary>
+        /// Lists the signed-in user's trade and cash-movement history, newest first.
+        /// </summary>
+        /// <remarks>
+        /// Covers buys, sells, deposits and withdrawals. Cash movements are
+        /// recorded against the pseudo-symbol CASH with a quantity of 1, so
+        /// TotalAmount carries the amount for every row regardless of type.
+        /// </remarks>
+        /// <param name="query">Paging parameters (PageNumber, PageSize).</param>
+        /// <response code="200">The requested page of history, newest first.</response>
+        /// <response code="400">The paging parameters failed validation.</response>
+        [HttpGet("transactions")]
+        [ProducesResponseType(typeof(List<TransactionDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetTransactionHistory([FromQuery] TransactionQueryObject query)
+        {
+            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            if (appUser == null)
+                return Unauthorized("User context not found.");
+
+            var transactions = await _portfolioService.GetTransactionHistoryAsync(appUser, query);
+            return Ok(transactions);
         }
 
         /// <summary>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react"
 import { useAuth } from "../../Context/useAuth"
-import { portfolioDepositAPI, portfolioGetAPI, portfolioSellAPI, portfolioWithdrawAPI } from "../../Services/PortfolioService"
+import { portfolioDepositAPI, portfolioGetAPI, portfolioMetricsAPI, portfolioSellAPI, portfolioTransactionsAPI, portfolioWithdrawAPI } from "../../Services/PortfolioService"
 import { getProfileAPI } from "../../Services/AuthService"
-import type { PortfolioGet } from "../../Models/Portfolio"
+import type { PortfolioGet, PortfolioMetrics, Transaction } from "../../Models/Portfolio"
 import { companyLogos } from "../../Components/Table/TestData"
 import { toast } from "react-toastify"
 import PurchasePortfolio from "../../Components/Portfolio/PurchasePortfolio/PurchasePortfolio"
@@ -12,6 +12,7 @@ import Band from "../../Components/Dashboard/Band"
 import MarketTicker from "../../Components/MarketTicker/MarketTicker"
 import GlassLogo from "../../Components/Dashboard/GlassLogo"
 import EmptyState from "../../Components/Dashboard/EmptyState"
+import TransactionHistory from "../../Components/Portfolio/TransactionHistory/TransactionHistory"
 import { Link } from "react-router-dom"
 
 const WalletPage = () => {
@@ -22,6 +23,8 @@ const WalletPage = () => {
     const [isSellModalOpen, setIsSellModalOpen] = useState<boolean>(false)
     const [selectedSellStock, setSelectedSellStock] = useState<{ symbol: string; price: number; maxQuantity: number } | null>(null)
     const [liveBalance, setLiveBalance] = useState<number>(0)
+    const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null)
+    const [transactions, setTransactions] = useState<Transaction[]>([])
 
     const getWalletPortfolio = () => {
         portfolioGetAPI()
@@ -29,6 +32,17 @@ const WalletPage = () => {
                 if (res?.data) setPortfolioValues(res.data)
             })
             .catch((e) => console.error(e))
+    }
+
+    // Cost basis lives only on the server, so unrealized P/L and the history
+    // are read rather than derived -- the page still renders balances without them.
+    const refreshPerformance = async () => {
+        const [metricsRes, transactionsRes] = await Promise.all([
+            portfolioMetricsAPI(),
+            portfolioTransactionsAPI(),
+        ])
+        if (metricsRes?.data) setMetrics(metricsRes.data)
+        if (transactionsRes?.data) setTransactions(transactionsRes.data)
     }
 
     const refreshWalletBalance = async () => {
@@ -44,6 +58,7 @@ const WalletPage = () => {
         const loadWalletData = async () => {
             getWalletPortfolio()
             await refreshWalletBalance()
+            await refreshPerformance()
         }
         loadWalletData()
     }, [user])
@@ -66,6 +81,7 @@ const WalletPage = () => {
                     toast.success(`$${amount.toLocaleString()} deposited successfully!`)
                     setDepositAmount("")
                     refreshWalletBalance()
+                    refreshPerformance()
                 }
             })
             .catch((e) => {
@@ -113,6 +129,7 @@ const WalletPage = () => {
                         }
                         setIsSellModalOpen(false)
                         setSelectedSellStock(null)
+                        refreshPerformance()
                     }
                 })
                 .catch((e) => {
@@ -134,6 +151,7 @@ const WalletPage = () => {
                     setSelectedSellStock(null)
                     getWalletPortfolio()
                     refreshWalletBalance()
+                    refreshPerformance()
                 }
             })
             .catch((e) => {
@@ -153,6 +171,13 @@ const WalletPage = () => {
 
     const stocksValue = calculateStocksValue()
     const estimatedTotalValue = liveBalance + stocksValue
+    const allocationBySymbol = new Map(
+        (metrics?.allocations ?? []).map((a) => [a.symbol.toUpperCase(), a]),
+    )
+    const gainLoss = metrics?.gainLossAmount ?? 0
+    const gainLossPercent = metrics?.gainLossPercent ?? 0
+    const signed = (value: number) => `${value < 0 ? "-" : "+"}$${Math.abs(value).toFixed(2)}`
+    const toneClass = (value: number) => (value < 0 ? "text-band-loss" : "text-band-gain")
 
     return (
         <div className="w-full min-h-screen bg-onyx-canvas font-sans text-left">
@@ -185,7 +210,7 @@ const WalletPage = () => {
                                 <span className="font-mono text-body font-normal text-band-ink/75">USD</span>
                             </div>
                         </div>
-                        <div className="relative z-10 mt-6 grid grid-cols-2 gap-4 border-t border-band-line/20 pt-6">
+                        <div className="relative z-10 mt-6 grid grid-cols-2 gap-4 border-t border-band-line/20 pt-6 md:grid-cols-3">
                             <div className="flex flex-col">
                                 <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Cash Balance (Wallet)</span>
                                 <span className="mt-2 font-mono text-subheading font-normal text-band-ink">${liveBalance.toFixed(2)}</span>
@@ -193,6 +218,17 @@ const WalletPage = () => {
                             <div className="flex flex-col">
                                 <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Stocks Value (Portfolio)</span>
                                 <span className="mt-2 font-mono text-subheading font-normal text-band-ink">${stocksValue.toFixed(2)}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Unrealized P/L</span>
+                                {metrics ? (
+                                    <span className={`mt-2 font-mono text-subheading font-normal ${toneClass(gainLoss)}`}>
+                                        {signed(gainLoss)}
+                                        <span className="ml-2 text-caption">({gainLossPercent.toFixed(2)}%)</span>
+                                    </span>
+                                ) : (
+                                    <span className="mt-2 font-mono text-subheading font-normal text-band-ink/75">—</span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -240,11 +276,12 @@ const WalletPage = () => {
                         <h3 className="mt-2 text-subheading font-medium text-band-ink">My assets</h3>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse font-sans">
+                        <table aria-label="Assets" className="w-full text-left border-collapse font-sans">
                             <thead>
                                 <tr className="border-b border-band-line/8 font-mono text-caption font-bold uppercase tracking-label-lg text-band-muted">
                                     <th className="py-4 px-6">Asset Name</th>
                                     <th className="py-4 px-6 text-right">Market Price</th>
+                                    <th className="py-4 px-6 text-right">Gain / Loss</th>
                                     <th className="py-4 px-6 text-right">Holdings Allocation</th>
                                     <th className="py-4 px-6 text-center w-24">Action</th>
                                 </tr>
@@ -269,6 +306,7 @@ const WalletPage = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">$1.00</td>
+                                    <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">—</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex flex-col items-end justify-center">
                                             <span className="font-mono text-body font-normal text-band-ink">${liveBalance.toFixed(2)}</span>
@@ -291,6 +329,7 @@ const WalletPage = () => {
                                     const symbolUpper = item.symbol.toUpperCase()
                                     const quantity = item.quantity || 0
                                     const currentStockValue = livePrice * quantity
+                                    const allocation = allocationBySymbol.get(symbolUpper)
 
                                     return (
                                         <tr key={item.id} className="hover:bg-band-raised transition-colors">
@@ -312,6 +351,20 @@ const WalletPage = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">${livePrice.toFixed(2)}</td>
+                                            <td className="px-6 py-4 text-right">
+                                                {allocation ? (
+                                                    <div className="flex flex-col items-end justify-center">
+                                                        <span className={`font-mono text-body font-normal ${toneClass(allocation.gainLossAmount)}`}>
+                                                            {signed(allocation.gainLossAmount)}
+                                                        </span>
+                                                        <span className={`mt-1 font-mono text-caption font-normal ${toneClass(allocation.gainLossAmount)}`}>
+                                                            {allocation.gainLossPercent.toFixed(2)}%
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="font-mono text-body font-normal text-band-muted">—</span>
+                                                )}
+                                            </td>
                                             <td className="py-4 px-6 text-right">
                                                 <div className="flex flex-col items-end justify-center">
                                                     <span className="font-mono text-body font-normal text-band-ink">${currentStockValue.toFixed(2)}</span>
@@ -351,6 +404,10 @@ const WalletPage = () => {
                         </Link>
                     </EmptyState>
                 )}
+            </Band>
+
+            <Band tone="dark" className="py-section">
+                <TransactionHistory transactions={transactions} />
             </Band>
 
             {selectedSellStock && (

@@ -35,6 +35,8 @@ layer, and a real CI/CD pipeline running across a monorepo.
 - Per-user virtual wallet and asset tracking system
 - Cash balance, total asset value, and position-level allocation in a single view
 - Instant simulated deposit and sell actions
+- Unrealized profit/loss against cost basis, both portfolio-wide and per position
+- Paged transaction history covering buys, sells, deposits and withdrawals
 
 ### 🔍 Stock Search & Profile
 
