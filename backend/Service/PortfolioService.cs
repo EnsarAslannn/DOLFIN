@@ -51,7 +51,8 @@ namespace api.Service
                     _metrics,
                     CacheKeys.PortfolioByUser(user.Id),
                     async ct => await _portfolioRepo.GetUserPortfolio(user),
-                    CacheConfiguration.Portfolio
+                    CacheConfiguration.Portfolio,
+                    tags: [CacheKeys.PortfolioTag]
                 );
             }
             catch (Exception ex)

@@ -94,6 +94,19 @@ namespace api.Repository
             return _context.Stock.AnyAsync(s => s.Id == id);
         }
 
+        public async Task<int> UpdatePricesAsync(Func<Stock, decimal> nextPrice)
+        {
+            var stocks = await _context.Stock.ToListAsync();
+
+            foreach (var stock in stocks)
+            {
+                stock.Purchase = nextPrice(stock);
+            }
+
+            await _context.SaveChangesAsync();
+            return stocks.Count;
+        }
+
         public async Task<Stock?> UpdateAsync(int id, UpdateStockRequestDto stockDto)
         {
             var existingStock = await _context.Stock.FirstOrDefaultAsync(x => x.Id == id);

@@ -29,6 +29,9 @@ namespace api.IntegrationTests
             Environment.SetEnvironmentVariable("JWT__Issuer", "https://dol-fin.com");
             Environment.SetEnvironmentVariable("JWT__Audience", "https://dol-fin.com");
             Environment.SetEnvironmentVariable("Admin__SeedUsername", "");
+            // Prices must hold still for the duration of a test: several specs
+            // buy at a price and then assert on the resulting balance.
+            Environment.SetEnvironmentVariable("PriceSimulation__Enabled", "false");
             Environment.SetEnvironmentVariable("RateLimiting__AuthPermitLimit", "1000");
             Environment.SetEnvironmentVariable("RateLimiting__AuthWindowSeconds", "60");
         }

@@ -11,6 +11,46 @@ namespace api.Tests.Repository
 {
     public class StockRepositoryTests
     {
+        [Fact]
+        public async Task UpdatePricesAsync_WritesTheNewPriceForEveryStock()
+        {
+            var context = await SeedAsync(MakeStock("AAPL", purchase: 100m), MakeStock("TSLA", purchase: 200m));
+            var repo = new StockRepository(context);
+
+            var count = await repo.UpdatePricesAsync(stock => stock.Purchase + 1m);
+
+            Assert.Equal(2, count);
+            Assert.Equal(101m, context.Stock.Single(s => s.Symbol == "AAPL").Purchase);
+            Assert.Equal(201m, context.Stock.Single(s => s.Symbol == "TSLA").Purchase);
+        }
+
+        // Cost basis lives on the position, not the stock: a price tick must
+        // not touch what a holder paid, or their P/L would always read zero.
+        [Fact]
+        public async Task UpdatePricesAsync_LeavesEverythingButThePriceAlone()
+        {
+            var context = await SeedAsync(MakeStock("AAPL", companyName: "Apple Inc.", purchase: 100m, marketCap: 55));
+            var repo = new StockRepository(context);
+
+            await repo.UpdatePricesAsync(_ => 123.45m);
+
+            var stock = context.Stock.Single();
+            Assert.Equal(123.45m, stock.Purchase);
+            Assert.Equal("Apple Inc.", stock.CompanyName);
+            Assert.Equal("Technology", stock.Industry);
+            Assert.Equal(0.5m, stock.LastDiv);
+            Assert.Equal(55, stock.MarketCap);
+        }
+
+        [Fact]
+        public async Task UpdatePricesAsync_WithNoStocks_ReturnsZero()
+        {
+            var context = InMemoryDbContextFactory.Create();
+            var repo = new StockRepository(context);
+
+            Assert.Equal(0, await repo.UpdatePricesAsync(_ => 1m));
+        }
+
         private static Stock MakeStock(
             string symbol,
             string companyName = "Some Inc.",

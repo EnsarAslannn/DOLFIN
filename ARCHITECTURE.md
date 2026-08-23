@@ -43,7 +43,8 @@ serialize directly onto the wire.
 Controllers/     API endpoints — thin: parse request, call a service, map the result.
 Service/         Business logic: PortfolioService, PortfolioAnalyticsService,
                  RebalancingService, PriceAlertService (+ its background job),
-                 TokenService, CacheWarmingService.
+                 PriceSimulationService (+ its background job and the pure
+                 PriceWalk rules), TokenService, CacheWarmingService.
 Repository/      Data access behind Interfaces/ — StockRepository, CommentRepository,
                  PortfolioRepository, PriceAlertRepository, TransactionRepository,
                  UnitOfWork, plus the Cached* decorators mentioned above.

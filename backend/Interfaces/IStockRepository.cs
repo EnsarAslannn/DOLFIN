@@ -21,5 +21,7 @@ namespace api.Interfaces
         Task<bool> StockExists(int id);
 
         Task<List<Stock>> GetMarketTrendsAsync();
+
+        Task<int> UpdatePricesAsync(Func<Stock, decimal> nextPrice);
     }
 }
