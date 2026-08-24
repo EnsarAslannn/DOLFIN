@@ -39,6 +39,7 @@ bir CI/CD sürecini bir araya getiren uçtan uca bir uygulama ortaya koymaktır.
 - Anlık simüle mevduat (deposit) ve satış (sell) işlemleri
 - Maliyet bazına göre hesaplanan gerçekleşmemiş kar/zarar: portföy toplamı ve pozisyon bazında
 - Fiyatları periyodik olarak hareket ettiren simülasyon servisi (kar/zarar ve fiyat alarmlarını anlamlı kılar)
+- Cüzdan sayfasının sekme görünürken kendini tazelemesi; fiyat hareket ettikçe kar/zarar güncellenir
 - Alım, satım, mevduat ve çekim hareketlerinin sayfalanabilir işlem geçmişi
 
 ### 🔍 Hisse Arama & Profil

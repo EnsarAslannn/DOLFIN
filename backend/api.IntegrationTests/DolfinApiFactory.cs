@@ -32,6 +32,7 @@ namespace api.IntegrationTests
             // Prices must hold still for the duration of a test: several specs
             // buy at a price and then assert on the resulting balance.
             Environment.SetEnvironmentVariable("PriceSimulation__Enabled", "false");
+            Environment.SetEnvironmentVariable("PriceAlerts__Enabled", "false");
             Environment.SetEnvironmentVariable("RateLimiting__AuthPermitLimit", "1000");
             Environment.SetEnvironmentVariable("RateLimiting__AuthWindowSeconds", "60");
         }
