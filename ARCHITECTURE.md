@@ -45,6 +45,10 @@ Service/         Business logic: PortfolioService, PortfolioAnalyticsService,
                  RebalancingService, PriceAlertService (+ its background job),
                  PriceSimulationService (+ its background job and the pure
                  PriceWalk rules), TokenService, CacheWarmingService.
+                 Both background jobs read an options record bound from
+                 configuration (PriceAlertOptions, PriceSimulationOptions) and
+                 can be switched off through it -- the integration tests do
+                 exactly that so neither timer perturbs a running test.
 Repository/      Data access behind Interfaces/ — StockRepository, CommentRepository,
                  PortfolioRepository, PriceAlertRepository, TransactionRepository,
                  UnitOfWork, plus the Cached* decorators mentioned above.

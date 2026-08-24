@@ -14,6 +14,11 @@ import GlassLogo from "../../Components/Dashboard/GlassLogo"
 import EmptyState from "../../Components/Dashboard/EmptyState"
 import TransactionHistory from "../../Components/Portfolio/TransactionHistory/TransactionHistory"
 import { Link } from "react-router-dom"
+import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
+
+// Prices move on a server-side timer, so a wallet left open goes stale.
+// Matching that cadence keeps the figures honest without extra chatter.
+const LIVE_REFRESH_MS = 60_000
 
 const WalletPage = () => {
     const { user, updateWalletBalance } = useAuth()
@@ -36,13 +41,18 @@ const WalletPage = () => {
 
     // Cost basis lives only on the server, so unrealized P/L and the history
     // are read rather than derived -- the page still renders balances without them.
+    const refreshMetrics = async () => {
+        const res = await portfolioMetricsAPI()
+        if (res?.data) setMetrics(res.data)
+    }
+
+    const refreshTransactions = async () => {
+        const res = await portfolioTransactionsAPI()
+        if (res?.data) setTransactions(res.data)
+    }
+
     const refreshPerformance = async () => {
-        const [metricsRes, transactionsRes] = await Promise.all([
-            portfolioMetricsAPI(),
-            portfolioTransactionsAPI(),
-        ])
-        if (metricsRes?.data) setMetrics(metricsRes.data)
-        if (transactionsRes?.data) setTransactions(transactionsRes.data)
+        await Promise.all([refreshMetrics(), refreshTransactions()])
     }
 
     const refreshWalletBalance = async () => {
@@ -58,10 +68,22 @@ const WalletPage = () => {
         const loadWalletData = async () => {
             getWalletPortfolio()
             await refreshWalletBalance()
-            await refreshPerformance()
+            await Promise.all([refreshMetrics(), refreshTransactions()])
         }
         loadWalletData()
     }, [user])
+
+    // Only the price-driven figures are polled: the history changes when this
+    // user trades, and a trade already refreshes it. Polling pauses while the
+    // sell dialog is open so the position cannot shift under an order.
+    usePollWhileVisible(
+        () => {
+            getWalletPortfolio()
+            refreshMetrics()
+        },
+        LIVE_REFRESH_MS,
+        Boolean(user) && !isSellModalOpen,
+    )
 
     const handleDepositSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault()

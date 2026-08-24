@@ -1,8 +1,4 @@
 using api.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace api.Service
 {
@@ -10,22 +6,29 @@ namespace api.Service
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<PriceAlertBackgroundService> _logger;
-        private readonly TimeSpan _checkInterval;
+        private readonly PriceAlertOptions _options;
 
         public PriceAlertBackgroundService(
             IServiceScopeFactory scopeFactory,
             ILogger<PriceAlertBackgroundService> logger,
-            IConfiguration configuration
+            PriceAlertOptions options
         )
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
-            var hours = configuration.GetValue<double?>("PriceAlerts:CheckIntervalHours") ?? 24;
-            _checkInterval = TimeSpan.FromHours(hours);
+            _options = options;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            if (!_options.Enabled)
+            {
+                _logger.LogInformation("Price alert checks are disabled; no alert will fire");
+                return;
+            }
+
+            var interval = TimeSpan.FromSeconds(Math.Max(_options.IntervalSeconds, 1));
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -41,7 +44,7 @@ namespace api.Service
 
                 try
                 {
-                    await Task.Delay(_checkInterval, stoppingToken);
+                    await Task.Delay(interval, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
