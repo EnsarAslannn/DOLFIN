@@ -1,6 +1,7 @@
 import { PanelHeader } from "../../Dashboard/Panel"
 import EmptyState from "../../Dashboard/EmptyState"
 import Reveal from "../../Dashboard/Reveal"
+import { formatTimestamp } from "../../../Helpers/dateTime"
 import type { Transaction, TransactionType } from "../../../Models/Portfolio"
 
 type Props = {
@@ -15,19 +16,6 @@ const badgeClass = (type: TransactionType) =>
   isDebit(type)
     ? "text-band-loss ring-band-loss/30"
     : "text-band-gain ring-band-gain/30"
-
-const formatTimestamp = (timestamp: string) => {
-  const parsed = new Date(timestamp)
-  if (Number.isNaN(parsed.getTime())) return "—"
-
-  return parsed.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 const TransactionHistory = ({ transactions }: Props) => (
   <div className="flex flex-col gap-8">

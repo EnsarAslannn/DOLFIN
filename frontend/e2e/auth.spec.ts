@@ -6,9 +6,52 @@ test.describe("authentication flow", () => {
             route.fulfill({ status: 401, body: "" }),
         )
 
-        await page.goto("/search")
+        await page.goto("/wallet")
 
         await expect(page).toHaveURL(/\/login$/)
+    })
+
+    test("lets a visitor browse the catalog and the discussion without an account", async ({ page }) => {
+        await page.route("**/api/account/profile", (route) =>
+            route.fulfill({ status: 401, body: "" }),
+        )
+        await page.route("**/api/stock/trends", (route) =>
+            route.fulfill({ status: 404, body: "" }),
+        )
+        await page.route("**/api/stock?**", (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify([
+                    { id: 42, symbol: "TSLA", companyName: "Tesla Inc", purchase: 250, industry: "Automotive", marketCap: 800000000000 },
+                ]),
+            }),
+        )
+        await page.route("**/api/comment?**", (route) =>
+            route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify([
+                    { id: 1, title: "Bullish", content: "Great stock!", createdBy: "someone_else", stockId: 42 },
+                ]),
+            }),
+        )
+
+        await page.goto("/search")
+
+        await expect(page).toHaveURL(/\/search$/)
+
+        await page.getByPlaceholder(/search companies/i).fill("TSLA")
+        await page.getByRole("button", { name: /^search$/i }).click()
+
+        await expect(page.getByText("Tesla Inc")).toBeVisible()
+        await expect(page.getByText("Great stock!")).toBeVisible()
+
+        // Reading is open; anything that spends money is not.
+        await expect(page.getByRole("link", { name: /sign in to buy tsla/i })).toBeVisible()
+        await expect(page.getByRole("button", { name: /^add$/i })).toHaveCount(0)
+        await expect(page.getByText(/trading needs an account/i)).toBeVisible()
+        await expect(page.getByText(/join the conversation/i)).toBeVisible()
     })
 
     test("shows validation errors when submitting the login form empty", async ({ page }) => {

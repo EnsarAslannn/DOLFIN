@@ -13,6 +13,7 @@ import MarketTicker from "../../Components/MarketTicker/MarketTicker"
 import GlassLogo from "../../Components/Dashboard/GlassLogo"
 import EmptyState from "../../Components/Dashboard/EmptyState"
 import TransactionHistory from "../../Components/Portfolio/TransactionHistory/TransactionHistory"
+import PriceAlerts from "../../Components/Alerts/PriceAlerts/PriceAlerts"
 import { Link } from "react-router-dom"
 import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
 
@@ -429,6 +430,10 @@ const WalletPage = () => {
             </Band>
 
             <Band tone="dark" className="py-section">
+                <PriceAlerts />
+            </Band>
+
+            <Band tone="cream" className="py-section">
                 <TransactionHistory transactions={transactions} />
             </Band>
 

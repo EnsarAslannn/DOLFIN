@@ -84,6 +84,12 @@ api.IntegrationTests/   xUnit integration tests (Testcontainers) — see below.
   `TokenService` creates it, `ClaimsExtensions` reads the current user off
   it in every other controller. CSRF is covered separately via the
   double-submit `IAntiforgery` cookie pattern on state-changing requests.
+  Controllers are `[Authorize]` by default and open up per action: the
+  catalog reads (`StockController.GetAll/GetById/GetMarketTrends`) and the
+  comment reads carry `[AllowAnonymous]` so a visitor can browse before
+  signing up, while everything wallet-shaped stays behind the wall. Two unit
+  test files assert those attributes per action, because the difference
+  between "open" and "leaked" here is one attribute.
 - **Validation:** every request DTO has a matching FluentValidation
   validator in `Validation/`; the single `ValidationActionFilter` action
   filter runs them for every action model-bound to a DTO, so there is no
@@ -146,8 +152,9 @@ dotnet test api.IntegrationTests/api.IntegrationTests.csproj  # integration only
 ## Frontend structure (brief)
 
 The frontend (`frontend/src/`) is a standard feature-oriented React/Vite
-layout — `Pages/` (routed screens), `Components/` (shared UI),
-`Context/` (React context providers, e.g. auth state), `Services/`
+layout — `Pages/` (routed screens), `Components/` (shared UI, including
+`Components/Alerts/` — the navbar notification bell and the wallet's alert
+list), `Context/` (React context providers, e.g. auth state), `Services/`
 (Axios calls into the API, see `Helpers/AxiosInstance.tsx` for the base
 URL/interceptor setup), `Routes/` (route definitions), `Models/`
 (TypeScript types mirroring the API's DTOs), `Helpers/`. End-to-end tests

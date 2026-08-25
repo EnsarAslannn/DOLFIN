@@ -35,14 +35,10 @@ export const router = createBrowserRouter([
             { path: "", element: withSuspense(<HomePage />) },
             { path: "login", element: withSuspense(<LoginPage />) },
             { path: "register", element: withSuspense(<RegisterPage />) },
-            {
-                path: "search",
-                element: (
-                    <ProtectedRoute>
-                        {withSuspense(<SearchPage />)}
-                    </ProtectedRoute>
-                ),
-            },
+            // Search and the company pages are deliberately open: a visitor
+            // can read the catalog and the discussion before deciding to sign
+            // up. Everything that touches a wallet stays protected.
+            { path: "search", element: withSuspense(<SearchPage />) },
             {
                 path: "wallet",
                 element: (
@@ -53,11 +49,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "company/:ticker",
-                element: (
-                    <ProtectedRoute>
-                        {withSuspense(<CompanyPage />)}
-                    </ProtectedRoute>
-                ),
+                element: withSuspense(<CompanyPage />),
                 children: [
                     { path: "company-profile", element: withSuspense(<CompanyProfile />) },
                     { path: "income-statement", element: withSuspense(<IncomeStatement />) },

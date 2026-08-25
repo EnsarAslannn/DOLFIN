@@ -51,6 +51,10 @@ namespace api.Service
         public Task<List<PriceAlert>> GetActiveAlertsAsync(AppUser user) =>
             _alertRepo.GetActiveAlertsForUserAsync(user.Id);
 
+        public Task<PriceAlert?> GetAlertByIdAsync(int alertId) => _alertRepo.GetByIdAsync(alertId);
+
+        public Task DeleteAlertAsync(PriceAlert alert) => _alertRepo.DeleteAsync(alert);
+
         public Task<List<AlertNotification>> GetNotificationsAsync(AppUser user) =>
             _alertRepo.GetNotificationsForUserAsync(user.Id);
 

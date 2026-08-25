@@ -8,6 +8,10 @@ test.describe("portfolio flow", () => {
         await page.route("**/api/account/profile", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
+        // The navbar bell polls for triggered alerts on every signed-in page.
+        await page.route("**/api/alerts/notifications", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
         await page.route("**/api/stock/trends", (route) =>
             route.fulfill({ status: 404, body: "" }),
         )
@@ -59,6 +63,10 @@ test.describe("portfolio flow", () => {
         await page.route("**/api/account/profile", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
+        // The navbar bell polls for triggered alerts on every signed-in page.
+        await page.route("**/api/alerts/notifications", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
         await page.route("**/api/portfolio/sell", (route) => {
             sold = true
             return route.fulfill({
@@ -94,6 +102,12 @@ test.describe("portfolio flow", () => {
                 }),
             }),
         )
+        await page.route("**/api/alerts", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
+        await page.route("**/api/stock?**", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
         await page.route("**/api/portfolio/transactions**", (route) =>
             route.fulfill({
                 status: 200,
@@ -124,6 +138,10 @@ test.describe("portfolio flow", () => {
         await page.route("**/api/account/profile", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
+        // The navbar bell polls for triggered alerts on every signed-in page.
+        await page.route("**/api/alerts/notifications", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
         await page.route("**/api/portfolio", (route) =>
             route.fulfill({
                 status: 200,
@@ -147,6 +165,12 @@ test.describe("portfolio flow", () => {
                     ],
                 }),
             }),
+        )
+        await page.route("**/api/alerts", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
+        )
+        await page.route("**/api/stock?**", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
         )
         await page.route("**/api/portfolio/transactions**", (route) =>
             route.fulfill({
@@ -178,6 +202,10 @@ test.describe("portfolio flow", () => {
 
         await page.route("**/api/account/profile", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
+        )
+        // The navbar bell polls for triggered alerts on every signed-in page.
+        await page.route("**/api/alerts/notifications", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
         )
         await page.route("**/api/stock?**", (route) =>
             route.fulfill({
@@ -228,6 +256,10 @@ test.describe("portfolio flow", () => {
 
         await page.route("**/api/account/profile", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
+        )
+        // The navbar bell polls for triggered alerts on every signed-in page.
+        await page.route("**/api/alerts/notifications", (route) =>
+            route.fulfill({ status: 200, contentType: "application/json", body: "[]" }),
         )
         await page.route("**/api/stock/trends", (route) =>
             route.fulfill({ status: 404, body: "" }),

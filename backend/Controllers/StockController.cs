@@ -27,11 +27,14 @@ namespace api.Controllers
         /// <remarks>
         /// Results are served from the Redis-backed cache when available and
         /// fall back to a direct database read if the cache is unreachable.
+        /// Open to anonymous callers so a visitor can browse the catalog
+        /// before signing up.
         /// </remarks>
         /// <param name="query">Filter (symbol, company name), sort and paging options.</param>
         /// <response code="200">The matching page of stocks.</response>
         /// <response code="400">The query parameters failed validation.</response>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(List<StockDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
@@ -43,12 +46,13 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// Gets a single stock by its numeric id.
+        /// Gets a single stock by its numeric id. Open to anonymous callers.
         /// </summary>
         /// <param name="id">The stock's database id.</param>
         /// <response code="200">The requested stock.</response>
         /// <response code="404">No stock exists with that id.</response>
         [HttpGet("{id:int}")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(StockDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById([FromRoute] int id)
@@ -161,11 +165,13 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// Gets the stocks shown in the market trends ticker.
+        /// Gets the stocks shown in the market trends ticker. Open to
+        /// anonymous callers.
         /// </summary>
         /// <response code="200">The trending stocks.</response>
         /// <response code="404">The stock catalog has not been seeded yet.</response>
         [HttpGet("trends")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(List<api.Models.Stock>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetMarketTrends()

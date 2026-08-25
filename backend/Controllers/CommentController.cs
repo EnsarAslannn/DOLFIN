@@ -36,14 +36,16 @@ namespace api.Controllers
 
         /// <summary>
         /// Lists comments, optionally filtered by stock symbol and sorted.
+        /// Open to anonymous callers so a visitor can read the discussion
+        /// before signing up; posting still requires an account.
         /// </summary>
         /// <param name="queryObject">Symbol filter and sort options.</param>
         /// <response code="200">The matching comments.</response>
         /// <response code="400">The query parameters failed validation.</response>
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(IEnumerable<CommentDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetAll([FromQuery] CommentQueryObject queryObject)
         {
             var comments = await _commentRepo.GetAllAsync(queryObject);

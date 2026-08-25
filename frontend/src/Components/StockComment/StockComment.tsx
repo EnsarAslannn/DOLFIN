@@ -7,8 +7,10 @@ import StockCommentForm, {
 } from "./StockCommentForm/StockCommentForm"
 import StockCommentList from "../StockCommentList/StockCommentList"
 import DataLoader from "../Dashboard/DataLoader"
+import GuestCallout from "../Dashboard/GuestCallout"
 import { PanelHeader } from "../Dashboard/Panel"
 import Reveal from "../Dashboard/Reveal"
+import { useAuth } from "../../Context/useAuth"
 import { toStockOption, postableStocks, type StockOption } from "./stockOptions"
 import type { CommentGet } from "../../Models/Comment"
 import type { StockSearchResult } from "../../Models/StockSearchResult"
@@ -16,6 +18,7 @@ import type { StockSearchResult } from "../../Models/StockSearchResult"
 const ALL = "all" as const
 
 const StockComment = () => {
+  const { user } = useAuth()
   const [stocks, setStocks] = useState<StockOption[]>([])
   const [comments, setComments] = useState<CommentGet[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,7 +134,9 @@ const StockComment = () => {
           lead={
             activeSymbol
               ? `Showing ${visible.length} comment${visible.length === 1 ? "" : "s"} on ${activeSymbol}.`
-              : "Notes posted against any ticker on the platform. Filter by company, or add your own below."
+              : user
+                ? "Notes posted against any ticker on the platform. Filter by company, or add your own below."
+                : "Notes posted against any ticker on the platform. Filter by company to read what traders are saying."
           }
         />
       </Reveal>
@@ -175,20 +180,29 @@ const StockComment = () => {
           )}
         </div>
 
-        <Reveal className="rounded-card bg-band-surface p-6 ring-1 ring-inset ring-band-line/6 lg:col-span-2">
-          <h3 className="text-subheading font-medium text-band-ink">
-            Add a comment
-          </h3>
-          <p className="mt-2 text-body font-normal text-band-muted">
-            Pick the company you are writing about, then say your piece.
-          </p>
-          <StockCommentForm
-            stocks={postable}
-            defaultStockId={filter === ALL ? undefined : filter}
-            submitting={posting}
-            handleComment={handleComment}
-          />
-        </Reveal>
+        {user ? (
+          <Reveal className="rounded-card bg-band-surface p-6 ring-1 ring-inset ring-band-line/6 lg:col-span-2">
+            <h3 className="text-subheading font-medium text-band-ink">
+              Add a comment
+            </h3>
+            <p className="mt-2 text-body font-normal text-band-muted">
+              Pick the company you are writing about, then say your piece.
+            </p>
+            <StockCommentForm
+              stocks={postable}
+              defaultStockId={filter === ALL ? undefined : filter}
+              submitting={posting}
+              handleComment={handleComment}
+            />
+          </Reveal>
+        ) : (
+          <div className="lg:col-span-2">
+            <GuestCallout
+              title="Join the conversation"
+              description="Reading the discussion is open to everyone. Posting a note against a ticker needs an account."
+            />
+          </div>
+        )}
       </div>
     </section>
   )

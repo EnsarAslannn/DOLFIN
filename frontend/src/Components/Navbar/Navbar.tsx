@@ -7,6 +7,7 @@ import { ctaBaseClass } from "../../Helpers/formStyles"
 import { useSectionTone } from "../../Helpers/useSectionTone"
 import MobileMenu from "./MobileMenu"
 import MenuIcon from "./MenuIcon"
+import NotificationBell from "../Alerts/NotificationBell/NotificationBell"
 
 const SCROLL_THRESHOLD = 24
 
@@ -118,6 +119,7 @@ const Navbar = () => {
           <div className="flex items-center gap-3 sm:gap-4">
             {user ? (
               <>
+                <NotificationBell isLight={isLight} />
                 <div
                   className={`hidden items-baseline gap-2 rounded-pill px-3 py-2 transition-colors duration-300 sm:flex ${
                     isLight ? "bg-onyx-canvas/8" : "bg-mist-border/10"
