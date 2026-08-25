@@ -13,6 +13,10 @@ namespace api.Interfaces
 
         Task<List<PriceAlert>> GetActiveAlertsAsync(AppUser user);
 
+        Task<PriceAlert?> GetAlertByIdAsync(int alertId);
+
+        Task DeleteAlertAsync(PriceAlert alert);
+
         Task<int> CheckAndTriggerAlertsAsync();
 
         Task<List<AlertNotification>> GetNotificationsAsync(AppUser user);

@@ -14,6 +14,8 @@ namespace api.Interfaces
 
         Task UpdateAsync(PriceAlert alert);
 
+        Task DeleteAsync(PriceAlert alert);
+
         Task<AlertNotification> CreateNotificationAsync(AlertNotification notification);
 
         Task<AlertNotification?> GetNotificationByIdAsync(int id);

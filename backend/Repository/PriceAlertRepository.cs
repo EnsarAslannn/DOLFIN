@@ -49,6 +49,12 @@ namespace api.Repository
             await _context.SaveChangesAsync();
         }
 
+        public async Task DeleteAsync(PriceAlert alert)
+        {
+            _context.PriceAlerts.Remove(alert);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<AlertNotification> CreateNotificationAsync(AlertNotification notification)
         {
             await _context.AlertNotifications.AddAsync(notification);

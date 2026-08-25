@@ -82,6 +82,38 @@ namespace api.Controllers
         }
 
         /// <summary>
+        /// Deletes one of the signed-in user's price alerts.
+        /// </summary>
+        /// <remarks>
+        /// A notification raised by the alert is removed with it, so deleting
+        /// a fired alert also clears it from the notification list.
+        /// </remarks>
+        /// <param name="id">The alert's id.</param>
+        /// <response code="204">The alert was deleted.</response>
+        /// <response code="403">The alert belongs to a different user.</response>
+        /// <response code="404">No alert exists with that id.</response>
+        [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            if (appUser == null)
+                return Unauthorized("User context not found.");
+
+            var alert = await _alertService.GetAlertByIdAsync(id);
+            if (alert == null)
+                return NotFound("Alert not found");
+
+            if (alert.AppUserId != appUser.Id)
+                return Forbid();
+
+            await _alertService.DeleteAlertAsync(alert);
+            return NoContent();
+        }
+
+        /// <summary>
         /// Lists the notifications raised by the user's triggered alerts.
         /// </summary>
         /// <response code="200">The user's notifications, read and unread.</response>

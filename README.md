@@ -48,10 +48,25 @@ bir CI/CD sürecini bir araya getiren uçtan uca bir uygulama ortaya koymaktır.
 - Hisse senedi arama ve detaylı profil görüntüleme
 - Admin yetkisiyle hisse senedi yönetimi
 
+### 🔔 Fiyat Alarmları
+
+- Bir hisse için hedef fiyat ve yön (üstüne çıkarsa / altına düşerse) belirleyerek alarm kurma
+- Alarmları dakikada bir kontrol eden arka plan servisi; koşul sağlandığında bildirim üretir
+- Navbar'daki zil ikonunda okunmamış bildirim sayacı, açılır panelde bildirim listesi ve
+  tek tek ya da toplu okundu işaretleme
+- Cüzdan sayfasında bekleyen/tetiklenmiş alarm listesi ve alarm silme
+
+### 👀 Üye Olmadan Gezinme
+
+- Hisse arama, şirket profilleri ve tartışma bölümü giriş yapmadan okunabilir
+- Alım-satım, yorum yazma ve alarm kurma hesap gerektirir; ilgili butonlar ziyaretçiyi
+  başarısız bir istek yerine giriş sayfasına yönlendirir
+
 ### 💬 İlişkisel Yorum Sistemi
 
 - Hisse senedi sembolleriyle (ticker) doğrudan ilişkilendirilmiş dinamik yorum mimarisi
 - Sahiplik kontrollü yorum CRUD işlemleri (yalnızca kendi yorumunu düzenleme/silme)
+- Yorumları okumak herkese açık; yazmak için giriş gerekir
 
 ### 🔐 Güvenli Kimlik Doğrulama & Yetkilendirme
 

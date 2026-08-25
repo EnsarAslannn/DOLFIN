@@ -177,5 +177,30 @@ namespace api.Tests.Service
             Assert.True(notification.IsRead);
             alertRepo.Verify(r => r.UpdateNotificationAsync(notification), Times.Once);
         }
+
+        [Fact]
+        public async Task GetAlertByIdAsync_ReadsThroughToTheRepository()
+        {
+            var alert = new PriceAlert { Id = 7, AppUserId = "user-1", StockId = 1, TargetPrice = 200m };
+            var alertRepo = new Mock<IPriceAlertRepository>();
+            alertRepo.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(alert);
+
+            var service = CreateService(alertRepo, new Mock<IStockRepository>());
+
+            Assert.Same(alert, await service.GetAlertByIdAsync(7));
+        }
+
+        [Fact]
+        public async Task DeleteAlertAsync_RemovesTheAlert()
+        {
+            var alert = new PriceAlert { Id = 7, AppUserId = "user-1", StockId = 1, TargetPrice = 200m };
+            var alertRepo = new Mock<IPriceAlertRepository>();
+
+            var service = CreateService(alertRepo, new Mock<IStockRepository>());
+
+            await service.DeleteAlertAsync(alert);
+
+            alertRepo.Verify(r => r.DeleteAsync(alert), Times.Once);
+        }
     }
 }

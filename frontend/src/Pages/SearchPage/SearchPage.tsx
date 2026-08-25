@@ -25,6 +25,7 @@ import StockComment from "../../Components/StockComment/StockComment"
 import { useAuth } from "../../Context/useAuth"
 import { searchStocksBySymbolAPI, searchStocksByCompanyNameAPI } from "../../Services/StockService"
 import PurchasePortfolio from "../../Components/Portfolio/PurchasePortfolio/PurchasePortfolio"
+import GuestCallout from "../../Components/Dashboard/GuestCallout"
 
 const SearchPage = () => {
   const { user, updateWalletBalance } = useAuth()
@@ -278,8 +279,9 @@ const SearchPage = () => {
               Find a company
             </h1>
             <p className="mt-3 max-w-[60ch] text-body-lg font-normal text-band-muted">
-              Look up any listed ticker to read its fundamentals, then add it to
-              your portfolio.
+              {user
+                ? "Look up any listed ticker to read its fundamentals, then add it to your portfolio."
+                : "Look up any listed ticker and read its fundamentals. Browsing is open — an account is only needed to trade."}
             </p>
           </div>
 
@@ -317,12 +319,21 @@ const SearchPage = () => {
 
       <Band tone="dark" className="py-section">
         <div className="flex w-full flex-col gap-16">
-            <ListPortfolio
-              portfolioValues={portfolioValues!}
-              onPortfolioDelete={onPortfolioDelete}
-            />
+            {!user && (
+              <GuestCallout
+                title="Trading needs an account"
+                description="Search, fundamentals and the discussion are open to everyone. Opening a wallet gives you a starting balance to trade with, unrealized profit and loss on every position, and price alerts that watch a level for you."
+              />
+            )}
 
-            {portfolioValues && (
+            {user && (
+              <ListPortfolio
+                portfolioValues={portfolioValues!}
+                onPortfolioDelete={onPortfolioDelete}
+              />
+            )}
+
+            {user && portfolioValues && (
               <div className="flex w-full flex-col gap-6">
                 <Reveal>
                   <PanelHeader eyebrow="Analytics" title="Portfolio analytics" />

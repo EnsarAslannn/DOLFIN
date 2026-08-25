@@ -46,10 +46,26 @@ layer, and a real CI/CD pipeline running across a monorepo.
 - Stock search and detailed profile view
 - Admin-only stock management
 
+### 🔔 Price Alerts
+
+- Set an alert on a stock by naming a target price and a direction (rises to / falls to)
+- A background service checks alerts every minute and raises a notification once the
+  condition is met
+- An unread counter on the navbar bell, the notification list in its dropdown, and
+  mark-one or mark-all-read
+- Pending and triggered alerts listed on the wallet page, each removable
+
+### 👀 Guest Browsing
+
+- Stock search, company profiles and the discussion are readable without signing in
+- Trading, commenting and setting alerts need an account; those controls send a visitor
+  to the sign-in page rather than failing on submit
+
 ### 💬 Relational Comment System
 
 - Dynamic comment architecture directly linked to stock tickers
 - Ownership-checked comment CRUD (users can only edit/delete their own comments)
+- Reading the discussion is open to everyone; posting requires an account
 
 ### 🔐 Secure Authentication & Authorization
 

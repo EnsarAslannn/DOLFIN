@@ -40,5 +40,27 @@ namespace api.Tests.Controllers
                 $"'{actionName}' should be reachable by any authenticated user, not admin-only."
             );
         }
+
+        [Theory]
+        [InlineData(nameof(StockController.GetAll))]
+        [InlineData(nameof(StockController.GetById))]
+        [InlineData(nameof(StockController.GetMarketTrends))]
+        public void ReadActions_AreOpenToAnonymousVisitors(string actionName)
+        {
+            var action = GetAction(actionName);
+
+            Assert.NotNull(action.GetCustomAttribute<AllowAnonymousAttribute>());
+        }
+
+        [Theory]
+        [InlineData(nameof(StockController.Create))]
+        [InlineData(nameof(StockController.Update))]
+        [InlineData(nameof(StockController.Delete))]
+        public void MutatingActions_AreNotOpenToAnonymousVisitors(string actionName)
+        {
+            var action = GetAction(actionName);
+
+            Assert.Null(action.GetCustomAttribute<AllowAnonymousAttribute>());
+        }
     }
 }

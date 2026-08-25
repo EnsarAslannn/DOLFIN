@@ -213,5 +213,65 @@ namespace api.IntegrationTests
             var updated = await response.Content.ReadFromJsonAsync<AlertNotificationDto>();
             Assert.True(updated!.IsRead);
         }
+
+        [Fact]
+        public async Task DeleteAlert_Owner_RemovesItFromTheList()
+        {
+            var stock = await CreateStockAsAdminAsync(150m);
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var createResponse = await client.PostAsJsonAsync(
+                "/api/alerts",
+                new CreatePriceAlertRequestDto
+                {
+                    StockId = stock.Id,
+                    TargetPrice = 200m,
+                    Condition = PriceAlertCondition.GreaterThanOrEqual,
+                }
+            );
+            var created = await createResponse.Content.ReadFromJsonAsync<PriceAlertDto>(JsonOptions);
+
+            var response = await client.DeleteAsync($"/api/alerts/{created!.Id}");
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            var remaining = await client.GetFromJsonAsync<List<PriceAlertDto>>("/api/alerts", JsonOptions);
+            Assert.DoesNotContain(remaining!, a => a.Id == created.Id);
+        }
+
+        [Fact]
+        public async Task DeleteAlert_NotOwner_ReturnsForbidden()
+        {
+            var stock = await CreateStockAsAdminAsync(150m);
+            var ownerClient = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var createResponse = await ownerClient.PostAsJsonAsync(
+                "/api/alerts",
+                new CreatePriceAlertRequestDto
+                {
+                    StockId = stock.Id,
+                    TargetPrice = 200m,
+                    Condition = PriceAlertCondition.GreaterThanOrEqual,
+                }
+            );
+            var created = await createResponse.Content.ReadFromJsonAsync<PriceAlertDto>(JsonOptions);
+
+            var attackerClient = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+            var response = await attackerClient.DeleteAsync($"/api/alerts/{created!.Id}");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+
+            var stillThere = await ownerClient.GetFromJsonAsync<List<PriceAlertDto>>("/api/alerts", JsonOptions);
+            Assert.Contains(stillThere!, a => a.Id == created.Id);
+        }
+
+        [Fact]
+        public async Task DeleteAlert_UnknownId_ReturnsNotFound()
+        {
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var response = await client.DeleteAsync("/api/alerts/999999");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }
