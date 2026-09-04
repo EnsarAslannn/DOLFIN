@@ -12,7 +12,7 @@ test.describe("price alerts", () => {
     test("a triggered alert reaches the user through the navbar bell", async ({ page }) => {
         let read = false
 
-        await page.route("**/api/account/profile", (route) => route.fulfill(json(user)))
+        await page.route("**/api/account/{profile,session}", (route) => route.fulfill(json(user)))
         await page.route("**/api/stock/trends", (route) =>
             route.fulfill({ status: 404, body: "" }),
         )
@@ -56,7 +56,7 @@ test.describe("price alerts", () => {
     test("a user can set a price alert from the wallet", async ({ page }) => {
         const created: Array<Record<string, unknown>> = []
 
-        await page.route("**/api/account/profile", (route) => route.fulfill(json(user)))
+        await page.route("**/api/account/{profile,session}", (route) => route.fulfill(json(user)))
         await page.route("**/api/alerts/notifications", (route) => route.fulfill(json([])))
         await page.route("**/api/portfolio", (route) => route.fulfill(json([])))
         await page.route("**/api/portfolio/metrics", (route) =>

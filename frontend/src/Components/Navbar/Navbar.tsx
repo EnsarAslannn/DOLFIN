@@ -64,9 +64,12 @@ const Navbar = () => {
       : "text-ivory-text hover:bg-mist-border/8"
   }`
 
+  // These point at sections of the home page. They go through the router
+  // rather than a plain <a href="/#...">: from any other route that would be
+  // a document navigation, reloading the whole app just to reach an anchor.
   const sectionLinks = [
-    { href: "/#how-it-works", label: "How it works" },
-    { href: "/#help", label: "Help Center" },
+    { to: "/#how-it-works", label: "How it works" },
+    { to: "/#help", label: "Help Center" },
   ]
 
   return (
@@ -92,13 +95,13 @@ const Navbar = () => {
 
             <div className="hidden items-center gap-7 md:flex">
               {sectionLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
+                <Link
+                  key={link.to}
+                  to={link.to}
                   className={`text-label font-normal underline-offset-[6px] transition-colors duration-300 hover:underline ${mutedClass}`}
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               <Link to="/search" className={navLinkClass("/search")}>
                 Search
@@ -187,9 +190,9 @@ const Navbar = () => {
         triggerRef={triggerRef}
       >
         {sectionLinks.map((link) => (
-          <a key={link.href} href={link.href} onClick={closeMenu} className={sheetRowClass}>
+          <Link key={link.to} to={link.to} onClick={closeMenu} className={sheetRowClass}>
             {link.label}
-          </a>
+          </Link>
         ))}
         <Link to="/search" onClick={closeMenu} className={sheetRowClass}>
           Search

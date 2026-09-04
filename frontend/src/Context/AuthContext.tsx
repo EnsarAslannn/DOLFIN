@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react"
 import type { UserProfile } from "../Models/User"
 import { useNavigate } from "react-router"
-import { getProfileAPI, loginAPI, logoutAPI, registerAPI } from "../Services/AuthService"
+import {
+    getProfileAPI,
+    getSessionAPI,
+    loginAPI,
+    logoutAPI,
+    registerAPI,
+} from "../Services/AuthService"
 import { toast } from "react-toastify"
 import React from "react"
 import { UserContext } from "./UserContext"
@@ -15,9 +21,9 @@ export const UserProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const restoreSession = async () => {
-            const res = await getProfileAPI()
-            if (res?.data) {
-                setUser(res.data)
+            const profile = await getSessionAPI()
+            if (profile) {
+                setUser(profile)
             }
             setIsReady(true)
         }

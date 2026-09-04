@@ -39,6 +39,19 @@ export const logoutAPI = async () => {
   }
 }
 
+// The session probe every visitor triggers on load. Guest browsing is
+// supported, so "not signed in" comes back as 204 rather than the 401 that
+// "account/profile" raises -- a failed request there would surface in the
+// console and in error tracking on every anonymous page load.
+export const getSessionAPI = async (): Promise<UserProfile | null> => {
+  try {
+    const res = await axiosInstance.get<UserProfile | "">("account/session")
+    return res.status === 200 && res.data ? res.data : null
+  } catch {
+    return null
+  }
+}
+
 export const getProfileAPI = async () => {
   try {
     const data = await axiosInstance.get<UserProfile>("account/profile")

@@ -216,5 +216,39 @@ namespace api.Controllers
 
             return Ok(new { user.WalletBalance, user.UserName, user.Email });
         }
+
+        /// <summary>
+        /// Reports whether the caller has a session, without failing when they do not.
+        /// </summary>
+        /// <remarks>
+        /// Visitors are allowed to browse before signing up, so "nobody is
+        /// signed in" is a normal answer rather than an error: this endpoint
+        /// replies 204 where <c>GET /api/account/profile</c> raises the 401
+        /// that would otherwise show up as a failed request in every guest's
+        /// console and error tracking. A signed-in caller gets the same payload
+        /// and the same fresh CSRF cookie as <c>profile</c>.
+        /// </remarks>
+        /// <response code="200">The current user's username, email and wallet balance.</response>
+        /// <response code="204">No valid authentication cookie was supplied.</response>
+        [HttpGet("session")]
+        [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> GetSession()
+        {
+            if (User.Identity?.IsAuthenticated != true)
+                return NoContent();
+
+            var user = await User.GetAuthenticatedUserAsync(_userManager);
+            if (user == null)
+                return NoContent();
+
+            // Only a real session is handed a CSRF token: the antiforgery token
+            // is bound to the caller's identity, so one minted while anonymous
+            // would be rejected on the first request made after signing in.
+            IssueCsrfCookie();
+
+            return Ok(new { user.WalletBalance, user.UserName, user.Email });
+        }
     }
 }

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test"
 
 test.describe("authentication flow", () => {
     test("redirects an unauthenticated visitor from a protected page to login", async ({ page }) => {
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 401, body: "" }),
         )
 
@@ -12,7 +12,7 @@ test.describe("authentication flow", () => {
     })
 
     test("lets a visitor browse the catalog and the discussion without an account", async ({ page }) => {
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 401, body: "" }),
         )
         await page.route("**/api/stock/trends", (route) =>
@@ -55,7 +55,7 @@ test.describe("authentication flow", () => {
     })
 
     test("shows validation errors when submitting the login form empty", async ({ page }) => {
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 401, body: "" }),
         )
 
@@ -69,7 +69,7 @@ test.describe("authentication flow", () => {
     test("logs in successfully and lands on the search page", async ({ page }) => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 0 }
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         await page.route("**/api/account/login", (route) =>

@@ -40,14 +40,17 @@ const asProfileResponse = (data: UserProfile) =>
 describe("useAuth", () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        vi.mocked(AuthService.getSessionAPI).mockResolvedValue(null)
         vi.mocked(AuthService.getProfileAPI).mockResolvedValue(undefined)
         vi.mocked(AuthService.logoutAPI).mockResolvedValue(undefined)
     })
 
     it("restores the session from the server on mount when a valid cookie exists", async () => {
-        vi.mocked(AuthService.getProfileAPI).mockResolvedValue(
-            asProfileResponse({ userName: "bob", email: "bob@test.com", walletBalance: 50 }),
-        )
+        vi.mocked(AuthService.getSessionAPI).mockResolvedValue({
+            userName: "bob",
+            email: "bob@test.com",
+            walletBalance: 50,
+        })
 
         renderWithProvider()
 
@@ -76,9 +79,11 @@ describe("useAuth", () => {
     })
 
     it("calls the logout endpoint and clears local state on logout", async () => {
-        vi.mocked(AuthService.getProfileAPI).mockResolvedValue(
-            asProfileResponse({ userName: "bob", email: "bob@test.com", walletBalance: 0 }),
-        )
+        vi.mocked(AuthService.getSessionAPI).mockResolvedValue({
+            userName: "bob",
+            email: "bob@test.com",
+            walletBalance: 0,
+        })
 
         renderWithProvider()
 
