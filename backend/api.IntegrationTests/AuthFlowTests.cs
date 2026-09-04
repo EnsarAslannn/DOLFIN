@@ -139,6 +139,44 @@ namespace api.IntegrationTests
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
+        [Fact]
+        public async Task Session_WithoutAuthCookie_ReturnsNoContent()
+        {
+            var client = TestClientFactory.CreateHttpsClient(_factory);
+
+            var response = await client.GetAsync("/api/account/session");
+
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Session_WithAuthCookie_ReturnsProfileAndCsrfToken()
+        {
+            var username = $"sessionuser{Guid.NewGuid():N}"[..20];
+            var client = TestClientFactory.CreateHttpsClient(_factory, new CookieRelayHandler());
+
+            var registerResponse = await client.PostAsJsonAsync(
+                "/api/account/register",
+                new RegisterDto
+                {
+                    Username = username,
+                    Email = $"{username}@test.local",
+                    Password = AuthHelper.DefaultPassword,
+                }
+            );
+            registerResponse.EnsureSuccessStatusCode();
+
+            var response = await client.GetAsync("/api/account/session");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookies));
+            Assert.Contains(setCookies!, c => c.StartsWith("XSRF-TOKEN="));
+
+            var body = await response.Content.ReadFromJsonAsync<UserProfileResponse>();
+            Assert.NotNull(body);
+            Assert.Equal(username, body!.UserName);
+        }
+
         private class UserProfileResponse
         {
             public string UserName { get; set; } = string.Empty;

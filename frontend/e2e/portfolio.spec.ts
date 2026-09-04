@@ -5,7 +5,7 @@ test.describe("portfolio flow", () => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 10000 }
         let bought = false
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         // The navbar bell polls for triggered alerts on every signed-in page.
@@ -60,7 +60,7 @@ test.describe("portfolio flow", () => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 5000 }
         let sold = false
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         // The navbar bell polls for triggered alerts on every signed-in page.
@@ -135,7 +135,7 @@ test.describe("portfolio flow", () => {
     test("wallet reports unrealized profit and logs every movement", async ({ page }) => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 5000 }
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         // The navbar bell polls for triggered alerts on every signed-in page.
@@ -200,7 +200,7 @@ test.describe("portfolio flow", () => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 5000 }
         let posted = false
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         // The navbar bell polls for triggered alerts on every signed-in page.
@@ -254,7 +254,7 @@ test.describe("portfolio flow", () => {
     test("shows error when stock API fails", async ({ page }) => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 5000 }
 
-        await page.route("**/api/account/profile", (route) =>
+        await page.route("**/api/account/{profile,session}", (route) =>
             route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }),
         )
         // The navbar bell polls for triggered alerts on every signed-in page.
