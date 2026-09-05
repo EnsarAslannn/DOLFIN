@@ -6,6 +6,7 @@ import type { SyntheticEvent } from "react"
 import { companyLogos } from "../../../Components/Table/TestData"
 import GlassLogo from "../../Dashboard/GlassLogo"
 import { reveal } from "../../../Helpers/motion"
+import { useLanguage } from "../../../i18n/useLanguage"
 
 interface Props {
   portfolioValue: PortfolioGet
@@ -18,6 +19,7 @@ const CardPortfolio = ({
   onPortfolioDelete,
   totalPortfolioInvested,
 }: Props) => {
+  const { t } = useLanguage()
   const symbolUpper = portfolioValue.symbol.toUpperCase()
 
   const currentPrice = portfolioValue.purchase || 0
@@ -35,15 +37,19 @@ const CardPortfolio = ({
   const weightString = `${currentWeightPercent.toFixed(0)}%`
 
   const figures = [
-    { label: "Invested", value: `$${totalCost.toFixed(2)}`, tone: "text-band-ink" },
     {
-      label: "Current value",
+      label: t("portfolio.card.invested"),
+      value: `$${totalCost.toFixed(2)}`,
+      tone: "text-band-ink",
+    },
+    {
+      label: t("portfolio.card.currentValue"),
       value: `$${currentTotalValue.toFixed(2)}`,
       tone: "text-band-ink",
       align: "text-right",
     },
     {
-      label: "Avg cost / live",
+      label: t("portfolio.card.avgLive"),
       value: `$${avgCost.toFixed(2)} / $${currentPrice.toFixed(2)}`,
       tone: "text-band-muted",
     },
@@ -79,7 +85,7 @@ const CardPortfolio = ({
             {portfolioValue.symbol}
           </Link>
           <span className="font-mono text-caption font-normal text-band-muted">
-            {quantity} shares
+            {t("portfolio.card.shares", { count: quantity })}
           </span>
         </div>
       </div>
@@ -98,7 +104,7 @@ const CardPortfolio = ({
 
         <div className="flex flex-col text-right">
           <dt className="font-mono text-caption font-normal uppercase tracking-label-sm text-band-subtle">
-            Profit / loss
+            {t("portfolio.card.pnl")}
           </dt>
           <dd
             className={`mt-1 font-mono text-body font-bold ${
@@ -114,7 +120,7 @@ const CardPortfolio = ({
 
       <div className="mt-6 flex w-full flex-col gap-2">
         <div className="flex items-center justify-between font-mono text-caption font-normal uppercase tracking-label-sm text-band-subtle">
-          <span>Portfolio weight</span>
+          <span>{t("portfolio.card.weight")}</span>
           <span className="text-band-ink">{weightString}</span>
         </div>
         <div className="h-1 w-full overflow-hidden rounded-pill bg-onyx-canvas">

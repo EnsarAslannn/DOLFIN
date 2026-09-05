@@ -41,17 +41,17 @@ test.describe("authentication flow", () => {
 
         await expect(page).toHaveURL(/\/search$/)
 
-        await page.getByPlaceholder(/search companies/i).fill("TSLA")
-        await page.getByRole("button", { name: /^search$/i }).click()
+        await page.getByPlaceholder(/şirketleri koda veya ada göre arayın/i).fill("TSLA")
+        await page.getByRole("button", { name: /^ara$/i }).click()
 
         await expect(page.getByText("Tesla Inc")).toBeVisible()
         await expect(page.getByText("Great stock!")).toBeVisible()
 
         // Reading is open; anything that spends money is not.
-        await expect(page.getByRole("link", { name: /sign in to buy tsla/i })).toBeVisible()
-        await expect(page.getByRole("button", { name: /^add$/i })).toHaveCount(0)
-        await expect(page.getByText(/trading needs an account/i)).toBeVisible()
-        await expect(page.getByText(/join the conversation/i)).toBeVisible()
+        await expect(page.getByRole("link", { name: /tsla almak için giriş yapın/i })).toBeVisible()
+        await expect(page.getByRole("button", { name: /^ekle$/i })).toHaveCount(0)
+        await expect(page.getByText(/şlem yapmak için hesap gerekir/)).toBeVisible()
+        await expect(page.getByText(/sohbete katılın/i)).toBeVisible()
     })
 
     test("shows validation errors when submitting the login form empty", async ({ page }) => {
@@ -60,10 +60,10 @@ test.describe("authentication flow", () => {
         )
 
         await page.goto("/login")
-        await page.getByRole("button", { name: "Sign In" }).click()
+        await page.getByRole("button", { name: "Giriş Yap" }).click()
 
-        await expect(page.getByText("Username is required")).toBeVisible()
-        await expect(page.getByText("Password is required")).toBeVisible()
+        await expect(page.getByText("Kullanıcı adı zorunludur")).toBeVisible()
+        await expect(page.getByText("Parola zorunludur")).toBeVisible()
     })
 
     test("logs in successfully and lands on the search page", async ({ page }) => {
@@ -83,9 +83,9 @@ test.describe("authentication flow", () => {
         )
 
         await page.goto("/login")
-        await page.getByLabel("Username").fill("e2e_test_user")
-        await page.getByLabel("Password").fill("TestPassword1234!@#")
-        await page.getByRole("button", { name: "Sign In" }).click()
+        await page.getByLabel("Kullanıcı adı").fill("e2e_test_user")
+        await page.getByLabel("Parola").fill("TestPassword1234!@#")
+        await page.getByRole("button", { name: "Giriş Yap" }).click()
 
         await expect(page).toHaveURL(/\/search$/)
     })

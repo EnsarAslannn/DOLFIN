@@ -44,7 +44,7 @@ const renderBell = () =>
 
 const openPanel = async () => {
     const user = userEvent.setup()
-    await user.click(await screen.findByRole("button", { name: /notifications/i }))
+    await user.click(await screen.findByRole("button", { name: /bildirimler/i }))
     return user
 }
 
@@ -65,7 +65,7 @@ describe("NotificationBell", () => {
         renderBell()
 
         expect(
-            await screen.findByRole("button", { name: /2 unread/i }),
+            await screen.findByRole("button", { name: /2 okunmamış/i }),
         ).toBeInTheDocument()
     })
 
@@ -76,7 +76,7 @@ describe("NotificationBell", () => {
 
         await waitFor(() => expect(listNotifications).toHaveBeenCalled())
         expect(
-            screen.getByRole("button", { name: /^notifications$/i }),
+            screen.getByRole("button", { name: /^bildirimler$/i }),
         ).toBeInTheDocument()
     })
 
@@ -98,9 +98,9 @@ describe("NotificationBell", () => {
 
         await openPanel()
 
-        expect(screen.getByText(/no alerts have fired yet/i)).toBeInTheDocument()
+        expect(screen.getByText(/henüz tetiklenen bir alarm yok/i)).toBeInTheDocument()
         expect(
-            screen.getByRole("link", { name: /set a price alert/i }),
+            screen.getByRole("link", { name: /fiyat alarmı kur/i }),
         ).toHaveAttribute("href", "/wallet")
     })
 
@@ -110,7 +110,7 @@ describe("NotificationBell", () => {
         renderBell()
         const user = await openPanel()
 
-        const panel = screen.getByRole("region", { name: /price alert notifications/i })
+        const panel = screen.getByRole("region", { name: /fiyat alarmı bildirimleri/i })
         await user.click(within(panel).getByText(/TSLA reached/))
 
         expect(markRead).toHaveBeenCalledWith(9)
@@ -129,7 +129,7 @@ describe("NotificationBell", () => {
 
         await waitFor(() =>
             expect(
-                screen.getByRole("button", { name: /^notifications$/i }),
+                screen.getByRole("button", { name: /^bildirimler$/i }),
             ).toBeInTheDocument(),
         )
     })
@@ -144,7 +144,7 @@ describe("NotificationBell", () => {
         renderBell()
         const user = await openPanel()
 
-        await user.click(screen.getByRole("button", { name: /mark all read/i }))
+        await user.click(screen.getByRole("button", { name: /tümünü okundu işaretle/i }))
 
         expect(markRead).toHaveBeenCalledWith(1)
         expect(markRead).toHaveBeenCalledWith(2)

@@ -5,16 +5,22 @@ import {
   FaBalanceScale,
   FaMoneyBillWave,
 } from "react-icons/fa"
+import { useLanguage } from "../../i18n/useLanguage"
 
 const links = [
-  { to: "company-profile", label: "Company Profile", Icon: FaBuilding },
-  { to: "income-statement", label: "Income Statement", Icon: FaTable },
-  { to: "balance-sheet", label: "Balance Sheet", Icon: FaBalanceScale },
-  { to: "cashflow-statement", label: "Cashflow Statement", Icon: FaMoneyBillWave },
-]
+  { to: "company-profile", labelKey: "company.sidebar.profile", Icon: FaBuilding },
+  { to: "income-statement", labelKey: "company.sidebar.income", Icon: FaTable },
+  { to: "balance-sheet", labelKey: "company.sidebar.balance", Icon: FaBalanceScale },
+  {
+    to: "cashflow-statement",
+    labelKey: "company.sidebar.cashflow",
+    Icon: FaMoneyBillWave,
+  },
+] as const
 
 const Sidebar = () => {
   const location = useLocation()
+  const { t } = useLanguage()
 
   const isActive = (path: string) => {
     return location.pathname.includes(path)
@@ -25,10 +31,10 @@ const Sidebar = () => {
       <div className="mx-auto flex w-full min-h-full flex-col flex-nowrap items-center justify-start overflow-y-auto overflow-x-hidden px-0">
         <div className="relative z-40 mt-4 flex h-auto w-full flex-1 flex-col items-stretch">
           <span className="mb-2 border-b border-mist-border/8 px-4 pb-3 font-mono text-caption font-normal uppercase tracking-label-lg text-ash-text">
-            Instrument Panel
+            {t("company.sidebar.heading")}
           </span>
           <div className="flex list-none flex-col space-y-1 md:min-w-full md:flex-col">
-            {links.map(({ to, label, Icon }) => (
+            {links.map(({ to, labelKey, Icon }) => (
               <Link
                 key={to}
                 to={to}
@@ -42,7 +48,7 @@ const Sidebar = () => {
                   size={16}
                   className={`shrink-0 ${isActive(to) ? "text-cobalt" : "text-ash-text/70"}`}
                 />
-                <span className="ml-3 font-sans">{label}</span>
+                <span className="ml-3 font-sans">{t(labelKey)}</span>
               </Link>
             ))}
           </div>

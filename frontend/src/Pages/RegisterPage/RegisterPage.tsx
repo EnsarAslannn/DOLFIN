@@ -1,9 +1,11 @@
+import { useMemo } from "react"
 import * as Yup from "yup"
 import { useAuth } from "../../Context/useAuth"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
 import { Link } from "react-router-dom"
 import authSkyline from "../../assets/extra/auth-office.webp"
+import { useLanguage } from "../../i18n/useLanguage"
 import {
   fieldClass,
   labelClass,
@@ -17,32 +19,33 @@ type RegisterFormsInputs = {
   password: string
 }
 
-const validation = Yup.object().shape({
-  email: Yup.string().required("Email is required"),
-  userName: Yup.string().required("Username is required"),
-  password: Yup.string()
-    .required("Password is required")
-    .min(12, "Password must be at least 12 characters")
-    .matches(
-      /[A-Z]/,
-      "Password must contain at least one uppercase and lowercase letter",
-    )
-    .matches(/[0-9]/, "Password must contain at least one digit")
-    .matches(
-      /[^a-zA-Z0-9]/,
-      "Password must contain at least one special character",
-    ),
-})
-
-const passwordRules = [
-  "Minimum 12 characters long",
-  "At least one uppercase and lowercase letter",
-  "At least one digit (0-9)",
-  "At least one special character (e.g., !, @, #, $, %)",
-]
-
 const RegisterPage = () => {
   const { registerUser } = useAuth()
+  const { t } = useLanguage()
+
+  // Rebuilt per language so a switch re-labels any error already on screen.
+  const validation = useMemo(
+    () =>
+      Yup.object().shape({
+        email: Yup.string().required(t("auth.validation.email")),
+        userName: Yup.string().required(t("auth.validation.username")),
+        password: Yup.string()
+          .required(t("auth.validation.password"))
+          .min(12, t("auth.validation.password.min"))
+          .matches(/[A-Z]/, t("auth.validation.password.case"))
+          .matches(/[0-9]/, t("auth.validation.password.digit"))
+          .matches(/[^a-zA-Z0-9]/, t("auth.validation.password.special")),
+      }),
+    [t],
+  )
+
+  const passwordRules = [
+    t("auth.rules.1"),
+    t("auth.rules.2"),
+    t("auth.rules.3"),
+    t("auth.rules.4"),
+  ]
+
   const {
     register,
     handleSubmit,
@@ -70,14 +73,13 @@ const RegisterPage = () => {
 
         <div className="relative z-10 flex h-full flex-col justify-end p-14">
           <span className="mb-5 font-mono text-caption font-normal uppercase tracking-label-lg text-ivory-text/75">
-            Open a sandbox account
+            {t("auth.register.aside.eyebrow")}
           </span>
           <h2 className="max-w-md text-heading md:text-heading-lg font-normal text-ivory-text">
-            Be wrong here, so you're right out there.
+            {t("auth.register.aside.title")}
           </h2>
           <p className="mt-5 max-w-sm text-body-lg font-normal text-ivory-text/85">
-            Simulated capital, real fundamentals. Nothing you do touches a
-            brokerage.
+            {t("auth.register.aside.lead")}
           </p>
         </div>
       </div>
@@ -86,26 +88,26 @@ const RegisterPage = () => {
         <div className="w-full sm:max-w-[420px]">
           <div className="mb-12">
             <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-ash-text/70">
-              Get started
+              {t("auth.register.eyebrow")}
             </span>
             <h1 className="mt-5 text-heading md:text-heading-lg font-normal text-ivory-text">
-              Create your account
+              {t("auth.register.title")}
             </h1>
             <p className="mt-5 text-body-lg font-normal text-ash-text">
-              Takes a minute. Your portfolio is private from the first tick.
+              {t("auth.register.lead")}
             </p>
           </div>
 
             <form className="space-y-8" onSubmit={handleSubmit(handleRegister)}>
               <div>
                 <label htmlFor="email" className={labelClass}>
-                  Email
+                  {t("auth.field.email")}
                 </label>
                 <input
                   type="text"
                   id="email"
                   className={fieldClass}
-                  placeholder="Email"
+                  placeholder={t("auth.field.email")}
                   {...register("email")}
                 />
                 {errors.email ? (
@@ -116,13 +118,13 @@ const RegisterPage = () => {
               </div>
               <div>
                 <label htmlFor="username" className={labelClass}>
-                  Username
+                  {t("auth.field.username")}
                 </label>
                 <input
                   type="text"
                   id="username"
                   className={fieldClass}
-                  placeholder="Username"
+                  placeholder={t("auth.field.username")}
                   {...register("userName")}
                 />
                 {errors.userName ? (
@@ -133,7 +135,7 @@ const RegisterPage = () => {
               </div>
               <div>
                 <label htmlFor="password" className={labelClass}>
-                  Password
+                  {t("auth.field.password")}
                 </label>
                 <input
                   type="password"
@@ -144,7 +146,7 @@ const RegisterPage = () => {
                 />
                 <div className="mt-3 rounded-card bg-obsidian-button p-4">
                   <p className="font-mono text-caption font-normal uppercase tracking-label text-ash-text">
-                    Password requirements
+                    {t("auth.rules.heading")}
                   </p>
                   <ul className="mt-2 list-disc space-y-1 pl-4 text-body font-normal text-ash-text">
                     {passwordRules.map((rule) => (
@@ -159,15 +161,15 @@ const RegisterPage = () => {
                 )}
               </div>
               <button type="submit" className={primaryButtonClass}>
-                Sign Up
+                {t("auth.register.submit")}
               </button>
               <p className="border-t border-mist-border/8 pt-8 text-body font-normal text-ash-text">
-                Already have an account?{" "}
+                {t("auth.register.hasAccount")}{" "}
                 <Link
                   to="/login"
                   className="cursor-pointer text-ivory-text underline underline-offset-4"
                 >
-                  Login here
+                  {t("auth.register.login")}
                 </Link>
               </p>
             </form>

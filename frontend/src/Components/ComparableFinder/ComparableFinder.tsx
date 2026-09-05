@@ -2,12 +2,14 @@ import { useState, useEffect } from "react"
 import { getCompanyPeers } from "../../api"
 import CompFinderItem from "./CompFinderItem/CompFinderItem"
 import Spinners from "../Spinners/Spinners"
+import { useLanguage } from "../../i18n/useLanguage"
 
 type Props = {
   ticker: string
 }
 
 const ComparableFinder = ({ ticker }: Props) => {
+  const { t } = useLanguage()
   const [companyPeers, setCompanyPeers] = useState<unknown>(null)
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -45,7 +47,7 @@ const ComparableFinder = ({ ticker }: Props) => {
         })
       ) : (
         <span className="text-body font-normal text-band-muted font-mono">
-          No peers found
+          {t("company.peers.none")}
         </span>
       )}
     </div>

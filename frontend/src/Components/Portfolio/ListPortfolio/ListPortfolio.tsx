@@ -6,6 +6,7 @@ import { PanelHeader } from "../../Dashboard/Panel"
 import Reveal from "../../Dashboard/Reveal"
 import { usePrefersReducedMotion } from "../../../Helpers/usePrefersReducedMotion"
 import { revealGroup, revealProps } from "../../../Helpers/motion"
+import { useLanguage } from "../../../i18n/useLanguage"
 import type { PortfolioGet } from "../../../Models/Portfolio"
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
 
 const ListPortfolio = ({ portfolioValues, onPortfolioDelete }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
 
   const holdings = portfolioValues ?? []
   const totalPortfolioInvested = holdings.reduce((sum, item) => {
@@ -27,11 +29,19 @@ const ListPortfolio = ({ portfolioValues, onPortfolioDelete }: Props) => {
     <div className="flex flex-col gap-8">
       <Reveal>
         <PanelHeader
-          eyebrow="Holdings"
-          title="My portfolio"
+          eyebrow={t("portfolio.eyebrow")}
+          title={t("portfolio.title")}
           lead={
             holdings.length > 0
-              ? `${holdings.length} position${holdings.length === 1 ? "" : "s"} · ${totalPortfolioInvested.toFixed(2)} invested`
+              ? t(
+                  holdings.length === 1
+                    ? "portfolio.lead.one"
+                    : "portfolio.lead.other",
+                  {
+                    count: holdings.length,
+                    invested: totalPortfolioInvested.toFixed(2),
+                  },
+                )
               : undefined
           }
         />
@@ -55,8 +65,8 @@ const ListPortfolio = ({ portfolioValues, onPortfolioDelete }: Props) => {
       ) : (
         <EmptyState
           variant="wallet"
-          title="No positions yet"
-          description="Search for a ticker above and add it to start tracking cost basis, current value and weight."
+          title={t("portfolio.empty.title")}
+          description={t("portfolio.empty.description")}
         />
       )}
     </div>

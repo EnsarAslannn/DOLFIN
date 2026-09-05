@@ -9,10 +9,12 @@ import ProfileHeader from "../../Components/Dashboard/ProfileHeader"
 import Spinners from "../../Components/Spinners/Spinners"
 import Band from "../../Components/Dashboard/Band"
 import { formatLargeNonMonetaryNumber } from "../../Helpers/NumberFormatting"
+import { useLanguage } from "../../i18n/useLanguage"
 
 
 const CompanyPage = () => {
   const { ticker } = useParams()
+  const { t } = useLanguage()
   const [company, setCompany] = useState<CompanyProfile>()
 
   useEffect(() => {
@@ -46,18 +48,20 @@ const CompanyPage = () => {
             </div>
             <div className="flex flex-col space-y-1">
               <h3 className="text-subheading font-normal text-band-ink tracking-tight">
-                Financial Data Unavailable
+                {t("company.unavailable.title")}
               </h3>
               <p className="text-body text-band-muted font-mono">
-                SCOPE_LIMITATION_WARNING // LIVE_DEMO_RESTRICTION
+                {t("company.unavailable.code")}
               </p>
             </div>
             <p className="text-body text-band-muted max-w-md leading-relaxed">
-              Financial data for <span className="font-bold font-mono text-band-ink bg-band-raised px-2 py-1 rounded ring-1 ring-inset ring-band-line/8">{ticker?.toUpperCase()}</span> is currently unavailable for this demo version.
+              {t("company.unavailable.body", {
+                ticker: ticker?.toUpperCase() ?? "",
+              })}
             </p>
             <div className="pt-2">
               <p className="text-caption text-band-muted font-normal bg-band-raised px-3 py-2 rounded-card font-mono">
-                Please audit premium corporate tiers: AAPL, MSFT, NVDA, TSLA, GOOGL
+                {t("company.unavailable.tiers")}
               </p>
             </div>
           </div>
@@ -90,16 +94,25 @@ const CompanyPage = () => {
               industry={company.industry}
               exchange={company.exchangeShortName}
               metrics={[
-                { label: "Price", value: "$" + company.price.toFixed(2) },
                 {
-                  label: "Change",
+                  label: t("company.metric.price"),
+                  value: "$" + company.price.toFixed(2),
+                },
+                {
+                  label: t("company.metric.change"),
                   value:
                     (company.changes >= 0 ? "+" : "") +
                     company.changes.toFixed(2),
                   tone: company.changes >= 0 ? "gain" : "loss",
                 },
-                { label: "Market cap", value: renderMarketCap(company.mktCap) },
-                { label: "Beta", value: company.beta?.toFixed(2) ?? "—" },
+                {
+                  label: t("company.metric.marketCap"),
+                  value: renderMarketCap(company.mktCap),
+                },
+                {
+                  label: t("company.metric.beta"),
+                  value: company.beta?.toFixed(2) ?? "—",
+                },
               ]}
             />
 

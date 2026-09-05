@@ -21,31 +21,41 @@ describe("formatTimestamp", () => {
 })
 
 describe("formatRelativeTime", () => {
+    // Turkish is the default language, so an omitted locale renders Turkish.
+    it.each([
+        [0, "az önce"],
+        [30_000, "az önce"],
+        [5 * MINUTE, "5 dk önce"],
+        [3 * HOUR, "3 sa önce"],
+        [2 * DAY, "2 gün önce"],
+    ])("renders %i ms ago as %s", (elapsed, expected) => {
+        expect(formatRelativeTime(ago(elapsed), "tr", NOW)).toBe(expected)
+    })
+
     it.each([
         [0, "just now"],
-        [30_000, "just now"],
         [5 * MINUTE, "5m ago"],
         [3 * HOUR, "3h ago"],
         [2 * DAY, "2d ago"],
-    ])("renders %i ms ago as %s", (elapsed, expected) => {
-        expect(formatRelativeTime(ago(elapsed), NOW)).toBe(expected)
+    ])("renders %i ms ago in English as %s", (elapsed, expected) => {
+        expect(formatRelativeTime(ago(elapsed), "en", NOW)).toBe(expected)
     })
 
     // Past a week the gap is better described by a date than by a count.
     it("falls back to an absolute timestamp beyond a week", () => {
-        const old = formatRelativeTime(ago(30 * DAY), NOW)
+        const old = formatRelativeTime(ago(30 * DAY), "tr", NOW)
 
-        expect(old).not.toMatch(/ago$/)
+        expect(old).not.toMatch(/önce$/)
         expect(old).not.toBe("—")
     })
 
     // Server and browser clocks drift; a timestamp a few seconds in the
     // future should not render as a negative age.
     it("treats a future timestamp as just now", () => {
-        expect(formatRelativeTime(ago(-5000), NOW)).toBe("just now")
+        expect(formatRelativeTime(ago(-5000), "tr", NOW)).toBe("az önce")
     })
 
     it("falls back to a dash when the value is not a date", () => {
-        expect(formatRelativeTime("not-a-date", NOW)).toBe("—")
+        expect(formatRelativeTime("not-a-date", "tr", NOW)).toBe("—")
     })
 })

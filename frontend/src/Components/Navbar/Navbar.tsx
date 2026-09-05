@@ -2,21 +2,24 @@ import { useEffect, useId, useRef, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import logo from "../../assets/dolphin.png"
 import { useAuth } from "../../Context/useAuth"
+import { useLanguage } from "../../i18n/useLanguage"
 import { contentClass } from "../../Helpers/layout"
 import { ctaBaseClass } from "../../Helpers/formStyles"
 import { useSectionTone } from "../../Helpers/useSectionTone"
 import MobileMenu from "./MobileMenu"
 import MenuIcon from "./MenuIcon"
+import LanguageToggle from "./LanguageToggle"
 import NotificationBell from "../Alerts/NotificationBell/NotificationBell"
 
 const SCROLL_THRESHOLD = 24
 
 const PROBE_Y = 32
 
-const authedLinks = [{ to: "/wallet", label: "Wallet" }]
+const authedLinks = [{ to: "/wallet", labelKey: "nav.wallet" }] as const
 
 const Navbar = () => {
   const { user, logout } = useAuth()
+  const { t } = useLanguage()
   const location = useLocation()
   const [isScrolled, setIsScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -68,8 +71,8 @@ const Navbar = () => {
   // rather than a plain <a href="/#...">: from any other route that would be
   // a document navigation, reloading the whole app just to reach an anchor.
   const sectionLinks = [
-    { to: "/#how-it-works", label: "How it works" },
-    { to: "/#help", label: "Help Center" },
+    { to: "/#how-it-works", label: t("nav.howItWorks") },
+    { to: "/#help", label: t("nav.helpCenter") },
   ]
 
   return (
@@ -78,7 +81,9 @@ const Navbar = () => {
     >
       <div className={contentClass}>
         <div className="flex h-16 items-center justify-between gap-6">
-          <div className="flex items-center gap-10">
+          <div className="flex items-center gap-6 lg:gap-10">
+            <LanguageToggle isLight={isLight} />
+
             <Link to="/" className="flex shrink-0 items-center gap-3">
               <img
                 src={logo}
@@ -104,7 +109,7 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link to="/search" className={navLinkClass("/search")}>
-                Search
+                {t("nav.search")}
               </Link>
               {user &&
                 authedLinks.map((link) => (
@@ -113,7 +118,7 @@ const Navbar = () => {
                     to={link.to}
                     className={navLinkClass(link.to)}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 ))}
             </div>
@@ -143,7 +148,7 @@ const Navbar = () => {
                   onClick={logout}
                   className={`hidden cursor-pointer text-label font-normal underline-offset-[6px] transition-colors duration-300 hover:underline md:inline ${mutedClass}`}
                 >
-                  Logout
+                  {t("nav.logout")}
                 </button>
               </>
             ) : (
@@ -152,13 +157,13 @@ const Navbar = () => {
                   to="/login"
                   className={`hidden text-label font-normal underline-offset-[6px] transition-colors duration-300 hover:underline sm:inline ${mutedClass}`}
                 >
-                  Log in
+                  {t("nav.login")}
                 </Link>
                 <Link
                   to="/register"
                   className={`cursor-pointer px-5 py-2 text-center text-body sm:px-6 ${ctaBaseClass} ${ctaToneClass}`}
                 >
-                  Create account
+                  {t("nav.createAccount")}
                 </Link>
               </>
             )}
@@ -169,7 +174,7 @@ const Navbar = () => {
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-controls={menuId}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               className={`-mr-2 flex h-11 w-11 cursor-pointer items-center justify-center rounded-card transition-colors duration-200 md:hidden ${
                 isLight
                   ? "text-onyx-canvas hover:bg-onyx-canvas/8"
@@ -195,12 +200,12 @@ const Navbar = () => {
           </Link>
         ))}
         <Link to="/search" onClick={closeMenu} className={sheetRowClass}>
-          Search
+          {t("nav.search")}
         </Link>
         {user &&
           authedLinks.map((link) => (
             <Link key={link.to} to={link.to} onClick={closeMenu} className={sheetRowClass}>
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
 
@@ -231,12 +236,12 @@ const Navbar = () => {
               }}
               className={`cursor-pointer text-left ${sheetRowClass}`}
             >
-              Logout
+              {t("nav.logout")}
             </button>
           </>
         ) : (
           <Link to="/login" onClick={closeMenu} className={sheetRowClass}>
-            Log in
+            {t("nav.login")}
           </Link>
         )}
       </MobileMenu>

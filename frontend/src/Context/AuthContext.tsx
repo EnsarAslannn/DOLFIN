@@ -11,11 +11,13 @@ import {
 import { toast } from "react-toastify"
 import React from "react"
 import { UserContext } from "./UserContext"
+import { useLanguage } from "../i18n/useLanguage"
 
 type Props = { children: React.ReactNode }
 
 export const UserProvider = ({ children }: Props) => {
     const navigate = useNavigate()
+    const { t } = useLanguage()
     const [user, setUser] = useState<UserProfile | null>(null)
     const [isReady, setIsReady] = useState(false)
 
@@ -46,7 +48,7 @@ export const UserProvider = ({ children }: Props) => {
             .then(async (res) => {
                 if (res && res.data) {
                     setUser(res.data)
-                    toast.success("Registration Success!")
+                    toast.success(t("auth.toast.registered"))
                     await primeCsrfCookie()
 
                     setTimeout(() => {
@@ -56,7 +58,7 @@ export const UserProvider = ({ children }: Props) => {
             })
             .catch((e) => {
                 console.error(e)
-                toast.warning("Server error occurred")
+                toast.warning(t("auth.toast.serverError"))
             })
     }
 
@@ -65,7 +67,7 @@ export const UserProvider = ({ children }: Props) => {
             .then(async (res) => {
                 if (res && res.data) {
                     setUser(res.data)
-                    toast.success("Login Success!")
+                    toast.success(t("auth.toast.loggedIn"))
                     await primeCsrfCookie()
 
                     setTimeout(() => {
@@ -75,7 +77,7 @@ export const UserProvider = ({ children }: Props) => {
             })
             .catch((e) => {
                 console.error(e)
-                toast.warning("Server error occurred")
+                toast.warning(t("auth.toast.serverError"))
             })
     }
 

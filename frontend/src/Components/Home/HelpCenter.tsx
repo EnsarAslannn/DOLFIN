@@ -6,40 +6,22 @@ import { bandClass, contentClass } from "../../Helpers/layout"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
 import { reveal, revealGroup, revealProps } from "../../Helpers/motion"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
+import { useLanguage } from "../../i18n/useLanguage"
 import { Chevron, PlusMinus } from "./Icons"
-
-const faqs = [
-  {
-    question: "What is DOL-FIN?",
-    answer:
-      "A financial analytics platform for tracking tickers, reading the filings underneath them, and following what other investors are saying about the same companies — in one place, without a terminal subscription.",
-  },
-  {
-    question: "Where does the data come from?",
-    answer:
-      "Every statement and quote on the platform is simulated in a local sandbox across a set of well-known companies. It is built for learning the workflow, not for making real trading decisions.",
-  },
-  {
-    question: "How do I build and track a portfolio?",
-    answer:
-      "Create an account, search for a ticker such as TSLA or AAPL, and select Add. The position lands on your dashboard with its cost basis, and the value updates as the simulated tape moves.",
-  },
-  {
-    question: "Who can see my portfolio?",
-    answer:
-      "Only you. Holdings, balances and wallet activity are scoped to your account. Comments are the one thing you publish deliberately, and they are attached to a company rather than to your portfolio.",
-  },
-  {
-    question: "Does it cost anything?",
-    answer:
-      "No. There is no card step and no paid tier while the sandbox is open — the account exists so your portfolio has somewhere private to live.",
-  },
-]
 
 const HelpCenter = () => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
   const [openIndex, setOpenIndex] = useState<number | null>(0)
   const panelId = useId()
+
+  const faqs = [
+    { question: t("home.faq.1.q"), answer: t("home.faq.1.a") },
+    { question: t("home.faq.2.q"), answer: t("home.faq.2.a") },
+    { question: t("home.faq.3.q"), answer: t("home.faq.3.a") },
+    { question: t("home.faq.4.q"), answer: t("home.faq.4.a") },
+    { question: t("home.faq.5.q"), answer: t("home.faq.5.a") },
+  ]
 
   const toggle = (index: number) =>
     setOpenIndex(openIndex === index ? null : index)
@@ -58,9 +40,9 @@ const HelpCenter = () => {
           <SectionHeader
             align="center"
             tone="light"
-            eyebrow="Help Center"
-            title="Questions, answered"
-            lead="The five things people ask before they create an account."
+            eyebrow={t("home.faq.eyebrow")}
+            title={t("home.faq.title")}
+            lead={t("home.faq.lead")}
           />
         </motion.div>
 
@@ -125,12 +107,12 @@ const HelpCenter = () => {
           {...revealProps(prefersReducedMotion)}
           className="mt-12 text-center text-body font-normal text-ink-muted"
         >
-          Still stuck?{" "}
+          {t("home.faq.stuck")}{" "}
           <Link
             to="/register"
             className="inline-flex items-center gap-1 text-onyx-canvas underline-offset-4 transition-colors duration-200 hover:text-cobalt hover:underline"
           >
-            Create an account and try it
+            {t("home.faq.stuck.link")}
             <Chevron className="h-3 w-3" />
           </Link>
         </motion.p>

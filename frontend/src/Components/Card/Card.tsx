@@ -7,6 +7,7 @@ import GlassLogo from "../Dashboard/GlassLogo"
 import type { StockSearchResult } from "../../Models/StockSearchResult"
 import { formatLargeMonetaryNumber } from "../../Helpers/NumberFormatting"
 import { reveal } from "../../Helpers/motion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 interface Props {
   id: string
@@ -18,6 +19,7 @@ export const resultGridClass =
   "grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-[minmax(0,2.4fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_auto] md:items-center"
 
 const Card: React.FC<Props> = ({ id, searchResult, onPortfolioCreate }: Props) => {
+  const { t } = useLanguage()
   const symbol = searchResult.symbol || searchResult.Symbol || ""
   const name =
     searchResult.companyName ||
@@ -26,17 +28,19 @@ const Card: React.FC<Props> = ({ id, searchResult, onPortfolioCreate }: Props) =
     ""
   const price = searchResult.purchase || searchResult.Purchase || 0
   const industry =
-    searchResult.industry || searchResult.Industry || "Equity Market"
+    searchResult.industry ||
+    searchResult.Industry ||
+    t("search.industry.fallback")
   const marketCap = searchResult.marketCap || searchResult.MarketCap || 0
 
   const symbolUpper = symbol.toUpperCase()
   const isPositive = price > 150
 
   const statementLinks = [
-    { to: "company-profile", label: "Profile" },
-    { to: "income-statement", label: "Income" },
-    { to: "balance-sheet", label: "Balance sheet" },
-    { to: "cashflow-statement", label: "Cash flow" },
+    { to: "company-profile", label: t("search.link.profile") },
+    { to: "income-statement", label: t("search.link.income") },
+    { to: "balance-sheet", label: t("search.link.balance") },
+    { to: "cashflow-statement", label: t("search.link.cashflow") },
   ]
 
   return (

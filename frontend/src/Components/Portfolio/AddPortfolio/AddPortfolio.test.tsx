@@ -38,7 +38,7 @@ describe("AddPortfolio", () => {
         signedInAs(member)
         const onPortfolioCreate = renderButton()
 
-        await userEvent.click(screen.getByRole("button", { name: /^add$/i }))
+        await userEvent.click(screen.getByRole("button", { name: /^ekle$/i }))
 
         expect(onPortfolioCreate).toHaveBeenCalled()
     })
@@ -50,10 +50,10 @@ describe("AddPortfolio", () => {
         renderButton()
 
         expect(
-            screen.queryByRole("button", { name: /^add$/i }),
+            screen.queryByRole("button", { name: /^ekle$/i }),
         ).not.toBeInTheDocument()
         expect(
-            screen.getByRole("link", { name: /sign in to buy tsla/i }),
+            screen.getByRole("link", { name: /tsla almak için giriş yapın/i }),
         ).toHaveAttribute("href", "/login")
     })
 })

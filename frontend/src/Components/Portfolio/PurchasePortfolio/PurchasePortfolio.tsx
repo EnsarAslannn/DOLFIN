@@ -3,6 +3,7 @@ import { portfolioDepositAPI } from "../../../Services/PortfolioService"
 import { useAuth } from "../../../Context/useAuth"
 import { toast } from "react-toastify"
 import { fieldClass, labelClass, ctaBaseClass, ctaDisabledClass, ctaFillClass } from "../../../Helpers/formStyles"
+import { useLanguage } from "../../../i18n/useLanguage"
 
 interface PurchasePortfolioProps {
     isOpen: boolean
@@ -26,6 +27,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
     maxOwnedQuantity = 0
 }) => {
     const { updateWalletBalance } = useAuth()
+    const { t } = useLanguage()
     const [quantity, setQuantity] = useState<number>(1)
     const [isDepositing, setIsDepositing] = useState<boolean>(false)
 
@@ -50,12 +52,12 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
             .then((res) => {
                 if (res && res.data?.newBalance !== undefined) {
                     updateWalletBalance(res.data.newBalance)
-                    toast.success("$5,000 deposited successfully!")
+                    toast.success(t("trade.toast.deposited"))
                 }
             })
             .catch((e) => {
                 console.error(e)
-                toast.warning("Could not deposit funds!")
+                toast.warning(t("trade.toast.depositFailed"))
             })
             .finally(() => {
                 setIsDepositing(false)
@@ -67,12 +69,12 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
             <div className="w-full max-w-md rounded-card bg-graphite-card ring-1 ring-inset ring-mist-border/6 p-card font-sans text-ivory-text shadow-subtle animate-fadeIn">
                 <div className="mb-6 flex items-center justify-between">
                     <h3 className="text-heading-sm font-normal text-ivory-text">
-                        {mode === "BUY" ? "Buy" : "Sell"}{" "}
+                        {mode === "BUY" ? t("trade.buy.title") : t("trade.sell.title")}{" "}
                         <span className="font-mono">{stockSymbol}</span>
                     </h3>
                     <button
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={t("trade.close")}
                         className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-pill ring-1 ring-inset ring-mist-border/8 text-ash-text transition-colors hover:ring-mist-border/20 hover:text-ivory-text"
                     >
                         <svg
@@ -94,21 +96,21 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
 
                 <div className="mb-6 space-y-2 rounded-card bg-obsidian-button p-4 text-body">
                     <div className="flex justify-between">
-                        <span className="text-ash-text">Wallet Balance:</span>
+                        <span className="text-ash-text">{t("trade.walletBalance")}</span>
                         <span className="font-mono text-ivory-text">
                             ${walletBalance.toFixed(2)}
                         </span>
                     </div>
                     {mode === "SELL" && (
                         <div className="flex justify-between">
-                            <span className="text-ash-text">Available Shares:</span>
+                            <span className="text-ash-text">{t("trade.availableShares")}</span>
                             <span className="font-mono text-ivory-text">
-                                {maxOwnedQuantity} Units
+                                {t("trade.units", { count: maxOwnedQuantity })}
                             </span>
                         </div>
                     )}
                     <div className="flex justify-between">
-                        <span className="text-ash-text">Market Price:</span>
+                        <span className="text-ash-text">{t("trade.marketPrice")}</span>
                         <span className="font-mono text-ivory-text">
                             ${stockPrice.toFixed(2)}
                         </span>
@@ -117,7 +119,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
 
                 <div className="mb-6">
                     <label htmlFor="purchase-quantity" className={labelClass}>
-                        Quantity (Shares)
+                        {t("trade.quantity")}
                     </label>
                     <input
                         id="purchase-quantity"
@@ -134,7 +136,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
 
                 <div className="mb-6 flex items-center justify-between border-t border-mist-border/8 pt-4">
                     <span className="text-body font-normal text-ash-text">
-                        {mode === "BUY" ? "Total Cost:" : "Total Revenue:"}
+                        {mode === "BUY" ? t("trade.totalCost") : t("trade.totalRevenue")}
                     </span>
                     <span
                         className={`font-mono text-heading-sm font-normal ${
@@ -150,14 +152,14 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
                 {isInsufficientFunds && (
                     <div className="mb-4 flex flex-col items-center justify-center space-y-2 rounded-card bg-obsidian-button p-4">
                         <p className="text-center text-body font-normal text-loss">
-                            Insufficient funds to complete this transaction.
+                            {t("trade.insufficientFunds")}
                         </p>
                         <button
                             onClick={handleQuickDeposit}
                             disabled={isDepositing}
                             className="cursor-pointer text-body font-normal text-ivory-text underline underline-offset-4 transition-opacity hover:opacity-70"
                         >
-                            {isDepositing ? "Depositing..." : "Instant Deposit $5,000"}
+                            {isDepositing ? t("trade.depositing") : t("trade.instantDeposit")}
                         </button>
                     </div>
                 )}
@@ -165,7 +167,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
                 {isInsufficientShares && (
                     <div className="mb-4 rounded-card bg-obsidian-button p-4">
                         <p className="text-center text-body font-normal text-loss">
-                            You cannot sell more shares than you currently own.
+                            {t("trade.insufficientShares")}
                         </p>
                     </div>
                 )}
@@ -175,7 +177,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
                         onClick={onClose}
                         className="flex-1 cursor-pointer rounded-pill ring-1 ring-inset ring-mist-border/8 bg-graphite-card px-6 py-cta text-body font-normal text-ivory-text transition-colors hover:ring-mist-border/20"
                     >
-                        Cancel
+                        {t("trade.cancel")}
                     </button>
                     <button
                         onClick={handleConfirm}
@@ -186,7 +188,7 @@ const PurchasePortfolio: React.FC<PurchasePortfolioProps> = ({
                                 : ctaFillClass
                         }`}
                     >
-                        {mode === "BUY" ? "Confirm Buy" : "Confirm Sell"}
+                        {mode === "BUY" ? t("trade.confirmBuy") : t("trade.confirmSell")}
                     </button>
                 </div>
             </div>

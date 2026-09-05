@@ -1,9 +1,11 @@
+import { useMemo } from "react"
 import * as Yup from "yup"
 import { useAuth } from "../../Context/useAuth"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
 import { Link } from "react-router-dom"
 import authSkyline from "../../assets/extra/auth-office.webp"
+import { useLanguage } from "../../i18n/useLanguage"
 import {
   fieldClass,
   labelClass,
@@ -16,13 +18,20 @@ type LoginFormsInputs = {
   password: string
 }
 
-const validation = Yup.object().shape({
-  userName: Yup.string().required("Username is required"),
-  password: Yup.string().required("Password is required"),
-})
-
 const LoginPage = () => {
   const { loginUser } = useAuth()
+  const { t } = useLanguage()
+
+  // Rebuilt per language so a switch re-labels any error already on screen.
+  const validation = useMemo(
+    () =>
+      Yup.object().shape({
+        userName: Yup.string().required(t("auth.validation.username")),
+        password: Yup.string().required(t("auth.validation.password")),
+      }),
+    [t],
+  )
+
   const {
     register,
     handleSubmit,
@@ -50,13 +59,13 @@ const LoginPage = () => {
 
         <div className="relative z-10 flex h-full flex-col justify-end p-14">
           <span className="mb-5 font-mono text-caption font-normal uppercase tracking-label-lg text-ivory-text/75">
-            Market intelligence terminal
+            {t("auth.login.aside.eyebrow")}
           </span>
           <h2 className="max-w-md text-heading md:text-heading-lg font-normal text-ivory-text">
-            The whole tape, one signal at a time.
+            {t("auth.login.aside.title")}
           </h2>
           <p className="mt-5 max-w-sm text-body-lg font-normal text-ivory-text/85">
-            Your portfolio, filings, and commentary — behind a single sign-in.
+            {t("auth.login.aside.lead")}
           </p>
         </div>
       </div>
@@ -65,26 +74,26 @@ const LoginPage = () => {
         <div className="w-full sm:max-w-[420px]">
           <div className="mb-12">
             <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-ash-text/70">
-              Welcome back
+              {t("auth.login.eyebrow")}
             </span>
             <h1 className="mt-5 text-heading md:text-heading-lg font-normal text-ivory-text">
-              Sign in to your account
+              {t("auth.login.title")}
             </h1>
             <p className="mt-5 text-body-lg font-normal text-ash-text">
-              Pick up exactly where you left the tape.
+              {t("auth.login.lead")}
             </p>
           </div>
 
             <form className="space-y-8" onSubmit={handleSubmit(handleLogin)}>
               <div>
                 <label htmlFor="username" className={labelClass}>
-                  Username
+                  {t("auth.field.username")}
                 </label>
                 <input
                   type="text"
                   id="username"
                   className={fieldClass}
-                  placeholder="Username"
+                  placeholder={t("auth.field.username")}
                   {...register("userName")}
                 />
                 {errors.userName ? (
@@ -95,7 +104,7 @@ const LoginPage = () => {
               </div>
               <div>
                 <label htmlFor="password" className={labelClass}>
-                  Password
+                  {t("auth.field.password")}
                 </label>
                 <input
                   type="password"
@@ -111,15 +120,15 @@ const LoginPage = () => {
                 )}
               </div>
               <button type="submit" className={primaryButtonClass}>
-                Sign In
+                {t("auth.login.submit")}
               </button>
               <p className="border-t border-mist-border/8 pt-8 text-body font-normal text-ash-text">
-                Don’t have an account yet?{" "}
+                {t("auth.login.noAccount")}{" "}
                 <Link
                   to="/register"
                   className="cursor-pointer text-ivory-text underline underline-offset-4"
                 >
-                  Sign up
+                  {t("auth.login.signUp")}
                 </Link>
               </p>
             </form>

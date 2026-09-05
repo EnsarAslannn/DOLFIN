@@ -2,32 +2,36 @@ import { Link } from "react-router-dom"
 import logo from "../../assets/dolphin.png"
 import { bandClass, contentClass } from "../../Helpers/layout"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
+import { useLanguage } from "../../i18n/useLanguage"
 
-const columns = [
-  {
-    heading: "Platform",
-    links: [
-      { to: "/search", label: "Search" },
-      { to: "/wallet", label: "Wallet" },
-    ],
-  },
-  {
-    heading: "Account",
-    links: [
-      { to: "/login", label: "Log in" },
-      { to: "/register", label: "Create account" },
-    ],
-  },
-  {
-    heading: "Company",
-    links: [
-      { to: "/#how-it-works", label: "How it works" },
-      { to: "/#help", label: "Help Center" },
-    ],
-  },
-]
+const SiteFooter = () => {
+  const { t } = useLanguage()
 
-const SiteFooter = () => (
+  const columns = [
+    {
+      heading: t("footer.col.platform"),
+      links: [
+        { to: "/search", label: t("nav.search") },
+        { to: "/wallet", label: t("nav.wallet") },
+      ],
+    },
+    {
+      heading: t("footer.col.account"),
+      links: [
+        { to: "/login", label: t("nav.login") },
+        { to: "/register", label: t("nav.createAccount") },
+      ],
+    },
+    {
+      heading: t("footer.col.company"),
+      links: [
+        { to: "/#how-it-works", label: t("nav.howItWorks") },
+        { to: "/#help", label: t("nav.helpCenter") },
+      ],
+    },
+  ]
+
+  return (
   <footer
     {...{ [TONE_ATTR]: "dark" }}
     className={`bg-footer-navy font-sans ${bandClass}`}
@@ -47,8 +51,7 @@ const SiteFooter = () => (
             </span>
           </Link>
           <p className="mt-6 max-w-[300px] text-body font-normal text-ash-text">
-            Find the signal beneath the noise. Fundamentals, filings and
-            portfolio tracking in one sandboxed terminal.
+            {t("footer.tagline")}
           </p>
         </div>
 
@@ -75,14 +78,15 @@ const SiteFooter = () => (
 
       <div className="mt-20 flex flex-col gap-3 border-t border-slate-border/30 pt-8 sm:flex-row sm:items-center sm:justify-between">
         <span className="font-mono text-caption font-normal uppercase tracking-label text-ash-text/70">
-          © 2026 DOL-FIN
+          {t("footer.copyright")}
         </span>
         <span className="font-mono text-caption font-normal uppercase tracking-label text-ash-text/70">
-          Simulated data · run in a secure sandbox
+          {t("footer.disclaimer")}
         </span>
       </div>
     </div>
   </footer>
-)
+  )
+}
 
 export default SiteFooter

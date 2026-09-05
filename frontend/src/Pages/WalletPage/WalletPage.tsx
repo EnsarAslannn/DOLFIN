@@ -16,6 +16,7 @@ import TransactionHistory from "../../Components/Portfolio/TransactionHistory/Tr
 import PriceAlerts from "../../Components/Alerts/PriceAlerts/PriceAlerts"
 import { Link } from "react-router-dom"
 import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
+import { useLanguage } from "../../i18n/useLanguage"
 
 // Prices move on a server-side timer, so a wallet left open goes stale.
 // Matching that cadence keeps the figures honest without extra chatter.
@@ -23,6 +24,7 @@ const LIVE_REFRESH_MS = 60_000
 
 const WalletPage = () => {
     const { user, updateWalletBalance } = useAuth()
+    const { t } = useLanguage()
     const [depositAmount, setDepositAmount] = useState<string>("")
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [portfolioValues, setPortfolioValues] = useState<PortfolioGet[] | null>([])
@@ -91,7 +93,7 @@ const WalletPage = () => {
         const amount = parseFloat(depositAmount)
 
         if (isNaN(amount) || amount <= 0) {
-            toast.warning("Please enter a valid amount greater than 0")
+            toast.warning(t("wallet.toast.invalidAmount"))
             return
         }
 
@@ -109,7 +111,7 @@ const WalletPage = () => {
             })
             .catch((e) => {
                 console.error(e)
-                toast.error("Deposit failed. Please try again.")
+                toast.error(t("wallet.toast.depositFailed"))
             })
             .finally(() => {
                 setIsSubmitting(false)
@@ -127,7 +129,7 @@ const WalletPage = () => {
 
     const triggerUsdSell = () => {
         if (liveBalance <= 0) {
-            toast.warning("You do not have any USD balance to sell!")
+            toast.warning(t("wallet.toast.noUsd"))
             return
         }
         setSelectedSellStock({
@@ -157,7 +159,7 @@ const WalletPage = () => {
                 })
                 .catch((e) => {
                     console.error(e)
-                    toast.error("Withdrawal failed. Please try again.")
+                    toast.error(t("wallet.toast.withdrawFailed"))
                 })
             return
         }
@@ -165,7 +167,7 @@ const WalletPage = () => {
         portfolioSellAPI(selectedSellStock.symbol, quantity)
             .then((res) => {
                 if (res && res.status >= 200 && res.status < 300) {
-                    toast.success("Asset converted to cash successfully!")
+                    toast.success(t("wallet.toast.converted"))
                     if (res.data?.newBalance !== undefined) {
                         setLiveBalance(res.data.newBalance)
                         updateWalletBalance(res.data.newBalance)
@@ -179,7 +181,7 @@ const WalletPage = () => {
             })
             .catch((e) => {
                 console.error(e)
-                toast.error("Sale order execution failed.")
+                toast.error(t("wallet.toast.saleFailed"))
             })
     }
 
@@ -211,9 +213,9 @@ const WalletPage = () => {
             <Band tone="dark" className="pb-section pt-12">
                 <div className="flex flex-col gap-10">
                 <div>
-                    <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-band-subtle">Wallet</span>
-                    <h1 className="mt-3 text-heading font-medium text-band-ink md:text-heading-lg">Wallet overview</h1>
-                    <p className="mt-3 max-w-[60ch] text-body-lg font-normal text-band-muted">Manage your funds and monitor estimated asset distribution.</p>
+                    <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-band-subtle">{t("wallet.eyebrow")}</span>
+                    <h1 className="mt-3 text-heading font-medium text-band-ink md:text-heading-lg">{t("wallet.title")}</h1>
+                    <p className="mt-3 max-w-[60ch] text-body-lg font-normal text-band-muted">{t("wallet.lead")}</p>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 relative flex min-h-[220px] flex-col justify-between overflow-hidden rounded-card bg-band-surface p-7">
@@ -227,7 +229,7 @@ const WalletPage = () => {
                         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-r from-onyx-canvas via-onyx-canvas/80 to-transparent" />
 
                         <div className="relative z-10">
-                            <span className="font-mono text-caption font-normal uppercase tracking-label-lg text-band-ink/75">Est. Total Value</span>
+                            <span className="font-mono text-caption font-normal uppercase tracking-label-lg text-band-ink/75">{t("wallet.estTotal")}</span>
                             <div className="mt-3 flex items-baseline space-x-2">
                                 <h2 className="font-mono text-heading-lg font-normal text-band-ink">${estimatedTotalValue.toFixed(2)}</h2>
                                 <span className="font-mono text-body font-normal text-band-ink/75">USD</span>
@@ -235,15 +237,15 @@ const WalletPage = () => {
                         </div>
                         <div className="relative z-10 mt-6 grid grid-cols-2 gap-4 border-t border-band-line/20 pt-6 md:grid-cols-3">
                             <div className="flex flex-col">
-                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Cash Balance (Wallet)</span>
+                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">{t("wallet.cashBalance")}</span>
                                 <span className="mt-2 font-mono text-subheading font-normal text-band-ink">${liveBalance.toFixed(2)}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Stocks Value (Portfolio)</span>
+                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">{t("wallet.stocksValue")}</span>
                                 <span className="mt-2 font-mono text-subheading font-normal text-band-ink">${stocksValue.toFixed(2)}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">Unrealized P/L</span>
+                                <span className="font-mono text-caption font-normal uppercase tracking-label text-band-ink/75">{t("wallet.unrealized")}</span>
                                 {metrics ? (
                                     <span className={`mt-2 font-mono text-subheading font-normal ${toneClass(gainLoss)}`}>
                                         {signed(gainLoss)}
@@ -257,8 +259,8 @@ const WalletPage = () => {
                     </div>
                     <div className="flex flex-col justify-between rounded-card bg-band-surface ring-1 ring-inset ring-band-line/6 p-card">
                         <div>
-                            <h3 className="mb-2 text-subheading font-normal text-band-ink">Deposit Cash</h3>
-                            <p className="mb-4 text-body font-normal text-band-muted">Add instant simulator credits into your trading account.</p>
+                            <h3 className="mb-2 text-subheading font-normal text-band-ink">{t("wallet.deposit.title")}</h3>
+                            <p className="mb-4 text-body font-normal text-band-muted">{t("wallet.deposit.lead")}</p>
                         </div>
                         <form onSubmit={handleDepositSubmit} className="flex flex-col space-y-4 w-full">
                             <div>
@@ -284,7 +286,7 @@ const WalletPage = () => {
                                     : ctaFillClass
                                     }`}
                             >
-                                {isSubmitting ? "Processing..." : "Confirm Deposit"}
+                                {isSubmitting ? t("wallet.deposit.processing") : t("wallet.deposit.submit")}
                             </button>
                         </form>
                     </div>
@@ -295,18 +297,18 @@ const WalletPage = () => {
             <Band tone="cream" className="py-section">
                 <div className="bg-band-surface ring-1 ring-inset ring-band-line/6 rounded-card overflow-hidden">
                     <div className="px-6 pb-2 pt-6">
-                        <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-band-subtle">Holdings</span>
-                        <h3 className="mt-2 text-subheading font-medium text-band-ink">My assets</h3>
+                        <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-band-subtle">{t("wallet.holdings.eyebrow")}</span>
+                        <h3 className="mt-2 text-subheading font-medium text-band-ink">{t("wallet.holdings.title")}</h3>
                     </div>
                     <div className="overflow-x-auto">
-                        <table aria-label="Assets" className="w-full text-left border-collapse font-sans">
+                        <table aria-label={t("wallet.table.label")} className="w-full text-left border-collapse font-sans">
                             <thead>
                                 <tr className="border-b border-band-line/8 font-mono text-caption font-bold uppercase tracking-label-lg text-band-muted">
-                                    <th className="py-4 px-6">Asset Name</th>
-                                    <th className="py-4 px-6 text-right">Market Price</th>
-                                    <th className="py-4 px-6 text-right">Gain / Loss</th>
-                                    <th className="py-4 px-6 text-right">Holdings Allocation</th>
-                                    <th className="py-4 px-6 text-center w-24">Action</th>
+                                    <th className="py-4 px-6">{t("wallet.col.asset")}</th>
+                                    <th className="py-4 px-6 text-right">{t("wallet.col.marketPrice")}</th>
+                                    <th className="py-4 px-6 text-right">{t("wallet.col.gainLoss")}</th>
+                                    <th className="py-4 px-6 text-right">{t("wallet.col.allocation")}</th>
+                                    <th className="py-4 px-6 text-center w-24">{t("wallet.col.action")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-band-line/8 text-body font-normal">
@@ -323,7 +325,7 @@ const WalletPage = () => {
                                                 )}
                                             </GlassLogo>
                                             <div className="flex flex-col">
-                                                <span className="text-body font-normal text-band-ink">United States Dollar</span>
+                                                <span className="text-body font-normal text-band-ink">{t("wallet.usd.name")}</span>
                                                 <span className="font-mono text-caption font-normal tracking-wide text-band-muted">CASH</span>
                                             </div>
                                         </div>
@@ -343,7 +345,7 @@ const WalletPage = () => {
                                             onClick={triggerUsdSell}
                                             className="cursor-pointer rounded-pill ring-1 ring-inset ring-band-line/8 px-4 py-2 text-body font-normal text-band-muted transition-colors hover:ring-band-loss/50 hover:text-band-loss"
                                         >
-                                            Sell
+                                            {t("wallet.sell")}
                                         </button>
                                     </td>
                                 </tr>
@@ -401,7 +403,7 @@ const WalletPage = () => {
                                                     onClick={() => triggerTableSell(item)}
                                                     className="cursor-pointer rounded-pill ring-1 ring-inset ring-band-line/8 px-4 py-2 text-body font-normal text-band-muted transition-colors hover:ring-band-loss/50 hover:text-band-loss"
                                                 >
-                                                    Sell
+                                                    {t("wallet.sell")}
                                                 </button>
                                             </td>
                                         </tr>
@@ -416,14 +418,14 @@ const WalletPage = () => {
                 {(!portfolioValues || portfolioValues.length === 0) && (
                     <EmptyState
                         variant="wallet"
-                        title="Cash only, for now"
-                        description="Your balance is sitting idle. Search for a ticker to put it to work and it will appear here beside your cash."
+                        title={t("wallet.empty.title")}
+                        description={t("wallet.empty.description")}
                     >
                         <Link
                             to="/search"
                             className={`inline-flex items-center px-6 py-3 text-body ${ctaBaseClass} ${ctaFillClass}`}
                         >
-                            Find a company
+                            {t("wallet.empty.cta")}
                         </Link>
                     </EmptyState>
                 )}

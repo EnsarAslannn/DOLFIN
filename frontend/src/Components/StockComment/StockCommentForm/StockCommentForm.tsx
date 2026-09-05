@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import * as Yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm, useWatch } from "react-hook-form"
@@ -11,6 +11,7 @@ import {
   ctaDisabledClass,
 } from "../../../Helpers/formStyles"
 import type { StockOption } from "../stockOptions"
+import { useLanguage } from "../../../i18n/useLanguage"
 
 export type CommentFormInputs = {
   stockId: string
@@ -25,24 +26,31 @@ type Props = {
   handleComment: (e: CommentFormInputs) => void
 }
 
-const validation = Yup.object().shape({
-  stockId: Yup.string().required("Choose the stock you are commenting on"),
-  title: Yup.string()
-    .required("Title is required")
-    .min(5, "Title must be at least 5 characters")
-    .max(280, "Title must be 280 characters or fewer"),
-  content: Yup.string()
-    .required("Content is required")
-    .min(5, "Comment must be at least 5 characters")
-    .max(280, "Comment must be 280 characters or fewer"),
-})
-
 const StockCommentForm = ({
   stocks,
   defaultStockId,
   submitting = false,
   handleComment,
 }: Props) => {
+  const { t } = useLanguage()
+
+  // Rebuilt per language so a switch re-labels any error already on screen.
+  const validation = useMemo(
+    () =>
+      Yup.object().shape({
+        stockId: Yup.string().required(t("comments.validation.stock")),
+        title: Yup.string()
+          .required(t("comments.validation.title"))
+          .min(5, t("comments.validation.title.min"))
+          .max(280, t("comments.validation.title.max")),
+        content: Yup.string()
+          .required(t("comments.validation.content"))
+          .min(5, t("comments.validation.content.min"))
+          .max(280, t("comments.validation.content.max")),
+      }),
+    [t],
+  )
+
   const {
     register,
     handleSubmit,
@@ -82,7 +90,7 @@ const StockCommentForm = ({
     >
       <div className="w-full text-left">
         <label htmlFor="comment-stock" className={labelClass}>
-          Stock / ticker
+          {t("comments.form.stock")}
         </label>
         <select
           id="comment-stock"
@@ -90,7 +98,7 @@ const StockCommentForm = ({
           aria-invalid={errors.stockId ? "true" : undefined}
           {...register("stockId")}
         >
-          <option value="">Select a company…</option>
+          <option value="">{t("comments.form.selectCompany")}</option>
           {stocks.map((stock) => (
             <option key={stock.id} value={stock.id}>
               {stock.symbol}
@@ -103,14 +111,14 @@ const StockCommentForm = ({
 
       <div className="w-full text-left">
         <label htmlFor="comment-title" className={labelClass}>
-          Title
+          {t("comments.form.titleLabel")}
         </label>
         <input
           type="text"
           id="comment-title"
           maxLength={280}
           className={fieldClass}
-          placeholder="Sum it up in a line"
+          placeholder={t("comments.form.titlePlaceholder")}
           aria-invalid={errors.title ? "true" : undefined}
           {...register("title")}
         />
@@ -119,14 +127,14 @@ const StockCommentForm = ({
 
       <div className="w-full text-left">
         <label htmlFor="comment-content" className={labelClass}>
-          Your comment
+          {t("comments.form.contentLabel")}
         </label>
         <textarea
           id="comment-content"
           rows={5}
           maxLength={280}
           className={`${fieldClass} resize-none`}
-          placeholder="What are you seeing in this name?"
+          placeholder={t("comments.form.contentPlaceholder")}
           aria-invalid={errors.content ? "true" : undefined}
           {...register("content")}
         />
@@ -152,7 +160,7 @@ const StockCommentForm = ({
           submitting || noStocks ? ctaDisabledClass : ctaFillClass
         }`}
       >
-        {submitting ? "Posting…" : "Post comment"}
+        {submitting ? t("comments.form.posting") : t("comments.form.submit")}
       </button>
     </form>
   )

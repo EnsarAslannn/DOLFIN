@@ -1,13 +1,17 @@
 import loadingLoop from "../../assets/extra/loading-loop.mp4"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 interface Props {
   label?: string
   variant?: "inline" | "overlay"
 }
 
-const DataLoader = ({ label = "Reading the tape", variant = "inline" }: Props) => {
+const DataLoader = ({ label, variant = "inline" }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
+
+  const caption = label ?? t("loader.readingTape")
 
   const shell =
     variant === "overlay"
@@ -57,7 +61,7 @@ const DataLoader = ({ label = "Reading the tape", variant = "inline" }: Props) =
       )}
 
       <span className="font-mono text-caption font-normal uppercase tracking-label-lg text-band-muted">
-        {label}
+        {caption}
       </span>
     </div>
   )

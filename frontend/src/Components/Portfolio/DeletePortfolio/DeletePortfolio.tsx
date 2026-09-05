@@ -1,4 +1,5 @@
 import type { SyntheticEvent } from "react"
+import { useLanguage } from "../../../i18n/useLanguage"
 
 interface Props {
   onPortfolioDelete: (e: SyntheticEvent) => void
@@ -6,6 +7,8 @@ interface Props {
 }
 
 const DeletePortfolio = ({ onPortfolioDelete, portfolioValue }: Props) => {
+  const { t } = useLanguage()
+
   return (
     <div>
       <form
@@ -16,7 +19,8 @@ const DeletePortfolio = ({ onPortfolioDelete, portfolioValue }: Props) => {
         <button
           type="submit"
           className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-pill ring-1 ring-inset ring-mist-border/8 bg-graphite-card text-ash-text transition-colors duration-200 hover:border-loss hover:text-loss"
-          title="Remove from portfolio"
+          title={t("portfolio.remove")}
+          aria-label={t("portfolio.remove")}
         >
           <svg
             className="h-3 w-3"

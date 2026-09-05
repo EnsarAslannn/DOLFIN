@@ -6,16 +6,18 @@ import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
 import { reveal, revealGroup, revealProps } from "../../Helpers/motion"
 import { ctaClass, ctaGhostFullClass } from "../../Helpers/formStyles"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
+import { useLanguage } from "../../i18n/useLanguage"
 import { Check, Chevron } from "./Icons"
-
-const assurances = [
-  "No card required",
-  "Simulated market data",
-  "Delete your account any time",
-]
 
 const CreateAccount = () => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
+
+  const assurances = [
+    t("home.cta.assurance1"),
+    t("home.cta.assurance2"),
+    t("home.cta.assurance3"),
+  ]
 
   return (
     <section
@@ -46,22 +48,21 @@ const CreateAccount = () => {
           variants={reveal}
           className="font-mono text-caption font-normal uppercase tracking-label-lg text-ash-text"
         >
-          Create your account
+          {t("home.cta.eyebrow")}
         </motion.span>
 
         <motion.h2
           variants={reveal}
           className="mt-7 max-w-[18ch] text-heading font-medium text-ivory-text md:text-heading-lg lg:text-display-sm"
         >
-          Start reading the market from the inside
+          {t("home.cta.title")}
         </motion.h2>
 
         <motion.p
           variants={reveal}
           className="mt-7 max-w-[500px] text-body-lg font-normal text-ash-text"
         >
-          One account opens the full terminal — statements, ratios, filings and
-          a portfolio that stays scoped to you.
+          {t("home.cta.lead")}
         </motion.p>
 
         <motion.div
@@ -72,14 +73,14 @@ const CreateAccount = () => {
             to="/register"
             className={`inline-flex items-center justify-center gap-2 ${ctaClass}`}
           >
-            Create an account
+            {t("home.cta.primary")}
             <Chevron className="h-4 w-4" />
           </Link>
           <Link
             to="/login"
             className={`inline-flex items-center justify-center ${ctaGhostFullClass}`}
           >
-            I already have one
+            {t("home.cta.secondary")}
           </Link>
         </motion.div>
 

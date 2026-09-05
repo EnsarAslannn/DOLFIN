@@ -12,92 +12,94 @@ import {
   formatLargeMonetaryNumber,
   formatRatio,
 } from "../../Helpers/NumberFormatting"
+import { useLanguage } from "../../i18n/useLanguage"
+import type { TranslationKey } from "../../i18n/translations"
 
 const configs = [
   {
-    label: "Date",
+    labelKey: "income.col.date",
 
     render: (company: CompanyIncomeStatement) => company.date,
   },
 
   {
-    label: "Revenue",
+    labelKey: "income.col.revenue",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.revenue),
   },
 
   {
-    label: "Cost Of Revenue",
+    labelKey: "income.col.costOfRevenue",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.costOfRevenue),
   },
 
   {
-    label: "Depreciation",
+    labelKey: "income.col.depreciation",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.depreciationAndAmortization),
   },
 
   {
-    label: "Operating Income",
+    labelKey: "income.col.operatingIncome",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.operatingIncome),
   },
 
   {
-    label: "Income Before Taxes",
+    labelKey: "income.col.incomeBeforeTaxes",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.incomeBeforeTax),
   },
 
   {
-    label: "Net Income",
+    labelKey: "income.col.netIncome",
 
     render: (company: CompanyIncomeStatement) =>
       formatLargeMonetaryNumber(company.netIncome),
   },
 
   {
-    label: "Net Income Ratio",
+    labelKey: "income.col.netIncomeRatio",
 
     render: (company: CompanyIncomeStatement) =>
       formatRatio(company.netIncomeRatio),
   },
 
   {
-    label: "Earnings Per Share",
+    labelKey: "income.col.eps",
 
     render: (company: CompanyIncomeStatement) => formatRatio(company.eps),
   },
 
   {
-    label: "Earnings Per Diluted",
+    labelKey: "income.col.epsDiluted",
 
     render: (company: CompanyIncomeStatement) =>
       formatRatio(company.epsdiluted),
   },
 
   {
-    label: "Gross Profit Ratio",
+    labelKey: "income.col.grossProfitRatio",
 
     render: (company: CompanyIncomeStatement) =>
       formatRatio(company.grossProfitRatio),
   },
 
   {
-    label: "Opearting Income Ratio",
+    labelKey: "income.col.operatingIncomeRatio",
 
     render: (company: CompanyIncomeStatement) =>
       formatRatio(company.operatingIncomeRatio),
   },
 
   {
-    label: "Income Before Taxes Ratio",
+    labelKey: "income.col.incomeBeforeTaxesRatio",
 
     render: (company: CompanyIncomeStatement) =>
       formatRatio(company.incomeBeforeTaxRatio),
@@ -106,6 +108,12 @@ const configs = [
 
 const IncomeStatement = () => {
   const ticker = useOutletContext<string>()
+  const { t } = useLanguage()
+
+  const tableConfig = configs.map(({ labelKey, render }) => ({
+    label: t(labelKey as TranslationKey),
+    render,
+  }))
 
   const [incomeStatement, setIncomeStatement] =
     useState<CompanyIncomeStatement[]>()
@@ -142,18 +150,20 @@ const IncomeStatement = () => {
         </div>
         <div className="flex flex-col space-y-1">
           <h3 className="text-subheading font-normal text-band-ink tracking-tight">
-            Financial Data Unavailable
+            {t("company.unavailable.title")}
           </h3>
           <p className="text-body text-band-muted font-mono">
-            SCOPE_LIMITATION_WARNING // LIVE_DEMO_RESTRICTION
+            {t("company.unavailable.code")}
           </p>
         </div>
         <p className="text-body text-band-muted max-w-md leading-relaxed">
-          Financial data for <span className="font-bold font-mono text-band-ink bg-band-raised px-2 py-1 rounded ring-1 ring-inset ring-band-line/8">{ticker?.toUpperCase()}</span> is currently unavailable for this demo version.
+          {t("company.unavailable.body", {
+            ticker: ticker?.toUpperCase() ?? "",
+          })}
         </p>
         <div className="pt-2">
           <p className="text-caption text-band-muted font-normal bg-band-raised px-3 py-2 rounded-card font-mono">
-            Please audit premium corporate tiers: AAPL, MSFT, NVDA, TSLA, GOOGL
+            {t("company.unavailable.tiers")}
           </p>
         </div>
       </div>
@@ -180,18 +190,17 @@ const IncomeStatement = () => {
     const growth =
       ((latest.revenue - previous.revenue) / previous.revenue) * 100
 
-    let status = "STRONG"
+    const vars = { growth: growth.toFixed(1), margin: margin.toFixed(1) }
 
-    let summaryText = `The company expanded its top-line operations significantly, registering a year-over-year revenue growth of ${growth.toFixed(1)}%. It maintained a stable net conversion efficiency with a profit margin of ${margin.toFixed(1)}%, signaling sustainable operational scaling and resilient corporate risk management over the trailing fiscal period.`
+    let status = "STRONG"
+    let summaryText = t("income.summary.strong", vars)
 
     if (growth < 0 && margin < 10) {
       status = "WEAK"
-
-      summaryText = `The asset shows contraction signs with a negative top-line revenue growth of ${growth.toFixed(1)}% alongside a tight profit conversion margin sitting at ${margin.toFixed(1)}%. This compression suggests potential headwinds in macroeconomic scaling or rising cost boundaries that require structural optimization.`
+      summaryText = t("income.summary.weak", vars)
     } else if (growth < 0 || margin < 10) {
       status = "MODERATE"
-
-      summaryText = `Mixed technical indicators observed. While top-line growth metrics or net profit margin fields show slight deceleration, corporate baseline indicators remain functional. Close inspection of underlying expenditure lines is advised to balance future fiscal performance.`
+      summaryText = t("income.summary.moderate", vars)
     }
 
     return {
@@ -218,7 +227,7 @@ const IncomeStatement = () => {
           <div className="bg-band-surface ring-1 ring-inset ring-band-line/6 rounded-card p-5 shadow-xl flex flex-col text-left justify-between min-h-[115px]">
             <div className="flex flex-col space-y-1">
               <span className="text-band-muted uppercase font-bold text-caption tracking-widest font-mono">
-                Net Profit Margin
+                {t("income.metric.margin")}
               </span>
 
               <span className="font-normal text-heading text-band-ink font-mono">
@@ -237,7 +246,7 @@ const IncomeStatement = () => {
               </div>
 
               <span className="text-caption text-band-muted font-normal font-mono">
-                Net conversion efficiency of capital deployment
+                {t("income.metric.margin.sub")}
               </span>
             </div>
           </div>
@@ -245,7 +254,7 @@ const IncomeStatement = () => {
           <div className="bg-band-surface ring-1 ring-inset ring-band-line/6 rounded-card p-5 shadow-xl flex flex-col text-left justify-between min-h-[115px]">
             <div className="flex flex-col space-y-1">
               <span className="text-band-muted uppercase font-bold text-caption tracking-widest font-mono">
-                Revenue Growth (YoY)
+                {t("income.metric.growth")}
               </span>
 
               <span
@@ -266,7 +275,7 @@ const IncomeStatement = () => {
               </div>
 
               <span className="text-caption text-band-muted font-normal font-mono">
-                Top-line macroeconomic scalability expansion metric
+                {t("income.metric.growth.sub")}
               </span>
             </div>
           </div>
@@ -288,7 +297,7 @@ const IncomeStatement = () => {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              Income Statement Performance Intelligence
+              {t("income.summary.title")}
             </h4>
 
             <span
@@ -299,7 +308,9 @@ const IncomeStatement = () => {
                   : "bg-band-raised text-band-muted"
                 }`}
             >
-              {metrics.status} OUTLOOK
+              {t("income.summary.badge", {
+                status: t(("income.status." + metrics.status) as TranslationKey),
+              })}
             </span>
           </div>
 
@@ -317,40 +328,34 @@ const IncomeStatement = () => {
         <div className="w-full flex flex-col">
           <div className="block w-full bg-band-surface shadow-xl rounded-card p-6 mb-6 ring-1 ring-inset ring-band-line/8 flex flex-col space-y-3 text-left">
             <h3 className="text-body-lg font-bold text-band-ink uppercase tracking-wider font-mono">
-              Understanding the Income Statement
+              {t("income.explain.title")}
             </h3>
 
             <p className="text-band-ink text-body-lg font-normal leading-relaxed antialiased">
-              An{" "}
+              {t("income.explain.p1.a")}{" "}
               <strong className="text-band-ink font-normal">
-                Income Statement
+                {t("income.explain.p1.term")}
               </strong>{" "}
-              (Profit and Loss Statement) maps out a corporate institution's
-              core financial velocity over a sequential reporting period. It
-              tracks how total{" "}
-              <strong className="text-band-ink">Revenue (Top-Line)</strong>{" "}
-              transitions down into operational expenses, tax components, and
-              finally yields the net consolidated{" "}
+              {t("income.explain.p1.b")}{" "}
+              <strong className="text-band-ink">
+                {t("income.explain.p1.topline")}
+              </strong>{" "}
+              {t("income.explain.p1.c")}{" "}
               <strong className="text-band-muted">
-                Profit or Loss (Bottom-Line)
+                {t("income.explain.p1.bottomline")}
               </strong>
               .
             </p>
 
             <p className="text-band-ink text-body font-normal leading-relaxed antialiased pt-1">
               <strong className="text-band-ink block mb-1 font-mono text-body uppercase tracking-wide">
-                Why is it Critical?
+                {t("income.explain.why")}
               </strong>
-              While the Balance Sheet records asset and liability weight levels,
-              the Income Statement focuses strictly on business efficiency,
-              momentum, and operational pricing leverage. Investors study this
-              matrix to measure market share scalability, identifying if gross
-              margins are healthy enough to outpace rising industrial overhead
-              thresholds.
+              {t("income.explain.p2")}
             </p>
           </div>
 
-          <Table config={configs} data={incomeStatement} />
+          <Table config={tableConfig} data={incomeStatement} />
 
           {renderMetricsAndSummary(incomeStatement)}
         </div>

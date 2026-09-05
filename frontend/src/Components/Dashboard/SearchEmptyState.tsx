@@ -2,17 +2,19 @@ import { motion } from "framer-motion"
 import emptySearch from "../../assets/extra/empty-search.webp"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
 import { reveal, revealProps } from "../../Helpers/motion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 interface Props {
   title?: string
   description?: string
 }
 
-const SearchEmptyState = ({
-  title = "Search for a company to begin",
-  description = "Look up any listed ticker to read its fundamentals and add it to your portfolio.",
-}: Props) => {
+const SearchEmptyState = ({ title, description }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
+
+  const heading = title ?? t("search.empty.title")
+  const body = description ?? t("search.empty.description")
 
   return (
     <motion.div
@@ -33,9 +35,9 @@ const SearchEmptyState = ({
       />
 
       <div className="relative max-w-[34ch] px-7 py-12 sm:max-w-[54%] sm:px-10 sm:py-16 lg:max-w-[50%] lg:px-12 lg:py-20">
-        <h3 className="text-heading-sm font-medium text-band-ink">{title}</h3>
+        <h3 className="text-heading-sm font-medium text-band-ink">{heading}</h3>
         <p className="mt-4 text-body font-normal leading-relaxed text-band-muted">
-          {description}
+          {body}
         </p>
       </div>
     </motion.div>

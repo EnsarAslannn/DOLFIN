@@ -41,16 +41,16 @@ test.describe("price alerts", () => {
 
         await page.goto("/search")
 
-        const bell = page.getByRole("button", { name: /1 unread/i })
+        const bell = page.getByRole("button", { name: /1 okunmamış/i })
         await expect(bell).toBeVisible()
         await bell.click()
 
-        const panel = page.getByRole("region", { name: /price alert notifications/i })
+        const panel = page.getByRole("region", { name: /fiyat alarmı bildirimleri/i })
         await expect(panel.getByText(/TSLA reached 260\.00/)).toBeVisible()
 
         await panel.getByText(/TSLA reached 260\.00/).click()
 
-        await expect(page.getByRole("button", { name: /^notifications$/i })).toBeVisible()
+        await expect(page.getByRole("button", { name: /^bildirimler$/i })).toBeVisible()
     })
 
     test("a user can set a price alert from the wallet", async ({ page }) => {
@@ -109,16 +109,16 @@ test.describe("price alerts", () => {
 
         await page.goto("/wallet")
 
-        await expect(page.getByText(/nothing on watch/i)).toBeVisible()
+        await expect(page.getByText(/zlenen bir şey yok/)).toBeVisible()
 
         await page.selectOption("#alert-stock", "42")
         await page.fill("#alert-target", "300")
-        await page.getByRole("button", { name: /create alert/i }).click()
+        await page.getByRole("button", { name: /alarm oluştur/i }).click()
 
-        const alerts = page.getByRole("table", { name: /price alerts/i })
+        const alerts = page.getByRole("table", { name: /fiyat alarmları/i })
         const row = alerts.getByRole("row", { name: /tsla/i })
         await expect(row.getByText("$300.00")).toBeVisible()
-        await expect(row.getByText("Watching")).toBeVisible()
+        await expect(row.getByText("İzleniyor")).toBeVisible()
 
         expect(created).toEqual([
             { stockId: 42, targetPrice: 300, condition: "GreaterThanOrEqual" },

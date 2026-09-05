@@ -43,7 +43,7 @@ const respondWithAlerts = (alerts: PriceAlert[]) => {
     >)
 }
 
-const alertsTable = () => screen.getByRole("table", { name: /price alerts/i })
+const alertsTable = () => screen.getByRole("table", { name: /fiyat alarmları/i })
 
 describe("PriceAlerts", () => {
     beforeEach(() => {
@@ -63,7 +63,7 @@ describe("PriceAlerts", () => {
     it("invites the user to set one when nothing is on watch", async () => {
         render(<PriceAlerts />)
 
-        expect(await screen.findByText(/nothing on watch/i)).toBeInTheDocument()
+        expect(await screen.findByText(/zlenen bir şey yok/)).toBeInTheDocument()
     })
 
     it("lists a pending alert as watching", async () => {
@@ -72,7 +72,7 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         const row = within(await screen.findByRole("row", { name: /tsla/i }))
-        expect(row.getByText("Watching")).toBeInTheDocument()
+        expect(row.getByText("İzleniyor")).toBeInTheDocument()
         expect(row.getByText("$250.00")).toBeInTheDocument()
     })
 
@@ -87,7 +87,7 @@ describe("PriceAlerts", () => {
 
         expect(
             within(await screen.findByRole("row", { name: /tsla/i })).getByText(
-                "Triggered",
+                "Tetiklendi",
             ),
         ).toBeInTheDocument()
     })
@@ -101,8 +101,8 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await screen.findByRole("row", { name: /tsla/i })
-        expect(within(alertsTable()).getByText(/price rises to/i)).toBeInTheDocument()
-        expect(within(alertsTable()).getByText(/price falls to/i)).toBeInTheDocument()
+        expect(within(alertsTable()).getByText(/fiyat şu seviyeye yükselirse/i)).toBeInTheDocument()
+        expect(within(alertsTable()).getByText(/fiyat şu seviyeye düşerse/i)).toBeInTheDocument()
     })
 
     it("creates an alert from the form selections", async () => {
@@ -110,13 +110,13 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await waitFor(() => expect(listStocks).toHaveBeenCalled())
-        await user.selectOptions(screen.getByLabelText(/stock \/ ticker/i), "42")
+        await user.selectOptions(screen.getByLabelText(/hisse \/ kod/i), "42")
         await user.selectOptions(
-            screen.getByLabelText(/tell me when the price/i),
+            screen.getByLabelText(/fiyat şu olduğunda haber ver/i),
             "LessThanOrEqual",
         )
-        await user.type(screen.getByLabelText(/target price/i), "199.5")
-        await user.click(screen.getByRole("button", { name: /create alert/i }))
+        await user.type(screen.getByLabelText(/hedef fiyat/i), "199.5")
+        await user.click(screen.getByRole("button", { name: /alarm oluştur/i }))
 
         expect(createAlert).toHaveBeenCalledWith(42, 199.5, "LessThanOrEqual")
     })
@@ -128,13 +128,13 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await waitFor(() => expect(listStocks).toHaveBeenCalled())
-        const submit = screen.getByRole("button", { name: /create alert/i })
+        const submit = screen.getByRole("button", { name: /alarm oluştur/i })
         expect(submit).toBeDisabled()
 
-        await user.selectOptions(screen.getByLabelText(/stock \/ ticker/i), "42")
+        await user.selectOptions(screen.getByLabelText(/hisse \/ kod/i), "42")
         expect(submit).toBeDisabled()
 
-        await user.type(screen.getByLabelText(/target price/i), "199.5")
+        await user.type(screen.getByLabelText(/hedef fiyat/i), "199.5")
         expect(submit).toBeEnabled()
     })
 
@@ -145,9 +145,9 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await waitFor(() => expect(listStocks).toHaveBeenCalled())
-        await user.selectOptions(screen.getByLabelText(/stock \/ ticker/i), "42")
-        await user.type(screen.getByLabelText(/target price/i), "0")
-        await user.click(screen.getByRole("button", { name: /create alert/i }))
+        await user.selectOptions(screen.getByLabelText(/hisse \/ kod/i), "42")
+        await user.type(screen.getByLabelText(/hedef fiyat/i), "0")
+        await user.click(screen.getByRole("button", { name: /alarm oluştur/i }))
 
         expect(createAlert).not.toHaveBeenCalled()
     })
@@ -159,7 +159,7 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await user.click(
-            await screen.findByRole("button", { name: /remove alert on tsla/i }),
+            await screen.findByRole("button", { name: /tsla alarmını kaldır/i }),
         )
 
         expect(deleteAlert).toHaveBeenCalledWith(7)

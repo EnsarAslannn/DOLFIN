@@ -10,34 +10,36 @@ import {
   revealProps,
 } from "../../Helpers/motion"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
-
-const capabilities = [
-  {
-    step: "01",
-    title: "A live position view",
-    copy: "Every holding, its cost basis and its current value on one screen, recalculated as the tape moves.",
-  },
-  {
-    step: "02",
-    title: "The statements underneath",
-    copy: "Income, balance sheet and cash flow for any listed ticker, laid out to be read rather than exported.",
-  },
-  {
-    step: "03",
-    title: "Ratios already worked out",
-    copy: "Margins, returns and leverage computed from the filings, so you compare companies instead of spreadsheets.",
-  },
-  {
-    step: "04",
-    title: "What other investors said",
-    copy: "Comments left against each ticker by other accounts on the platform, attached to the company they concern.",
-  },
-]
+import { useLanguage } from "../../i18n/useLanguage"
 
 const TabletFeature = () => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
   const [selected, setSelected] = useState(0)
   const panelId = useId()
+
+  const capabilities = [
+    {
+      step: "01",
+      title: t("home.tablet.1.title"),
+      copy: t("home.tablet.1.copy"),
+    },
+    {
+      step: "02",
+      title: t("home.tablet.2.title"),
+      copy: t("home.tablet.2.copy"),
+    },
+    {
+      step: "03",
+      title: t("home.tablet.3.title"),
+      copy: t("home.tablet.3.copy"),
+    },
+    {
+      step: "04",
+      title: t("home.tablet.4.title"),
+      copy: t("home.tablet.4.copy"),
+    },
+  ]
 
   return (
     <section
@@ -55,20 +57,19 @@ const TabletFeature = () => {
               variants={reveal}
               className="block font-mono text-caption font-normal uppercase tracking-label-lg text-ink-muted"
             >
-              The dashboard
+              {t("home.tablet.eyebrow")}
             </motion.span>
             <motion.h2
               variants={reveal}
               className="mt-5 text-heading font-medium text-onyx-canvas md:text-heading-lg"
             >
-              Every holding, and the numbers behind it
+              {t("home.tablet.title")}
             </motion.h2>
             <motion.p
               variants={reveal}
               className="mt-6 max-w-[46ch] text-body-lg font-normal text-ink-muted"
             >
-              One workspace for the position and the filing it rests on — so
-              the decision and the evidence never live in two places.
+              {t("home.tablet.lead")}
             </motion.p>
 
             <motion.ul variants={reveal} className="mt-10 flex flex-col">
@@ -130,7 +131,7 @@ const TabletFeature = () => {
           <div className="relative aspect-[4/3] w-full overflow-hidden lg:h-full lg:min-h-[720px] lg:aspect-auto">
             <img
               src={tabletInHand}
-              alt="An investor reviewing a DOL-FIN portfolio dashboard on a tablet."
+              alt={t("home.tablet.image.alt")}
               loading="lazy"
               decoding="async"
               className="h-full w-full object-cover"

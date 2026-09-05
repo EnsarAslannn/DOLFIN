@@ -11,6 +11,7 @@ import GuestCallout from "../Dashboard/GuestCallout"
 import { PanelHeader } from "../Dashboard/Panel"
 import Reveal from "../Dashboard/Reveal"
 import { useAuth } from "../../Context/useAuth"
+import { useLanguage } from "../../i18n/useLanguage"
 import { toStockOption, postableStocks, type StockOption } from "./stockOptions"
 import type { CommentGet } from "../../Models/Comment"
 import type { StockSearchResult } from "../../Models/StockSearchResult"
@@ -19,6 +20,7 @@ const ALL = "all" as const
 
 const StockComment = () => {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [stocks, setStocks] = useState<StockOption[]>([])
   const [comments, setComments] = useState<CommentGet[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,7 +101,7 @@ const StockComment = () => {
   const handleComment = async (form: CommentFormInputs) => {
     const stock = postable.find((s) => s.id === Number(form.stockId))
     if (!stock) {
-      toast.warning("Select the stock you are commenting on.")
+      toast.warning(t("comments.toast.pickStock"))
       return
     }
 
@@ -107,7 +109,7 @@ const StockComment = () => {
     try {
       const res = await commentPostAPI(form.title, form.content, stock.id)
       if (!res) return
-      toast.success(`Posted to ${stock.symbol}.`)
+      toast.success(t("comments.toast.posted", { symbol: stock.symbol }))
       await getComments()
       setFilter(stock.id)
     } finally {
@@ -129,14 +131,19 @@ const StockComment = () => {
     <section className="flex w-full flex-col gap-8">
       <Reveal>
         <PanelHeader
-          eyebrow="Discussion"
-          title="What traders are saying"
+          eyebrow={t("comments.eyebrow")}
+          title={t("comments.title")}
           lead={
             activeSymbol
-              ? `Showing ${visible.length} comment${visible.length === 1 ? "" : "s"} on ${activeSymbol}.`
+              ? t(
+                  visible.length === 1
+                    ? "comments.lead.filtered.one"
+                    : "comments.lead.filtered.other",
+                  { count: visible.length, symbol: activeSymbol },
+                )
               : user
-                ? "Notes posted against any ticker on the platform. Filter by company, or add your own below."
-                : "Notes posted against any ticker on the platform. Filter by company to read what traders are saying."
+                ? t("comments.lead.user")
+                : t("comments.lead.guest")
           }
         />
       </Reveal>
@@ -145,7 +152,7 @@ const StockComment = () => {
         <Reveal>
         <div
           role="group"
-          aria-label="Filter comments by stock"
+          aria-label={t("comments.filter.label")}
           className="-mx-1 flex flex-nowrap gap-2 overflow-x-auto px-1 pb-1"
         >
           <button
@@ -154,7 +161,7 @@ const StockComment = () => {
             aria-pressed={filter === ALL}
             className={chipClass(filter === ALL)}
           >
-            All · {comments.length}
+            {t("comments.filter.all")} · {comments.length}
           </button>
           {chips.map(({ stock, id, count }) => (
             <button
@@ -174,7 +181,7 @@ const StockComment = () => {
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5 lg:gap-8">
         <div className="lg:col-span-3">
           {loading ? (
-            <DataLoader label="Loading discussion" />
+            <DataLoader label={t("comments.loading")} />
           ) : (
             <StockCommentList comments={visible} symbolById={symbolById} />
           )}
@@ -183,10 +190,10 @@ const StockComment = () => {
         {user ? (
           <Reveal className="rounded-card bg-band-surface p-6 ring-1 ring-inset ring-band-line/6 lg:col-span-2">
             <h3 className="text-subheading font-medium text-band-ink">
-              Add a comment
+              {t("comments.form.title")}
             </h3>
             <p className="mt-2 text-body font-normal text-band-muted">
-              Pick the company you are writing about, then say your piece.
+              {t("comments.form.lead")}
             </p>
             <StockCommentForm
               stocks={postable}
@@ -198,8 +205,8 @@ const StockComment = () => {
         ) : (
           <div className="lg:col-span-2">
             <GuestCallout
-              title="Join the conversation"
-              description="Reading the discussion is open to everyone. Posting a note against a ticker needs an account."
+              title={t("comments.guest.title")}
+              description={t("comments.guest.description")}
             />
           </div>
         )}

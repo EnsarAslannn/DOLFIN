@@ -26,9 +26,12 @@ import { useAuth } from "../../Context/useAuth"
 import { searchStocksBySymbolAPI, searchStocksByCompanyNameAPI } from "../../Services/StockService"
 import PurchasePortfolio from "../../Components/Portfolio/PurchasePortfolio/PurchasePortfolio"
 import GuestCallout from "../../Components/Dashboard/GuestCallout"
+import { useLanguage } from "../../i18n/useLanguage"
+import type { TranslationKey } from "../../i18n/translations"
 
 const SearchPage = () => {
   const { user, updateWalletBalance } = useAuth()
+  const { t } = useLanguage()
   const [search, setSearch] = useState<string>("")
   const [searchResult, setSearchResult] = useState<StockSearchResult[]>([])
   const [serverError, setServerError] = useState<string>("")
@@ -52,9 +55,9 @@ const SearchPage = () => {
       })
       .catch((e) => {
         console.error(e)
-        toast.warning("Could not get portfolio values!")
+        toast.warning(t("search.toast.portfolioFailed"))
       })
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (user) {
@@ -84,7 +87,7 @@ const SearchPage = () => {
       portfolioAddAPI(selectedStock.symbol, quantity)
         .then((res) => {
           if (res && res.status >= 200 && res.status < 300) {
-            toast.success("Stock purchased successfully!")
+            toast.success(t("search.toast.bought"))
             if (res.data?.newBalance !== undefined) {
               updateWalletBalance(res.data.newBalance)
             }
@@ -95,13 +98,13 @@ const SearchPage = () => {
         })
         .catch((e) => {
           console.error(e)
-          toast.warning("Could not create portfolio item!")
+          toast.warning(t("search.toast.buyFailed"))
         })
     } else {
       portfolioSellAPI(selectedStock.symbol, quantity)
         .then((res) => {
           if (res && res.status >= 200 && res.status < 300) {
-            toast.success("Stock sold successfully!")
+            toast.success(t("search.toast.sold"))
             if (res.data?.newBalance !== undefined) {
               updateWalletBalance(res.data.newBalance)
             }
@@ -112,7 +115,7 @@ const SearchPage = () => {
         })
         .catch((e) => {
           console.error(e)
-          toast.warning("Transaction execution failed!")
+          toast.warning(t("search.toast.sellFailed"))
         })
     }
   }
@@ -153,8 +156,8 @@ const SearchPage = () => {
       }
     } catch (error) {
       console.error("Search API Error:", error)
-      setServerError("Unable to connect to local API server")
-      toast.error("Could not fetch search results from local server!")
+      setServerError(t("search.error.offline"))
+      toast.error(t("search.toast.searchFailed"))
     }
   }
 
@@ -171,41 +174,36 @@ const SearchPage = () => {
   const stocksValue = calculateStocksValue()
   const estimatedTotalValue = cashBalance + stocksValue
 
+  // Banded by how many positions are held; the band selects the copy, so the
+  // wording follows the language instead of being frozen at English.
   const getPortfolioHealthDetails = () => {
-    if (!portfolioValues || portfolioValues.length === 0) {
-      return {
-        status: "Empty Portfolio",
-        description: "Your capital is currently completely unallocated in the equities market, resting fully in cash assets. While this strategy completely mitigates market volatility and systemic equity risk, it exposes your capital to purchasing power degradation via inflation. Consider initiating structural positions across uncorrelated assets to build a baseline risk-adjusted compounding framework."
-      }
-    }
-
-    if (portfolioValues.length === 1) {
-      return {
-        status: "Concentrated Risk",
-        description: "Your portfolio exhibits maximum idiosyncratic risk due to total asset concentration in a single equity instrument. Under standard Modern Portfolio Theory (MPT), this specific allocation configuration exposes your entire capital to unhedged corporate volatility and sector-specific shocks. To optimize your Sharpe ratio and build systemic resilience, consider liquidating marginal portions to diversify into low-correlation industries."
-      }
-    }
-
-    if (portfolioValues.length <= 3) {
-      return {
-        status: "Diversifying",
-        description: "Your asset layout indicates an active transition toward a balanced model, demonstrating a structured mitigation of individual asset beta. While you have successfully eliminated absolute concentration risk, your portfolio's macroeconomic sensitivity remains tied to specific cluster movements. Fine-tuning your variance through international equities or contrasting industrial sectors will further secure equity insulation during broader market drawdowns."
-      }
-    }
+    const count = portfolioValues?.length ?? 0
+    const band =
+      count === 0
+        ? "empty"
+        : count === 1
+          ? "concentrated"
+          : count <= 3
+            ? "diversifying"
+            : "safe"
 
     return {
-      status: "Highly Safe",
-      description: "Your capital structure possesses institutional-grade diversification, effectively minimizing idiosyncratic risk factors across multiple moving parameters. The variance of your equity distribution successfully counteracts isolated sector contractions, optimizing long-term capital preservation metrics. Maintain periodic capital rebalancing schedules to ensure asset weight drifts do not inadvertently distort your target alpha-to-risk boundary parameters."
+      status: t(`search.health.${band}.status` as TranslationKey),
+      description: t(`search.health.${band}.description` as TranslationKey),
     }
   }
 
   const getSectorAllocation = () => {
     if (!portfolioValues || portfolioValues.length === 0) {
-      return { primarySector: "None", techPercent: 0, otherPercent: 0 }
+      return {
+        primarySector: t("search.sector.none"),
+        techPercent: 0,
+        otherPercent: 0,
+      }
     }
     let techTotal = 0
     let otherTotal = 0
-    let lastFoundSector = "Technology"
+    let lastFoundSector = t("search.sector.technology")
 
     portfolioValues.forEach((item) => {
       const livePrice = item.purchase || 0
@@ -221,11 +219,17 @@ const SearchPage = () => {
     })
 
     const grandTotal = techTotal + otherTotal
-    if (grandTotal === 0) return { primarySector: "None", techPercent: 0, otherPercent: 0 }
+    if (grandTotal === 0)
+      return {
+        primarySector: t("search.sector.none"),
+        techPercent: 0,
+        otherPercent: 0,
+      }
 
     const techPercent = Math.round((techTotal / grandTotal) * 100)
     const otherPercent = Math.round((otherTotal / grandTotal) * 100)
-    const primarySector = techTotal >= otherTotal ? "Technology" : lastFoundSector
+    const primarySector =
+      techTotal >= otherTotal ? t("search.sector.technology") : lastFoundSector
 
     return { primarySector, techPercent, otherPercent }
   }
@@ -273,15 +277,13 @@ const SearchPage = () => {
         <Reveal className="flex flex-col gap-9">
           <div>
             <span className="block font-mono text-caption font-normal uppercase tracking-label-lg text-band-subtle">
-              Search
+              {t("search.eyebrow")}
             </span>
             <h1 className="mt-3 text-heading font-medium text-band-ink md:text-heading-lg">
-              Find a company
+              {t("search.title")}
             </h1>
             <p className="mt-3 max-w-[60ch] text-body-lg font-normal text-band-muted">
-              {user
-                ? "Look up any listed ticker to read its fundamentals, then add it to your portfolio."
-                : "Look up any listed ticker and read its fundamentals. Browsing is open — an account is only needed to trade."}
+              {user ? t("search.lead.user") : t("search.lead.guest")}
             </p>
           </div>
 
@@ -297,13 +299,17 @@ const SearchPage = () => {
         <section className="flex flex-col gap-8">
           <Reveal>
             <PanelHeader
-              eyebrow="Results"
-              title="Matching companies"
+              eyebrow={t("search.results.eyebrow")}
+              title={t("search.results.title")}
               actions={
                 searchResult.length > 0 ? (
                   <span className="font-mono text-caption font-normal uppercase tracking-label-sm text-band-subtle">
-                    {searchResult.length} match
-                    {searchResult.length === 1 ? "" : "es"}
+                    {t(
+                      searchResult.length === 1
+                        ? "search.results.count.one"
+                        : "search.results.count.other",
+                      { count: searchResult.length },
+                    )}
                   </span>
                 ) : undefined
               }
@@ -321,8 +327,8 @@ const SearchPage = () => {
         <div className="flex w-full flex-col gap-16">
             {!user && (
               <GuestCallout
-                title="Trading needs an account"
-                description="Search, fundamentals and the discussion are open to everyone. Opening a wallet gives you a starting balance to trade with, unrealized profit and loss on every position, and price alerts that watch a level for you."
+                title={t("search.guest.title")}
+                description={t("search.guest.description")}
               />
             )}
 
@@ -336,22 +342,37 @@ const SearchPage = () => {
             {user && portfolioValues && (
               <div className="flex w-full flex-col gap-6">
                 <Reveal>
-                  <PanelHeader eyebrow="Analytics" title="Portfolio analytics" />
+                  <PanelHeader
+                    eyebrow={t("search.analytics.eyebrow")}
+                    title={t("search.analytics.title")}
+                  />
                 </Reveal>
                 <RevealGroup className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                   <RevealItem>
                   <button type="button" onClick={() => togglePanel("worth")} className="cursor-pointer text-left w-full">
-                    <Tile title="Total Net Worth" subTitle={`$${estimatedTotalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+                    <Tile
+                      variant="netWorth"
+                      title={t("search.tile.netWorth")}
+                      subTitle={`$${estimatedTotalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    />
                   </button>
                   </RevealItem>
                   <RevealItem>
                   <button type="button" onClick={() => togglePanel("health")} className="cursor-pointer text-left w-full">
-                    <Tile title="Portfolio Health" subTitle={portfolioHealth} />
+                    <Tile
+                      variant="health"
+                      title={t("search.tile.health")}
+                      subTitle={portfolioHealth}
+                    />
                   </button>
                   </RevealItem>
                   <RevealItem>
                   <button type="button" onClick={() => togglePanel("sector")} className="cursor-pointer text-left w-full">
-                    <Tile title="Primary Sector" subTitle={sectorData.primarySector} />
+                    <Tile
+                      variant="sector"
+                      title={t("search.tile.sector")}
+                      subTitle={sectorData.primarySector}
+                    />
                   </button>
                   </RevealItem>
                 </RevealGroup>
@@ -363,14 +384,14 @@ const SearchPage = () => {
                     <div className="flex items-center justify-between border-b border-band-line/8 pb-3">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-band-ink tracking-tight">
-                          Net Worth Growth Timeline
+                          {t("search.worth.title")}
                         </span>
                         <span className="text-caption text-band-muted font-normal mt-1">
-                          Live historical context based on wallet & asset capitalization
+                          {t("search.worth.subtitle")}
                         </span>
                       </div>
                       <span className="text-caption font-bold text-band-gain bg-band-gain/10 px-2 py-1 rounded border border-band-gain/20">
-                        All-Time High
+                        {t("search.worth.badge")}
                       </span>
                     </div>
 
@@ -428,20 +449,20 @@ const SearchPage = () => {
                     <div className="flex items-center justify-between border-b border-band-line/8 pb-3">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-band-ink tracking-tight">
-                          Portfolio Risk & Diversification Audit
+                          {t("search.health.title")}
                         </span>
                         <span className="text-caption text-band-muted font-normal mt-1">
-                          Quantifying capital exposure and asset correlation metrics
+                          {t("search.health.subtitle")}
                         </span>
                       </div>
                       <span className={`text-caption font-bold bg-band-raised px-2 py-1 rounded border ${portfolioValues && portfolioValues.length > 3 ? "text-band-gain border-band-gain/20" : "text-band-muted border-band-line/10"
                         }`}>
-                        Active Strategy: {portfolioHealth}
+                        {t("search.health.strategy", { status: portfolioHealth })}
                       </span>
                     </div>
                     <div className="bg-band-raised p-5 rounded-card ring-1 ring-inset ring-band-line/8 leading-relaxed">
                       <p className="text-xs font-bold text-band-muted mb-2 uppercase tracking-wider font-mono">
-                        Macroeconomic & Structural Risk Analysis:
+                        {t("search.health.analysisLabel")}
                       </p>
                       <p className="text-sm text-band-ink font-normal tracking-normal leading-6">
                         {healthDetails.description}
@@ -457,7 +478,7 @@ const SearchPage = () => {
                     <div className="flex items-center justify-between border-b border-band-line/8 pb-3">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-band-ink tracking-tight">
-                          Sector Allocation Layout
+                          {t("search.sector.title")}
                         </span>
                       </div>
                     </div>
@@ -465,7 +486,7 @@ const SearchPage = () => {
                     <div className="flex flex-col space-y-4 pt-1">
                       <div className="flex flex-col space-y-1">
                         <div className="flex items-center justify-between text-caption font-bold text-band-muted font-mono">
-                          <span>Technology & Semiconductors</span>
+                          <span>{t("search.sector.tech")}</span>
                           <span>{sectorData.techPercent}.00%</span>
                         </div>
                         <div className="w-full h-1.5 bg-band-raised rounded-full overflow-hidden">
@@ -478,7 +499,11 @@ const SearchPage = () => {
 
                       <div className="flex flex-col space-y-1">
                         <div className="flex items-center justify-between text-caption font-bold text-band-muted font-mono">
-                          <span>Other Sectors ({sectorData.primarySector})</span>
+                          <span>
+                            {t("search.sector.other", {
+                              sector: sectorData.primarySector,
+                            })}
+                          </span>
                           <span>{sectorData.otherPercent}.00%</span>
                         </div>
                         <div className="w-full h-1.5 bg-band-raised rounded-full overflow-hidden">

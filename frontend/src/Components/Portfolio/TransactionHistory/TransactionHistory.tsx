@@ -2,6 +2,8 @@ import { PanelHeader } from "../../Dashboard/Panel"
 import EmptyState from "../../Dashboard/EmptyState"
 import Reveal from "../../Dashboard/Reveal"
 import { formatTimestamp } from "../../../Helpers/dateTime"
+import { useLanguage } from "../../../i18n/useLanguage"
+import type { TranslationKey } from "../../../i18n/translations"
 import type { Transaction, TransactionType } from "../../../Models/Portfolio"
 
 type Props = {
@@ -17,15 +19,18 @@ const badgeClass = (type: TransactionType) =>
     ? "text-band-loss ring-band-loss/30"
     : "text-band-gain ring-band-gain/30"
 
-const TransactionHistory = ({ transactions }: Props) => (
+const TransactionHistory = ({ transactions }: Props) => {
+  const { t, language } = useLanguage()
+
+  return (
   <div className="flex flex-col gap-8">
     <Reveal>
       <PanelHeader
-        eyebrow="Activity"
-        title="Transaction history"
+        eyebrow={t("tx.eyebrow")}
+        title={t("tx.title")}
         lead={
           transactions.length > 0
-            ? "Every trade, deposit and withdrawal on this account, newest first."
+            ? t("tx.lead")
             : undefined
         }
       />
@@ -34,15 +39,15 @@ const TransactionHistory = ({ transactions }: Props) => (
     {transactions.length > 0 ? (
       <div className="overflow-hidden rounded-card bg-band-surface ring-1 ring-inset ring-band-line/6">
         <div className="overflow-x-auto">
-          <table aria-label="Transaction history" className="w-full border-collapse text-left font-sans">
+          <table aria-label={t("tx.title")} className="w-full border-collapse text-left font-sans">
             <thead>
               <tr className="border-b border-band-line/8 font-mono text-caption font-bold uppercase tracking-label-lg text-band-muted">
-                <th className="px-6 py-4">Date</th>
-                <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Asset</th>
-                <th className="px-6 py-4 text-right">Quantity</th>
-                <th className="px-6 py-4 text-right">Price</th>
-                <th className="px-6 py-4 text-right">Total</th>
+                <th className="px-6 py-4">{t("tx.col.date")}</th>
+                <th className="px-6 py-4">{t("tx.col.type")}</th>
+                <th className="px-6 py-4">{t("tx.col.asset")}</th>
+                <th className="px-6 py-4 text-right">{t("tx.col.quantity")}</th>
+                <th className="px-6 py-4 text-right">{t("tx.col.price")}</th>
+                <th className="px-6 py-4 text-right">{t("tx.col.total")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-band-line/8 text-body font-normal">
@@ -52,7 +57,7 @@ const TransactionHistory = ({ transactions }: Props) => (
                 return (
                   <tr key={item.id} className="transition-colors hover:bg-band-raised">
                     <td className="whitespace-nowrap px-6 py-4 font-mono text-caption font-normal text-band-muted">
-                      {formatTimestamp(item.timestamp)}
+                      {formatTimestamp(item.timestamp, language)}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -60,7 +65,7 @@ const TransactionHistory = ({ transactions }: Props) => (
                           item.transactionType,
                         )}`}
                       >
-                        {item.transactionType}
+                        {t(("tx.type." + item.transactionType) as TranslationKey)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -93,11 +98,12 @@ const TransactionHistory = ({ transactions }: Props) => (
     ) : (
       <EmptyState
         variant="wallet"
-        title="Nothing has happened yet"
-        description="Deposit cash or place your first trade and every movement will be logged here."
+        title={t("tx.empty.title")}
+        description={t("tx.empty.description")}
       />
     )}
   </div>
-)
+  )
+}
 
 export default TransactionHistory

@@ -12,33 +12,35 @@ import {
   revealProps,
 } from "../../Helpers/motion"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
-
-const stages = [
-  {
-    step: "01",
-    title: "Open your workspace",
-    copy: "Register once and get a private portfolio only your account can see or edit.",
-    image: atriumLight,
-    scrim: "bg-onyx-canvas/45",
-  },
-  {
-    step: "02",
-    title: "Read the fundamentals",
-    copy: "Pull income statements, balance sheets and cash flow for any ticker on the platform.",
-    image: heroStill,
-    scrim: "bg-onyx-canvas/20",
-  },
-  {
-    step: "03",
-    title: "Build your position",
-    copy: "Add tickers to your portfolio and track how the value moves as the tape does.",
-    image: capitalStack,
-    scrim: "bg-onyx-canvas/20",
-  },
-]
+import { useLanguage } from "../../i18n/useLanguage"
 
 const HowItWorks = () => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
+
+  const stages = [
+    {
+      step: "01",
+      title: t("home.stages.1.title"),
+      copy: t("home.stages.1.copy"),
+      image: atriumLight,
+      scrim: "bg-onyx-canvas/45",
+    },
+    {
+      step: "02",
+      title: t("home.stages.2.title"),
+      copy: t("home.stages.2.copy"),
+      image: heroStill,
+      scrim: "bg-onyx-canvas/20",
+    },
+    {
+      step: "03",
+      title: t("home.stages.3.title"),
+      copy: t("home.stages.3.copy"),
+      image: capitalStack,
+      scrim: "bg-onyx-canvas/20",
+    },
+  ]
 
   return (
     <section
@@ -53,9 +55,9 @@ const HowItWorks = () => {
         >
           <SectionHeader
             align="center"
-            eyebrow="How it works"
-            title="Three stages to a working portfolio"
-            lead="It starts with one account, then everything underneath the price is open to you."
+            eyebrow={t("home.stages.eyebrow")}
+            title={t("home.stages.title")}
+            lead={t("home.stages.lead")}
           />
         </motion.div>
 

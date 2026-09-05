@@ -1,11 +1,17 @@
+import type { ReactNode } from "react"
+
+// The icon is chosen by `variant`, not by matching the title text: the title
+// is translated copy and would stop matching the moment the language changes.
+export type TileVariant = "netWorth" | "health" | "sector" | "marketCap"
+
 type Props = {
   title: string
   subTitle: string
+  variant?: TileVariant
 }
 
-const VARIANTS = [
-  {
-    titles: ["Company Name", "Total Net Worth"],
+const VARIANTS: Record<TileVariant, { spark: string; icon: ReactNode }> = {
+  netWorth: {
     spark: "M0,35 Q15,5 30,25 T60,10 T90,5 T100,2",
     icon: (
       <path
@@ -15,8 +21,7 @@ const VARIANTS = [
       />
     ),
   },
-  {
-    titles: ["Price", "Portfolio Health"],
+  health: {
     spark: "M0,20 Q20,20 40,5 T80,35 T100,10",
     icon: (
       <path
@@ -26,8 +31,7 @@ const VARIANTS = [
       />
     ),
   },
-  {
-    titles: ["Sector", "Primary Sector"],
+  sector: {
     spark: "M0,30 Q25,30 50,10 T75,25 T100,5",
     icon: (
       <path
@@ -37,8 +41,7 @@ const VARIANTS = [
       />
     ),
   },
-  {
-    titles: ["Market Cap"],
+  marketCap: {
     spark: "M0,15 Q30,40 60,15 T100,5",
     icon: (
       <>
@@ -55,10 +58,10 @@ const VARIANTS = [
       </>
     ),
   },
-]
+}
 
-const Tile = ({ title, subTitle }: Props) => {
-  const variant = VARIANTS.find((v) => v.titles.includes(title))
+const Tile = ({ title, subTitle, variant: variantKey }: Props) => {
+  const variant = variantKey ? VARIANTS[variantKey] : undefined
 
   return (
     <div className="group relative flex min-h-[115px] w-full items-center justify-between overflow-hidden rounded-card bg-band-surface ring-1 ring-inset ring-band-line/6 p-card transition-colors duration-200 hover:ring-band-line/20">

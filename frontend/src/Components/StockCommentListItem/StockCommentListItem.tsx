@@ -2,6 +2,7 @@ import { motion } from "framer-motion"
 import type { CommentGet } from "../../Models/Comment"
 import type { StockOption } from "../StockComment/stockOptions"
 import { reveal } from "../../Helpers/motion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 type Props = {
   comment: CommentGet
@@ -9,7 +10,8 @@ type Props = {
 }
 
 const StockCommentListItem = ({ comment, stock }: Props) => {
-  const author = comment.createdBy || "anonymous"
+  const { t } = useLanguage()
+  const author = comment.createdBy || t("comments.anonymous")
 
   return (
     <motion.article

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 interface Props {
   open: boolean
@@ -20,6 +21,7 @@ const MobileMenu = ({
   children,
 }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
   const panelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -75,7 +77,7 @@ const MobileMenu = ({
             }`}
           >
             <nav
-              aria-label="Mobile"
+              aria-label={t("nav.mobileLabel")}
               className="flex flex-col gap-1 px-6 pb-8 pt-4"
             >
               {children}

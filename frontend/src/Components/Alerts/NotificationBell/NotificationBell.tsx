@@ -7,6 +7,7 @@ import {
 import { formatRelativeTime } from "../../../Helpers/dateTime"
 import { subscribeToAlertChanges } from "../../../Helpers/alertEvents"
 import { usePollWhileVisible } from "../../../Helpers/usePollWhileVisible"
+import { useLanguage } from "../../../i18n/useLanguage"
 import type { AlertNotification } from "../../../Models/Alert"
 
 // Alerts are checked server-side once a minute, so polling any faster would
@@ -22,6 +23,7 @@ type Props = {
 }
 
 const NotificationBell = ({ isLight }: Props) => {
+  const { t, language } = useLanguage()
   const [notifications, setNotifications] = useState<AlertNotification[]>([])
   const [open, setOpen] = useState(false)
   const panelId = useId()
@@ -110,8 +112,8 @@ const NotificationBell = ({ isLight }: Props) => {
         aria-controls={panelId}
         aria-label={
           unread.length > 0
-            ? `Notifications, ${unread.length} unread`
-            : "Notifications"
+            ? t("bell.label.unread", { count: unread.length })
+            : t("bell.label")
         }
         className={`relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-card transition-colors duration-200 ${hoverClass}`}
       >
@@ -140,7 +142,7 @@ const NotificationBell = ({ isLight }: Props) => {
         <div
           id={panelId}
           role="region"
-          aria-label="Price alert notifications"
+          aria-label={t("bell.panel.label")}
           className={`absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-card border shadow-lg backdrop-blur-md ${panelClass}`}
         >
           <div
@@ -151,7 +153,7 @@ const NotificationBell = ({ isLight }: Props) => {
             <span
               className={`font-mono text-caption font-normal uppercase tracking-label ${mutedClass}`}
             >
-              Price alerts
+              {t("bell.heading")}
             </span>
             {unread.length > 0 && (
               <button
@@ -159,7 +161,7 @@ const NotificationBell = ({ isLight }: Props) => {
                 onClick={markAllRead}
                 className="cursor-pointer text-caption font-normal text-cobalt underline-offset-4 hover:underline"
               >
-                Mark all read
+                {t("bell.markAllRead")}
               </button>
             )}
           </div>
@@ -167,14 +169,14 @@ const NotificationBell = ({ isLight }: Props) => {
           {notifications.length === 0 ? (
             <div className="px-4 py-6">
               <p className={`text-body font-normal ${mutedClass}`}>
-                No alerts have fired yet.
+                {t("bell.empty")}
               </p>
               <Link
                 to="/wallet"
                 onClick={() => setOpen(false)}
                 className="mt-2 inline-block text-caption font-normal text-cobalt underline-offset-4 hover:underline"
               >
-                Set a price alert
+                {t("bell.setAlert")}
               </Link>
             </div>
           ) : (
@@ -219,8 +221,8 @@ const NotificationBell = ({ isLight }: Props) => {
                       <span
                         className={`font-mono text-caption font-normal ${mutedClass}`}
                       >
-                        {formatRelativeTime(notification.createdAt)}
-                        {notification.isRead ? "" : " · unread"}
+                        {formatRelativeTime(notification.createdAt, language)}
+                        {notification.isRead ? "" : ` · ${t("bell.unread")}`}
                       </span>
                     </span>
                   </button>

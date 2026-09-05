@@ -4,6 +4,7 @@ import type { StockOption } from "../StockComment/stockOptions"
 import StockCommentListItem from "../StockCommentListItem/StockCommentListItem"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
 import { revealGroup } from "../../Helpers/motion"
+import { useLanguage } from "../../i18n/useLanguage"
 
 type Props = {
   comments: CommentGet[]
@@ -12,12 +13,13 @@ type Props = {
 
 const StockCommentList = ({ comments, symbolById }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
 
   if (!comments || comments.length === 0) {
     return (
       <div className="rounded-card px-6 py-14 text-center ring-1 ring-inset ring-band-line/6">
         <p className="text-body font-normal text-band-muted">
-          Nothing posted here yet. Be the first to write one.
+          {t("comments.empty")}
         </p>
       </div>
     )

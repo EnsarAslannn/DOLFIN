@@ -3,20 +3,22 @@ import { motion } from "framer-motion"
 import heroStill from "../../assets/extra/hero-still.webp"
 import heroVideo from "../../assets/extra/HeroDOLFIN.mp4"
 import { usePrefersReducedMotion } from "../../Helpers/usePrefersReducedMotion"
+import { useLanguage } from "../../i18n/useLanguage"
 import { bandClass, contentClass } from "../../Helpers/layout"
 import { ctaClass, ctaGhostFullClass } from "../../Helpers/formStyles"
 import { reveal, revealGroup } from "../../Helpers/motion"
 import { TONE_ATTR } from "../../Helpers/useSectionTone"
 import { Check, Chevron } from "./Icons"
 
-const heroStats = [
-  { label: "Full statements", value: "Income, balance and cash flow" },
-  { label: "No card required", value: "Free while the sandbox is open" },
-  { label: "Private by default", value: "Your portfolio, only your account" },
-]
-
 const HeroSection = () => {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const { t } = useLanguage()
+
+  const heroStats = [
+    { label: t("home.hero.stat1.label"), value: t("home.hero.stat1.value") },
+    { label: t("home.hero.stat2.label"), value: t("home.hero.stat2.value") },
+    { label: t("home.hero.stat3.label"), value: t("home.hero.stat3.value") },
+  ]
 
   return (
     <section
@@ -70,24 +72,23 @@ const HeroSection = () => {
               className="inline-flex items-start gap-2 font-mono text-caption font-normal uppercase tracking-label-lg text-ivory-text/85"
             >
               <Check className="mt-[2px] h-3 w-3" />
-              Simulated market data · no brokerage attached
+              {t("home.hero.badge")}
             </motion.span>
 
             <motion.h1
               variants={reveal}
               className="mt-8 text-heading-lg font-medium text-ivory-text md:text-display-md lg:text-display"
             >
-              Find the signal
+              {t("home.hero.title.line1")}
               <br />
-              beneath the noise
+              {t("home.hero.title.line2")}
             </motion.h1>
 
             <motion.p
               variants={reveal}
               className="mt-7 max-w-[460px] text-body-lg font-normal text-ash-text"
             >
-              Track the tickers you care about, read what other investors are
-              saying, and dive into the fundamentals underneath the price.
+              {t("home.hero.lead")}
             </motion.p>
 
             <motion.div
@@ -98,14 +99,14 @@ const HeroSection = () => {
                 to="/register"
                 className={`inline-flex items-center justify-center gap-2 ${ctaClass}`}
               >
-                Create an account
+                {t("home.hero.cta.primary")}
                 <Chevron className="h-4 w-4" />
               </Link>
               <a
                 href="#how-it-works"
                 className={`inline-flex items-center justify-center ${ctaGhostFullClass}`}
               >
-                See how it works
+                {t("home.hero.cta.secondary")}
               </a>
             </motion.div>
           </motion.div>

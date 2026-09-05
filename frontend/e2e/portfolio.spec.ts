@@ -46,13 +46,13 @@ test.describe("portfolio flow", () => {
         })
 
         await page.goto("/search")
-        await page.getByPlaceholder(/search companies/i).fill("TSLA")
-        await page.getByRole("button", { name: /^search$/i }).click()
+        await page.getByPlaceholder(/şirketleri koda veya ada göre arayın/i).fill("TSLA")
+        await page.getByRole("button", { name: /^ara$/i }).click()
 
-        await page.getByRole("button", { name: /^add$/i }).click()
-        await page.getByRole("button", { name: /confirm buy/i }).click()
+        await page.getByRole("button", { name: /^ekle$/i }).click()
+        await page.getByRole("button", { name: /alımı onayla/i }).click()
 
-        await expect(page.getByText(/1 shares/i)).toBeVisible()
+        await expect(page.getByText(/1 adet/i)).toBeVisible()
         await expect(page.getByText("$9750.00")).toBeVisible()
     })
 
@@ -121,14 +121,14 @@ test.describe("portfolio flow", () => {
 
         await page.goto("/wallet")
 
-        const holdings = page.getByRole("table", { name: /assets/i })
+        const holdings = page.getByRole("table", { name: /varlıklar/i })
         const tslaRow = holdings.getByRole("row", { name: /tsla/i })
         await expect(tslaRow.getByText("$500.00")).toBeVisible()
-        await tslaRow.getByRole("button", { name: /^sell$/i }).click()
+        await tslaRow.getByRole("button", { name: /^sat$/i }).click()
 
-        await page.getByRole("button", { name: /confirm sell/i }).click()
+        await page.getByRole("button", { name: /satışı onayla/i }).click()
 
-        await expect(page.getByText(/asset converted to cash successfully/i)).toBeVisible()
+        await expect(page.getByText(/varlık başarıyla nakde çevrildi/i)).toBeVisible()
         await expect(tslaRow.getByText("$250.00").last()).toBeVisible()
     })
 
@@ -185,13 +185,13 @@ test.describe("portfolio flow", () => {
 
         await page.goto("/wallet")
 
-        await expect(page.getByText(/unrealized p\/l/i)).toBeVisible()
+        await expect(page.getByText(/gerçekleşmemiş k\/z/i)).toBeVisible()
         await expect(page.getByText("(8.70%)")).toBeVisible()
 
-        const holdings = page.getByRole("table", { name: /assets/i })
+        const holdings = page.getByRole("table", { name: /varlıklar/i })
         await expect(holdings.getByRole("row", { name: /tsla/i }).getByText("+$40.00")).toBeVisible()
 
-        const history = page.getByRole("table", { name: /transaction history/i })
+        const history = page.getByRole("table", { name: /şlem geçmişi/ })
         await expect(history.getByRole("row", { name: /tsla/i }).getByText("-$460.00")).toBeVisible()
         await expect(history.getByRole("row", { name: /cash/i }).getByText("+$5000.00")).toBeVisible()
     })
@@ -243,9 +243,9 @@ test.describe("portfolio flow", () => {
         await page.goto("/search")
 
         await page.selectOption("#comment-stock", "42")
-        await page.getByPlaceholder(/sum it up in a line/i).fill("Bullish")
-        await page.getByPlaceholder(/what are you seeing in this name/i).fill("Great stock!")
-        await page.getByRole("button", { name: /post comment/i }).click()
+        await page.getByPlaceholder(/tek satırda özetleyin/i).fill("Bullish")
+        await page.getByPlaceholder(/bu hissede ne görüyorsunuz/i).fill("Great stock!")
+        await page.getByRole("button", { name: /yorumu gönder/i }).click()
 
         await expect(page.getByText("Great stock!")).toBeVisible()
         await expect(page.getByText(/@e2e_test_user/i)).toBeVisible()
@@ -272,9 +272,9 @@ test.describe("portfolio flow", () => {
         )
 
         await page.goto("/search")
-        await page.getByPlaceholder(/search companies/i).fill("AAPL")
-        await page.getByRole("button", { name: /^search$/i }).click()
+        await page.getByPlaceholder(/şirketleri koda veya ada göre arayın/i).fill("AAPL")
+        await page.getByRole("button", { name: /^ara$/i }).click()
 
-        await expect(page.getByText(/unable to connect to local api server/i)).toBeVisible()
+        await expect(page.getByText(/yerel api sunucusuna bağlanılamıyor/i)).toBeVisible()
     })
 })

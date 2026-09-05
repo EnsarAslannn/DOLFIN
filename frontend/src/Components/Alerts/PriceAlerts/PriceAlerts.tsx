@@ -13,6 +13,8 @@ import Reveal from "../../Dashboard/Reveal"
 import DataLoader from "../../Dashboard/DataLoader"
 import { formatTimestamp } from "../../../Helpers/dateTime"
 import { notifyAlertsChanged } from "../../../Helpers/alertEvents"
+import { useLanguage } from "../../../i18n/useLanguage"
+import type { Translate } from "../../../i18n/translate"
 import {
   fieldClass,
   labelClass,
@@ -25,10 +27,15 @@ import type { StockSearchResult } from "../../../Models/StockSearchResult"
 
 // The API stores the trigger as a .NET enum name; these are the only two it
 // accepts, so the select is built from them rather than from free text.
-const conditionLabel = (condition: PriceAlertCondition) =>
-  condition === "GreaterThanOrEqual" ? "rises to" : "falls to"
+const conditionLabel = (t: Translate, condition: PriceAlertCondition) =>
+  t(
+    condition === "GreaterThanOrEqual"
+      ? "alerts.condition.rises"
+      : "alerts.condition.falls",
+  )
 
 const PriceAlerts = () => {
+  const { t, language } = useLanguage()
   const [stocks, setStocks] = useState<StockOption[]>([])
   const [alerts, setAlerts] = useState<PriceAlert[]>([])
   const [loading, setLoading] = useState(true)
@@ -80,13 +87,13 @@ const PriceAlerts = () => {
 
     const stock = stocks.find((s) => s.id === Number(stockId))
     if (!stock) {
-      toast.warning("Pick the company you want to watch.")
+      toast.warning(t("alerts.toast.pickCompany"))
       return
     }
 
     const price = parseFloat(targetPrice)
     if (Number.isNaN(price) || price <= 0) {
-      toast.warning("Enter a target price greater than 0.")
+      toast.warning(t("alerts.toast.badPrice"))
       return
     }
 
@@ -96,7 +103,11 @@ const PriceAlerts = () => {
       if (!res) return
 
       toast.success(
-        `Watching ${stock.symbol} for $${price.toFixed(2)} ${conditionLabel(condition)}.`,
+        t("alerts.toast.watching", {
+          symbol: stock.symbol,
+          price: `$${price.toFixed(2)}`,
+          condition: conditionLabel(t, condition),
+        }),
       )
       setTargetPrice("")
       await refreshAlerts()
@@ -110,7 +121,7 @@ const PriceAlerts = () => {
     const res = await alertDeleteAPI(alert.id)
     if (!res) return
 
-    toast.success(`Alert on ${alert.symbol} removed.`)
+    toast.success(t("alerts.toast.removed", { symbol: alert.symbol }))
     await refreshAlerts()
     // Removing an alert takes any notification it raised with it, so the bell
     // has to be told rather than left to catch up on its next poll.
@@ -123,25 +134,25 @@ const PriceAlerts = () => {
     <section className="flex w-full flex-col gap-8">
       <Reveal>
         <PanelHeader
-          eyebrow="Alerts"
-          title="Price alerts"
-          lead="Name a price and we watch it for you. Prices move on a one-minute cadence, and a triggered alert shows up under the bell in the header."
+          eyebrow={t("alerts.eyebrow")}
+          title={t("alerts.title")}
+          lead={t("alerts.lead")}
         />
       </Reveal>
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-5 lg:gap-8">
         <Reveal className="rounded-card bg-band-surface p-6 ring-1 ring-inset ring-band-line/6 lg:col-span-2">
           <h3 className="text-subheading font-medium text-band-ink">
-            Watch a price
+            {t("alerts.form.title")}
           </h3>
           <p className="mt-2 text-body font-normal text-band-muted">
-            Pick a company, choose a direction and set the level to be told about.
+            {t("alerts.form.lead")}
           </p>
 
           <form onSubmit={handleCreate} className="mt-6 flex flex-col gap-5">
             <div className="w-full text-left">
               <label htmlFor="alert-stock" className={labelClass}>
-                Stock / ticker
+                {t("alerts.form.stock")}
               </label>
               <select
                 id="alert-stock"
@@ -149,7 +160,7 @@ const PriceAlerts = () => {
                 onChange={(e) => setStockId(e.target.value)}
                 className={`${fieldClass} cursor-pointer`}
               >
-                <option value="">Select a company…</option>
+                <option value="">{t("alerts.form.selectCompany")}</option>
                 {stocks.map((stock) => (
                   <option key={stock.id} value={stock.id}>
                     {stock.symbol}
@@ -161,7 +172,7 @@ const PriceAlerts = () => {
 
             <div className="w-full text-left">
               <label htmlFor="alert-condition" className={labelClass}>
-                Tell me when the price
+                {t("alerts.form.condition")}
               </label>
               <select
                 id="alert-condition"
@@ -171,14 +182,18 @@ const PriceAlerts = () => {
                 }
                 className={`${fieldClass} cursor-pointer`}
               >
-                <option value="GreaterThanOrEqual">Rises to or above</option>
-                <option value="LessThanOrEqual">Falls to or below</option>
+                <option value="GreaterThanOrEqual">
+                  {t("alerts.form.rises")}
+                </option>
+                <option value="LessThanOrEqual">
+                  {t("alerts.form.falls")}
+                </option>
               </select>
             </div>
 
             <div className="w-full text-left">
               <label htmlFor="alert-target" className={labelClass}>
-                Target price
+                {t("alerts.form.target")}
               </label>
               <div className="relative flex items-center">
                 <span className="absolute left-4 font-mono text-body font-normal text-band-muted">
@@ -204,33 +219,35 @@ const PriceAlerts = () => {
                 canSubmit ? ctaFillClass : ctaDisabledClass
               }`}
             >
-              {submitting ? "Saving…" : "Create alert"}
+              {submitting ? t("alerts.form.saving") : t("alerts.form.submit")}
             </button>
           </form>
         </Reveal>
 
         <div className="lg:col-span-3">
           {loading ? (
-            <DataLoader label="Loading alerts" />
+            <DataLoader label={t("alerts.loading")} />
           ) : alerts.length === 0 ? (
             <EmptyState
               variant="wallet"
-              title="Nothing on watch"
-              description="Set an alert and it will sit here until the market reaches your level."
+              title={t("alerts.empty.title")}
+              description={t("alerts.empty.description")}
             />
           ) : (
             <div className="overflow-hidden rounded-card bg-band-surface ring-1 ring-inset ring-band-line/6">
               <div className="overflow-x-auto">
                 <table
-                  aria-label="Price alerts"
+                  aria-label={t("alerts.table.label")}
                   className="w-full border-collapse text-left font-sans"
                 >
                   <thead>
                     <tr className="border-b border-band-line/8 font-mono text-caption font-bold uppercase tracking-label-lg text-band-muted">
-                      <th className="px-6 py-4">Asset</th>
-                      <th className="px-6 py-4">Trigger</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Action</th>
+                      <th className="px-6 py-4">{t("alerts.col.asset")}</th>
+                      <th className="px-6 py-4">{t("alerts.col.trigger")}</th>
+                      <th className="px-6 py-4">{t("alerts.col.status")}</th>
+                      <th className="px-6 py-4 text-right">
+                        {t("alerts.col.action")}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-band-line/8 text-body font-normal">
@@ -246,7 +263,9 @@ const PriceAlerts = () => {
                             {alert.symbol.toUpperCase()}
                           </td>
                           <td className="px-6 py-4 font-normal text-band-muted">
-                            Price {conditionLabel(alert.condition)}{" "}
+                            {t("alerts.row.trigger", {
+                              condition: conditionLabel(t, alert.condition),
+                            })}{" "}
                             <span className="font-mono text-band-ink">
                               ${alert.targetPrice.toFixed(2)}
                             </span>
@@ -259,11 +278,13 @@ const PriceAlerts = () => {
                                   : "text-band-muted ring-band-line/20"
                               }`}
                             >
-                              {fired ? "Triggered" : "Watching"}
+                              {fired
+                                ? t("alerts.status.triggered")
+                                : t("alerts.status.watching")}
                             </span>
                             {fired && (
                               <span className="mt-1 block font-mono text-caption font-normal text-band-muted">
-                                {formatTimestamp(alert.triggeredAt!)}
+                                {formatTimestamp(alert.triggeredAt!, language)}
                               </span>
                             )}
                           </td>
@@ -271,10 +292,12 @@ const PriceAlerts = () => {
                             <button
                               type="button"
                               onClick={() => handleDelete(alert)}
-                              aria-label={`Remove alert on ${alert.symbol.toUpperCase()}`}
+                              aria-label={t("alerts.remove.aria", {
+                                symbol: alert.symbol.toUpperCase(),
+                              })}
                               className="cursor-pointer rounded-pill px-4 py-2 text-body font-normal text-band-muted ring-1 ring-inset ring-band-line/8 transition-colors hover:text-band-loss hover:ring-band-loss/50"
                             >
-                              Remove
+                              {t("alerts.remove")}
                             </button>
                           </td>
                         </tr>

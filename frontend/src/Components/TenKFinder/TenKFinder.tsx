@@ -3,12 +3,14 @@ import type { CompanyTenK } from "../../company"
 import { getTenK } from "../../api"
 import TenKFinderItem from "./TenKFinderItem/TenKFinderItem"
 import Spinners from "../Spinners/Spinners"
+import { useLanguage } from "../../i18n/useLanguage"
 
 type Props = {
   ticker: string
 }
 
 const TenKFinder = ({ ticker }: Props) => {
+  const { t } = useLanguage()
   const [companyData, setCompanyData] = useState<CompanyTenK[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -37,7 +39,7 @@ const TenKFinder = ({ ticker }: Props) => {
         })
       ) : (
         <span className="text-body font-normal text-band-muted font-mono">
-          No reports found
+          {t("company.filings.none")}
         </span>
       )}
     </div>

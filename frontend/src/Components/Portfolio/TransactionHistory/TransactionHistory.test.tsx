@@ -21,7 +21,7 @@ describe("TransactionHistory", () => {
     it("prompts the user to trade when there is no history", () => {
         render(<TransactionHistory transactions={[]} />)
 
-        expect(screen.getByText(/nothing has happened yet/i)).toBeInTheDocument()
+        expect(screen.getByText(/henüz bir hareket yok/i)).toBeInTheDocument()
         expect(screen.queryByRole("table")).not.toBeInTheDocument()
     })
 
