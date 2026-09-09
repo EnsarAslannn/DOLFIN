@@ -50,9 +50,9 @@ export const auth = {
   },
   tr: {
     "auth.login.aside.eyebrow": "Piyasa istihbarat terminali",
-    "auth.login.aside.title": "Tüm piyasa, her seferinde tek bir sinyal.",
+    "auth.login.aside.title": "Bütün piyasa, sinyal sinyal.",
     "auth.login.aside.lead":
-      "Portföyünüz, bildirimler ve yorumlar — tek bir girişin arkasında.",
+      "Portföyünüz, resmi raporlar ve yorumlar — hepsi tek bir girişin arkasında.",
     "auth.login.eyebrow": "Tekrar hoş geldiniz",
     "auth.login.title": "Hesabınıza giriş yapın",
     "auth.login.lead": "Bıraktığınız yerden devam edin.",
@@ -64,7 +64,7 @@ export const auth = {
     "auth.register.aside.title":
       "Burada yanılın ki dışarıda haklı çıkasınız.",
     "auth.register.aside.lead":
-      "Simüle sermaye, gerçek temel veriler. Yaptığınız hiçbir işlem gerçek bir aracı kuruma dokunmaz.",
+      "Sanal sermaye, gerçek temel veriler. Yaptığınız hiçbir işlem gerçek bir aracı kuruma ulaşmaz.",
     "auth.register.eyebrow": "Başlayın",
     "auth.register.title": "Hesabınızı oluşturun",
     "auth.register.lead":

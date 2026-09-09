@@ -344,7 +344,7 @@ const IncomeStatement = () => {
               <strong className="text-band-muted">
                 {t("income.explain.p1.bottomline")}
               </strong>
-              .
+              {t("income.explain.p1.d")}
             </p>
 
             <p className="text-band-ink text-body font-normal leading-relaxed antialiased pt-1">

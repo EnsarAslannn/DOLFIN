@@ -53,7 +53,7 @@ export const wallet = {
 
     "wallet.deposit.title": "Nakit Yatır",
     "wallet.deposit.lead":
-      "İşlem hesabınıza anında simülasyon kredisi ekleyin.",
+      "İşlem hesabınıza anında simülasyon bakiyesi ekleyin.",
     "wallet.deposit.processing": "İşleniyor...",
     "wallet.deposit.submit": "Yatırmayı Onayla",
 
@@ -70,13 +70,13 @@ export const wallet = {
 
     "wallet.empty.title": "Şimdilik yalnızca nakit",
     "wallet.empty.description":
-      "Bakiyeniz atıl duruyor. Onu değerlendirmek için bir hisse arayın; burada nakdinizin yanında görünecek.",
+      "Bakiyeniz şu an boşta duruyor. Değerlendirmek için bir hisse arayın; aldığınız hisse burada nakdinizin yanında görünecek.",
     "wallet.empty.cta": "Şirket bul",
 
     "wallet.toast.invalidAmount": "Lütfen 0'dan büyük geçerli bir tutar girin",
-    "wallet.toast.depositFailed": "Para yatırma başarısız. Lütfen tekrar deneyin.",
+    "wallet.toast.depositFailed": "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.",
     "wallet.toast.noUsd": "Satılacak USD bakiyeniz yok!",
-    "wallet.toast.withdrawFailed": "Para çekme başarısız. Lütfen tekrar deneyin.",
+    "wallet.toast.withdrawFailed": "Para çekme işlemi başarısız oldu. Lütfen tekrar deneyin.",
     "wallet.toast.converted": "Varlık başarıyla nakde çevrildi!",
     "wallet.toast.saleFailed": "Satış emri gerçekleştirilemedi.",
   },

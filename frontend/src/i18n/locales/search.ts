@@ -92,7 +92,7 @@ export const search = {
     "search.lead.user":
       "Listelenen herhangi bir hisseyi arayıp temel verilerini okuyun, ardından portföyünüze ekleyin.",
     "search.lead.guest":
-      "Listelenen herhangi bir hisseyi arayın ve temel verilerini okuyun. Gezinme herkese açık — hesap yalnızca işlem yapmak için gerekli.",
+      "Listelenen herhangi bir hisseyi arayın ve temel verilerini okuyun. Gezinmek herkese açık — hesap yalnızca işlem yapmak için gerekli.",
     "search.input.placeholder": "Şirketleri koda veya ada göre arayın...",
     "search.input.submit": "Ara",
     "search.suggestions.heading": "Öne çıkan demo varlıklar",
@@ -109,7 +109,7 @@ export const search = {
     "search.industry.fallback": "Hisse Senedi Piyasası",
 
     "search.link.profile": "Profil",
-    "search.link.income": "Gelir",
+    "search.link.income": "Gelir tablosu",
     "search.link.balance": "Bilanço",
     "search.link.cashflow": "Nakit akışı",
 
@@ -129,29 +129,29 @@ export const search = {
     "search.analytics.title": "Portföy analizi",
     "search.tile.netWorth": "Toplam Net Varlık",
     "search.tile.health": "Portföy Sağlığı",
-    "search.tile.sector": "Baskın Sektör",
+    "search.tile.sector": "Ağırlıklı Sektör",
 
     "search.worth.title": "Net Varlık Büyüme Çizelgesi",
     "search.worth.subtitle":
-      "Cüzdan ve varlık değerine dayalı canlı geçmiş bağlamı",
+      "Cüzdan ve varlık değerinden türetilen geçmiş performans",
     "search.worth.badge": "Tüm Zamanların Zirvesi",
 
     "search.health.title": "Portföy Risk ve Çeşitlendirme Denetimi",
     "search.health.subtitle":
-      "Sermaye maruziyeti ve varlık korelasyon ölçütlerinin nicelendirilmesi",
+      "Sermaye maruziyetinin ve varlıklar arası korelasyonun sayısallaştırılması",
     "search.health.strategy": "Aktif strateji: {{status}}",
     "search.health.analysisLabel": "Makroekonomik ve Yapısal Risk Analizi:",
 
     "search.health.empty.status": "Boş Portföy",
     "search.health.empty.description":
-      "Sermayeniz şu anda hisse senedi piyasasında hiç dağıtılmamış durumda ve tamamen nakit olarak duruyor. Bu strateji piyasa oynaklığını ve sistemik hisse riskini tümüyle bertaraf etse de, sermayenizi enflasyon yoluyla alım gücü kaybına açık bırakır. Riske göre düzeltilmiş bir bileşik getiri çerçevesi kurmak için birbiriyle ilişkisiz varlıklarda yapısal pozisyonlar açmayı değerlendirin.",
+      "Sermayeniz şu anda hisse senedi piyasasına hiç dağıtılmamış durumda; tamamı nakit olarak duruyor. Bu strateji piyasa oynaklığını ve sistemik hisse riskini tümüyle bertaraf etse de, sermayenizi enflasyon yoluyla alım gücü kaybına açık bırakır. Riske göre düzeltilmiş bir bileşik getiri çerçevesi kurmak için birbiriyle ilişkisiz varlıklarda yapısal pozisyonlar açmayı değerlendirin.",
     "search.health.concentrated.status": "Yoğunlaşmış Risk",
     "search.health.concentrated.description":
       "Portföyünüz, tüm varlığın tek bir hisse senedinde toplanması nedeniyle azami şirkete özgü risk taşıyor. Standart Modern Portföy Teorisi (MPT) çerçevesinde bu dağılım, sermayenizin tamamını korumasız şirket oynaklığına ve sektöre özgü şoklara açık bırakır. Sharpe oranınızı iyileştirmek ve sistemik dayanıklılık kurmak için bir bölümünü nakde çevirip düşük korelasyonlu sektörlere dağılmayı değerlendirin.",
     "search.health.diversifying.status": "Çeşitleniyor",
     "search.health.diversifying.description":
       "Varlık dağılımınız dengeli bir modele doğru aktif bir geçişe işaret ediyor ve tekil varlık betasının yapısal olarak azaltıldığını gösteriyor. Mutlak yoğunlaşma riskini başarıyla ortadan kaldırmış olsanız da, portföyünüzün makroekonomik duyarlılığı hâlâ belirli küme hareketlerine bağlı. Uluslararası hisseler veya birbirine zıt sanayi sektörleriyle varyansınızı ince ayarlamak, geniş çaplı piyasa düşüşlerinde korumanızı daha da güçlendirecektir.",
-    "search.health.safe.status": "Yüksek Güvenlik",
+    "search.health.safe.status": "Çok Güvenli",
     "search.health.safe.description":
       "Sermaye yapınız kurumsal düzeyde çeşitlendirmeye sahip ve birden çok değişken boyunca şirkete özgü risk etkenlerini etkili biçimde en aza indiriyor. Hisse dağılımınızın varyansı, izole sektör daralmalarını başarıyla dengeleyerek uzun vadeli sermaye koruma ölçütlerini iyileştiriyor. Varlık ağırlıklarındaki kaymaların hedef alfa-risk sınırınızı bozmaması için düzenli yeniden dengeleme takvimini sürdürün.",
 

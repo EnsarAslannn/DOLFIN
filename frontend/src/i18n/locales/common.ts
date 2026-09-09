@@ -48,12 +48,12 @@ export const common = {
     "nav.mobileLabel": "Mobil",
 
     "footer.tagline":
-      "Gürültünün altındaki sinyali bulun. Temel veriler, bildirimler ve portföy takibi tek bir korumalı terminalde.",
+      "Gürültünün altındaki sinyali bulun. Temel veriler, resmi raporlar ve portföy takibi tek bir korumalı terminalde.",
     "footer.col.platform": "Platform",
     "footer.col.account": "Hesap",
     "footer.col.company": "Kurumsal",
     "footer.copyright": "© 2026 DOL-FIN",
-    "footer.disclaimer": "Simüle veri · güvenli sanal ortamda çalışır",
+    "footer.disclaimer": "Simülasyon verisi · korumalı bir ortamda çalışır",
 
     "state.loading": "Yükleniyor",
     "state.error.title": "Bir şeyler ters gitti",

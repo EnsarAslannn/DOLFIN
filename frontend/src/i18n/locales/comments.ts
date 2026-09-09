@@ -49,14 +49,14 @@ export const comments = {
     "comments.eyebrow": "Tartışma",
     "comments.title": "Yatırımcılar ne diyor",
     "comments.lead.user":
-      "Platformdaki herhangi bir hisse için bırakılan notlar. Şirkete göre süzün ya da aşağıdan kendi notunuzu ekleyin.",
+      "Platformdaki herhangi bir hisse için bırakılan notlar. Şirkete göre filtreleyin ya da aşağıdan kendi notunuzu ekleyin.",
     "comments.lead.guest":
-      "Platformdaki herhangi bir hisse için bırakılan notlar. Yatırımcıların ne dediğini okumak için şirkete göre süzün.",
+      "Platformdaki herhangi bir hisse için bırakılan notlar. Yatırımcıların ne dediğini okumak için şirkete göre filtreleyin.",
     "comments.lead.filtered.one": "{{symbol}} için {{count}} yorum gösteriliyor.",
     "comments.lead.filtered.other":
       "{{symbol}} için {{count}} yorum gösteriliyor.",
 
-    "comments.filter.label": "Yorumları hisseye göre süz",
+    "comments.filter.label": "Yorumları hisseye göre filtrele",
     "comments.filter.all": "Tümü",
     "comments.loading": "Tartışma yükleniyor",
     "comments.empty": "Burada henüz bir not yok. İlk yazan siz olun.",

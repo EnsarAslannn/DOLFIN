@@ -101,8 +101,8 @@ describe("PriceAlerts", () => {
         render(<PriceAlerts />)
 
         await screen.findByRole("row", { name: /tsla/i })
-        expect(within(alertsTable()).getByText(/fiyat şu seviyeye yükselirse/i)).toBeInTheDocument()
-        expect(within(alertsTable()).getByText(/fiyat şu seviyeye düşerse/i)).toBeInTheDocument()
+        expect(within(alertsTable()).getByText(/fiyat şu seviyeye çıkınca/i)).toBeInTheDocument()
+        expect(within(alertsTable()).getByText(/fiyat şu seviyeye inince/i)).toBeInTheDocument()
     })
 
     it("creates an alert from the form selections", async () => {
@@ -112,7 +112,7 @@ describe("PriceAlerts", () => {
         await waitFor(() => expect(listStocks).toHaveBeenCalled())
         await user.selectOptions(screen.getByLabelText(/hisse \/ kod/i), "42")
         await user.selectOptions(
-            screen.getByLabelText(/fiyat şu olduğunda haber ver/i),
+            screen.getByLabelText(/şu durumda haber ver/i),
             "LessThanOrEqual",
         )
         await user.type(screen.getByLabelText(/hedef fiyat/i), "199.5")

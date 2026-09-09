@@ -81,7 +81,7 @@ export const home = {
     "home.faq.stuck.link": "Create an account and try it",
   },
   tr: {
-    "home.hero.badge": "Simüle piyasa verisi · aracı kurum bağlantısı yok",
+    "home.hero.badge": "Simülasyon verisi · aracı kurum bağlantısı yok",
     "home.hero.title.line1": "Gürültünün altındaki",
     "home.hero.title.line2": "sinyali bulun",
     "home.hero.lead":
@@ -89,11 +89,11 @@ export const home = {
     "home.hero.cta.primary": "Hesap oluştur",
     "home.hero.cta.secondary": "Nasıl çalıştığını gör",
     "home.hero.stat1.label": "Eksiksiz tablolar",
-    "home.hero.stat1.value": "Gelir, bilanço ve nakit akışı",
+    "home.hero.stat1.value": "Gelir tablosu, bilanço ve nakit akışı",
     "home.hero.stat2.label": "Kart gerekmez",
-    "home.hero.stat2.value": "Sanal ortam açık olduğu sürece ücretsiz",
+    "home.hero.stat2.value": "Simülasyon ortamı açık olduğu sürece ücretsiz",
     "home.hero.stat3.label": "Varsayılan olarak gizli",
-    "home.hero.stat3.value": "Portföyünüz yalnızca sizin hesabınızda",
+    "home.hero.stat3.value": "Portföyünüzü yalnızca siz görürsünüz",
 
     "home.stages.eyebrow": "Nasıl çalışır",
     "home.stages.title": "Çalışan bir portföye üç adımda ulaşın",
@@ -112,7 +112,7 @@ export const home = {
     "home.tablet.eyebrow": "Kontrol paneli",
     "home.tablet.title": "Her pozisyon ve arkasındaki rakamlar",
     "home.tablet.lead":
-      "Pozisyon ile dayandığı finansal tablo tek bir çalışma alanında — böylece karar ile kanıt hiçbir zaman ayrı yerlerde durmaz.",
+      "Pozisyon ve dayandığı rapor tek bir çalışma alanında — karar ile kanıt hiçbir zaman ayrı yerlerde durmaz.",
     "home.tablet.image.alt":
       "Bir yatırımcı tablet üzerinde DOL-FIN portföy panelini inceliyor.",
     "home.tablet.1.title": "Canlı pozisyon görünümü",
@@ -123,7 +123,7 @@ export const home = {
       "Listelenen her hisse için gelir tablosu, bilanço ve nakit akışı; dışa aktarılmak için değil okunmak için düzenlenmiş.",
     "home.tablet.3.title": "Hesaplanmış oranlar",
     "home.tablet.3.copy":
-      "Marjlar, getiriler ve kaldıraç bildirimlerden hesaplanır; böylece tablolar yerine şirketleri karşılaştırırsınız.",
+      "Marjlar, getiriler ve kaldıraç oranları resmi raporlardan hesaplanır; böylece hesap tablolarıyla değil şirketlerle uğraşırsınız.",
     "home.tablet.4.title": "Diğer yatırımcıların yorumları",
     "home.tablet.4.copy":
       "Platformdaki diğer hesapların her hisse için bıraktığı yorumlar, ilgili şirkete iliştirilmiş halde.",
@@ -131,32 +131,32 @@ export const home = {
     "home.cta.eyebrow": "Hesabınızı oluşturun",
     "home.cta.title": "Piyasayı içeriden okumaya başlayın",
     "home.cta.lead":
-      "Tek bir hesap terminalin tamamını açar — finansal tablolar, oranlar, bildirimler ve yalnızca size ait bir portföy.",
+      "Tek bir hesap terminalin tamamını açar — finansal tablolar, oranlar, resmi raporlar ve yalnızca size ait bir portföy.",
     "home.cta.primary": "Hesap oluştur",
     "home.cta.secondary": "Zaten hesabım var",
     "home.cta.assurance1": "Kart gerekmez",
-    "home.cta.assurance2": "Simüle piyasa verisi",
+    "home.cta.assurance2": "Simülasyon verisi",
     "home.cta.assurance3": "Hesabınızı istediğiniz zaman silin",
 
     "home.faq.eyebrow": "Yardım Merkezi",
-    "home.faq.title": "Sorular ve yanıtları",
+    "home.faq.title": "Merak edilenler",
     "home.faq.lead": "Hesap açmadan önce en çok sorulan beş soru.",
     "home.faq.1.q": "DOL-FIN nedir?",
     "home.faq.1.a":
-      "Hisseleri takip etmek, altlarındaki bildirimleri okumak ve diğer yatırımcıların aynı şirketler hakkında söylediklerini izlemek için bir finansal analiz platformu — hepsi tek yerde, terminal aboneliği olmadan.",
+      "Hisseleri takip etmek, altlarındaki resmi raporları okumak ve diğer yatırımcıların aynı şirketler hakkında söylediklerini görmek için kurulmuş bir finansal analiz platformu — hepsi tek yerde, terminal aboneliği gerekmeden.",
     "home.faq.2.q": "Veriler nereden geliyor?",
     "home.faq.2.a":
-      "Platformdaki her tablo ve fiyat, tanınmış şirketlerden oluşan bir küme üzerinde yerel bir sanal ortamda simüle edilir. Gerçek alım satım kararları için değil, iş akışını öğrenmek için tasarlanmıştır.",
+      "Platformdaki her tablo ve fiyat, tanınmış birkaç şirket için yerel bir simülasyon ortamında üretilir. Gerçek alım satım kararları için değil, işleyişi öğrenmek için tasarlanmıştır.",
     "home.faq.3.q": "Portföyü nasıl kurar ve takip ederim?",
     "home.faq.3.a":
-      "Hesap oluşturun, TSLA veya AAPL gibi bir hisse arayın ve Ekle düğmesini seçin. Pozisyon maliyetiyle birlikte panonuza düşer ve simüle piyasa hareket ettikçe değeri güncellenir.",
+      "Hesap oluşturun, TSLA veya AAPL gibi bir hisse arayın ve Ekle düğmesine basın. Pozisyon, maliyetiyle birlikte panelinize eklenir ve simülasyondaki fiyatlar hareket ettikçe değeri güncellenir.",
     "home.faq.4.q": "Portföyümü kimler görebilir?",
     "home.faq.4.a":
       "Yalnızca siz. Pozisyonlar, bakiyeler ve cüzdan hareketleri hesabınıza özeldir. Bilinçli olarak yayımladığınız tek şey yorumlardır; onlar da portföyünüze değil ilgili şirkete iliştirilir.",
     "home.faq.5.q": "Ücretli mi?",
     "home.faq.5.a":
-      "Hayır. Sanal ortam açık olduğu sürece kart adımı da ücretli paket de yok — hesap yalnızca portföyünüzün gizli bir yeri olsun diye var.",
-    "home.faq.stuck": "Hâlâ takıldınız mı?",
+      "Hayır. Simülasyon ortamı açık olduğu sürece ne kart adımı ne de ücretli paket var — hesap yalnızca portföyünüzün gizli bir yeri olsun diye var.",
+    "home.faq.stuck": "Hâlâ takıldığınız bir yer mi var?",
     "home.faq.stuck.link": "Hesap oluşturun ve deneyin",
   },
 }

@@ -103,11 +103,14 @@ const PriceAlerts = () => {
       if (!res) return
 
       toast.success(
-        t("alerts.toast.watching", {
-          symbol: stock.symbol,
-          price: `$${price.toFixed(2)}`,
-          condition: conditionLabel(t, condition),
-        }),
+        // One sentence per direction: a shared fragment cannot sit in the same
+        // slot in both languages without wrecking the word order in one.
+        t(
+          condition === "GreaterThanOrEqual"
+            ? "alerts.toast.watching.rises"
+            : "alerts.toast.watching.falls",
+          { symbol: stock.symbol, price: `$${price.toFixed(2)}` },
+        ),
       )
       setTargetPrice("")
       await refreshAlerts()

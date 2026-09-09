@@ -92,6 +92,7 @@ export const company = {
     "income.explain.p1.c":
       "transitions down into operational expenses, tax components, and finally yields the net consolidated",
     "income.explain.p1.bottomline": "Profit or Loss (Bottom-Line)",
+    "income.explain.p1.d": ".",
     "income.explain.why": "Why is it Critical?",
     "income.explain.p2":
       "While the Balance Sheet records asset and liability weight levels, the Income Statement focuses strictly on business efficiency, momentum, and operational pricing leverage. Investors study this matrix to measure market share scalability, identifying if gross margins are healthy enough to outpace rising industrial overhead thresholds.",
@@ -219,20 +220,20 @@ export const company = {
     "company.metric.marketCap": "Piyasa değeri",
     "company.metric.beta": "Beta",
 
-    "company.unavailable.title": "Finansal Veri Kullanılamıyor",
+    "company.unavailable.title": "Finansal Veriye Ulaşılamıyor",
     "company.unavailable.code": "SCOPE_LIMITATION_WARNING // LIVE_DEMO_RESTRICTION",
     "company.unavailable.body":
-      "{{ticker}} için finansal veriler bu demo sürümünde şu anda kullanılamıyor.",
+      "{{ticker}} için finansal veriler bu demo sürümünde bulunmuyor.",
     "company.unavailable.tiers":
       "Lütfen şu şirketleri inceleyin: AAPL, MSFT, NVDA, TSLA, GOOGL",
 
     "company.noData.title": "Bu hisse için finansal veri yok",
     "company.noData.description":
-      "Sanal ortamda beş şirketin eksiksiz tabloları bulunuyor. {{ticker}} henüz bunlardan biri değil.",
+      "Simülasyon ortamında beş şirketin eksiksiz tabloları bulunuyor. {{ticker}} henüz bunlardan biri değil.",
     "company.loading": "Şirket profili yükleniyor",
 
     "company.overview.eyebrow": "Genel bakış",
-    "company.overview.title": "Şirket ne yapıyor",
+    "company.overview.title": "Şirket ne iş yapıyor",
     "company.metrics.eyebrow": "Temel ölçütler",
     "company.metrics.title": "Son on iki ay",
     "company.peers.eyebrow": "Benzerleri",
@@ -240,7 +241,7 @@ export const company = {
     "company.peers.lead":
       "Aynı sektör ve alanda işlem gören halka açık şirketler.",
     "company.peers.none": "Benzer şirket bulunamadı",
-    "company.filings.eyebrow": "Bildirimler",
+    "company.filings.eyebrow": "Resmi Raporlar",
     "company.filings.title": "10-K raporları",
     "company.filings.lead":
       "SEC'in denetlenmiş yıllık raporu — finansal tablolar ve yönetimin açıklamak zorunda olduğu risk faktörleri.",
@@ -260,13 +261,13 @@ export const company = {
     "ratio.fcfPerShare": "Hisse Başına Serbest Nakit Akışı",
     "ratio.fcfPerShare.sub":
       "Yatırım harcamalarından sonra kalan nakdin hisse başına ifadesi",
-    "ratio.bookValue": "Hisse Başına Defter Değeri (SOA)",
+    "ratio.bookValue": "Hisse Başına Defter Değeri (Son 12 Ay)",
     "ratio.bookValue.sub":
       "Hisse başına defter değeri, şirketin net varlık değerini (toplam varlıklar - toplam yükümlülükler) hisse başına gösterir",
-    "ratio.dividendYield": "Temettü Verimi (SOA)",
+    "ratio.dividendYield": "Temettü Verimi (Son 12 Ay)",
     "ratio.dividendYield.sub":
       "Şirketin hisse fiyatına kıyasla yılda ne kadar temettü ödediğini gösterir",
-    "ratio.capex": "Hisse Başına Yatırım Harcaması (SOA)",
+    "ratio.capex": "Hisse Başına Yatırım Harcaması (Son 12 Ay)",
     "ratio.capex.sub":
       "Yatırım harcaması, şirketin fiziki varlık edinmek, yenilemek ve sürdürmek için kullandığı tutardır",
     "ratio.graham": "Graham Sayısı",
@@ -294,11 +295,14 @@ export const company = {
     "income.explain.p1.a": "",
     "income.explain.p1.term": "Gelir tablosu",
     "income.explain.p1.b":
-      "(kâr-zarar tablosu), bir şirketin ardışık bir raporlama dönemindeki temel finansal hızını ortaya koyar. Toplam",
+      "(kâr-zarar tablosu), bir şirketin bir raporlama dönemi boyunca izlediği finansal seyri ortaya koyar. Toplam",
     "income.explain.p1.topline": "hasılatın (üst satır)",
     "income.explain.p1.c":
-      "nasıl faaliyet giderlerine, vergi kalemlerine dönüştüğünü ve sonunda konsolide net",
-    "income.explain.p1.bottomline": "kâr ya da zararı (alt satır)",
+      "faaliyet giderleri ve vergi kalemleri boyunca inerek sonunda nasıl konsolide net",
+    "income.explain.p1.bottomline": "kâr ya da zarara (alt satır)",
+    // Rendered straight after the bold fragment with no separator, so the
+    // Turkish tail carries its own leading space and the English one does not.
+    "income.explain.p1.d": " dönüştüğünü izler.",
     "income.explain.why": "Neden Kritik?",
     "income.explain.p2":
       "Bilanço varlık ve yükümlülük ağırlıklarını kaydederken, gelir tablosu doğrudan işletme verimliliğine, ivmeye ve fiyatlama gücüne odaklanır. Yatırımcılar pazar payının ölçeklenebilirliğini ölçmek ve brüt marjların artan sanayi giderlerini aşacak kadar sağlıklı olup olmadığını anlamak için bu tabloyu inceler.",
@@ -306,7 +310,7 @@ export const company = {
     "income.metric.margin": "Net Kâr Marjı",
     "income.metric.margin.sub": "Kullanılan sermayenin net kâra dönüşüm verimliliği",
     "income.metric.growth": "Hasılat Büyümesi (Yıllık)",
-    "income.metric.growth.sub": "Üst satır ölçeklenebilirlik büyüme ölçütü",
+    "income.metric.growth.sub": "Hasılat tarafındaki büyümenin ölçütü",
     "income.summary.title": "Gelir Tablosu Performans Analizi",
     "income.summary.badge": "{{status}} GÖRÜNÜM",
     "income.status.STRONG": "GÜÇLÜ",
@@ -338,11 +342,11 @@ export const company = {
     "balance.explain.p1.a": "",
     "balance.explain.p1.term": "Bilanço",
     "balance.explain.p1.b":
-      ", bir şirketin belirli bir andaki yapısal sağlığının finansal fotoğrafıdır. Kurumun neye",
+      "bir şirketin belirli bir andaki yapısal sağlığının finansal fotoğrafıdır. Kurumun neye",
     "balance.explain.p1.owns": "sahip olduğunu (varlıklar)",
     "balance.explain.p1.c": ", neyi",
     "balance.explain.p1.owes": "borçlu olduğunu (yükümlülükler)",
-    "balance.explain.p1.d": "ve ortakların yatırdığı net sermayeyi",
+    "balance.explain.p1.d": ", ortakların yatırdığı net sermayenin ne kadar olduğunu",
     "balance.explain.p1.equity": "(özkaynaklar)",
     "balance.explain.p1.e":
       "muhasebenin temel denklemine göre açıkça gösterir: Varlıklar = Yükümlülükler + Özkaynaklar.",
@@ -365,7 +369,7 @@ export const company = {
     "balance.summary.stable":
       "Bilanço yapısı dengeli bir sermaye mimarisi sunuyor. Borç/özkaynak kaldıraç ölçütü {{dte}} seviyesinde korunuyor; bu da faaliyet büyümesinin riskli borçlanma yerine sermaye rezervleriyle güvenle desteklendiğini doğruluyor. Ayrıca {{turnover}} seviyesindeki aktif devir hızı, varlıkların hasılat üretmek için verimli kullanıldığını gösteriyor.",
     "balance.summary.leveraged":
-      "Teknik tarama yoğun kaldıraçlı bir bilanço dağılımına işaret ediyor. Borç/özkaynak oranı {{dte}} gibi agresif bir seviyede; bu da yükümlülüklerin özkaynak tamponunu belirgin biçimde aştığı anlamına geliyor. Kredi hatlarını makro oynaklığa karşı korumak için yapısal düzenlemeler ya da uzun vadeli yeniden yapılandırma gerekebilir.",
+      "Teknik tarama yoğun kaldıraçlı bir bilanço dağılımına işaret ediyor. Borç/özkaynak oranı {{dte}} gibi agresif bir seviyede; bu da yükümlülüklerin özkaynak tamponunu belirgin biçimde aştığı anlamına geliyor. Kredi imkânlarını makro oynaklığa karşı korumak için yapısal düzenlemeler ya da uzun vadeli yeniden yapılandırma gerekebilir.",
     "balance.summary.cautious":
       "Varlık verimliliği göstergeleri hafif bir yavaşlamaya işaret ediyor. Sermaye ölçütleri {{dte}} borç/özkaynak profiliyle güvenli görünse de, aktif devir hızı {{turnover}} ile beklenenin altında. Bu, sermayenin piyasa devrini iyileştirmek yerine atıl fiziki varlıklarda ya da stoklarda sıkıştığını gösteriyor.",
 
@@ -382,7 +386,7 @@ export const company = {
     "cashflow.explain.p1.a": "",
     "cashflow.explain.p1.term": "Nakit akış tablosu",
     "cashflow.explain.p1.b":
-      ", bir işletmeye giren ve çıkan nakdin gerçek hareketini izler. Muhasebe kalemlerini ayrıştırarak hazine hareketlerini üç temel başlığa böler:",
+      "bir işletmeye giren ve çıkan nakdin gerçek hareketini izler. Muhasebe kalemlerini ayrıştırarak nakit hareketlerini üç temel başlığa böler:",
     "cashflow.explain.p1.operating": "Faaliyet",
     "cashflow.explain.p1.operating.note": "(esas işten gelen nakit),",
     "cashflow.explain.p1.investing": "Yatırım",
@@ -409,7 +413,7 @@ export const company = {
     "cashflow.status.CAPEX_HEAVY": "YATIRIM_AĞIRLIKLI",
     "cashflow.status.NEUTRAL": "NÖTR",
     "cashflow.summary.liquid":
-      "Şirket güçlü bir nakit üretme hızı gösteriyor. Serbest nakit akışı verimliliği %{{yield}} seviyesinde; bu da esas faaliyetlerden gelen nakdin etkin biçimde serbest likiditeye dönüştüğünü gösteriyor. {{cycle}} günlük kısa nakit dönüşüm süresiyle birlikte şirket, sermaye projelerini sulandırma riski olmadan fonlayacak hazine serbestliğini koruyor.",
+      "Şirket güçlü bir nakit üretme hızı gösteriyor. Serbest nakit akışı verimliliği %{{yield}} seviyesinde; bu da esas faaliyetlerden gelen nakdin etkin biçimde serbest likiditeye dönüştüğünü gösteriyor. {{cycle}} günlük kısa nakit dönüşüm süresiyle birlikte şirket, sermaye projelerini pay sulandırma riski olmadan fonlayacak nakit esnekliğini koruyor.",
     "cashflow.summary.capexHeavy":
       "Veriler sermaye yoğun bir faaliyet dönemine işaret ediyor. Esas faaliyetler nakit üretse de, yoğun yatırım harcamaları nedeniyle serbest nakit akışı verimi %{{yield}} seviyesine sıkışmış durumda. Bu, organik yatırım getirilerine ulaşmadan önce sıkı bir aşama yönetimi gerektiren kısa vadeli bir hazine daralmasına işaret ediyor.",
   },
