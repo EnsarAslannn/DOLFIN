@@ -35,6 +35,19 @@ namespace api.Service
             if (stock == null)
                 throw new InvalidOperationException("Stock not found");
 
+            // The endpoint has always documented a 400 for a duplicate alert;
+            // nothing checked for one, so the same watch could be set any
+            // number of times and would then raise that many identical
+            // notifications the moment it fired.
+            if (
+                await _alertRepo.HasPendingDuplicateAsync(user.Id, stockId, targetPrice, condition)
+            )
+            {
+                throw new InvalidOperationException(
+                    "You already have a pending alert for this stock at this price."
+                );
+            }
+
             var alert = new PriceAlert
             {
                 AppUserId = user.Id,
@@ -48,8 +61,8 @@ namespace api.Service
             return created;
         }
 
-        public Task<List<PriceAlert>> GetActiveAlertsAsync(AppUser user) =>
-            _alertRepo.GetActiveAlertsForUserAsync(user.Id);
+        public Task<List<PriceAlert>> GetAlertsAsync(AppUser user) =>
+            _alertRepo.GetAlertsForUserAsync(user.Id);
 
         public Task<PriceAlert?> GetAlertByIdAsync(int alertId) => _alertRepo.GetByIdAsync(alertId);
 
@@ -83,7 +96,12 @@ namespace api.Service
                 if (!shouldTrigger)
                     continue;
 
+                // IsActive is cleared alongside TriggeredAt so the flag stops
+                // being a field nothing ever wrote: an alert that has fired is
+                // no longer being watched, and this is the only thing that
+                // stops watching it.
                 alert.TriggeredAt = DateTime.UtcNow;
+                alert.IsActive = false;
                 await _alertRepo.UpdateAsync(alert);
 
                 await _alertRepo.CreateNotificationAsync(

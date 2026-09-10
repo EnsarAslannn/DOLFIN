@@ -8,9 +8,21 @@ namespace api.Interfaces
 
         Task<PriceAlert?> GetByIdAsync(int id);
 
-        Task<List<PriceAlert>> GetActiveAlertsForUserAsync(string appUserId);
+        Task<List<PriceAlert>> GetAlertsForUserAsync(string appUserId);
 
         Task<List<PriceAlert>> GetAllUntriggeredActiveAlertsAsync();
+
+        /// <summary>
+        /// Whether the user already has an alert still waiting on exactly this
+        /// stock, price and direction. An alert that has already fired does not
+        /// count — setting the same watch again is how you re-arm it.
+        /// </summary>
+        Task<bool> HasPendingDuplicateAsync(
+            string appUserId,
+            int stockId,
+            decimal targetPrice,
+            PriceAlertCondition condition
+        );
 
         Task UpdateAsync(PriceAlert alert);
 

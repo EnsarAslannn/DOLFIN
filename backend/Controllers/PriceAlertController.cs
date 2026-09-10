@@ -32,10 +32,15 @@ namespace api.Controllers
         /// A background service re-checks active alerts on an interval and
         /// raises a notification once the condition is met, so alerts do not
         /// fire in real time.
+        ///
+        /// The same stock, price and direction cannot be watched twice at
+        /// once: while an identical alert is still pending this is rejected as
+        /// a duplicate. Once that alert has fired, setting it again is allowed
+        /// — that is how a watch is re-armed.
         /// </remarks>
         /// <param name="dto">The stock, target price and trigger condition (above or below).</param>
         /// <response code="201">The alert was created.</response>
-        /// <response code="400">Unknown stock, invalid target price, or a duplicate alert.</response>
+        /// <response code="400">Unknown stock, invalid target price, or an identical alert is already pending.</response>
         [HttpPost]
         [ProducesResponseType(typeof(PriceAlertDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -66,9 +71,16 @@ namespace api.Controllers
         }
 
         /// <summary>
-        /// Lists the signed-in user's alerts that have not fired yet.
+        /// Lists all of the signed-in user's price alerts, newest first.
         /// </summary>
-        /// <response code="200">The user's active alerts.</response>
+        /// <remarks>
+        /// Both alerts still waiting on their condition and alerts that have
+        /// already fired are returned — the wallet shows the two together.
+        /// <c>triggeredAt</c> is what tells them apart: it is null while the
+        /// alert is still being watched and carries the firing time once it
+        /// has gone off. Deleting an alert is what removes it from this list.
+        /// </remarks>
+        /// <response code="200">The user's alerts, pending and fired alike.</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<PriceAlertDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAlerts()
@@ -77,7 +89,7 @@ namespace api.Controllers
             if (appUser == null)
                 return Unauthorized("User context not found.");
 
-            var alerts = await _alertService.GetActiveAlertsAsync(appUser);
+            var alerts = await _alertService.GetAlertsAsync(appUser);
             return Ok(alerts.Select(a => a.ToPriceAlertDto()));
         }
 

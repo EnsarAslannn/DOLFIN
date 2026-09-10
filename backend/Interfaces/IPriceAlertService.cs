@@ -11,7 +11,7 @@ namespace api.Interfaces
             PriceAlertCondition condition
         );
 
-        Task<List<PriceAlert>> GetActiveAlertsAsync(AppUser user);
+        Task<List<PriceAlert>> GetAlertsAsync(AppUser user);
 
         Task<PriceAlert?> GetAlertByIdAsync(int alertId);
 

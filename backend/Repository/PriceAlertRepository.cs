@@ -26,21 +26,48 @@ namespace api.Repository
             return await _context.PriceAlerts.Include(a => a.Stock).FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<List<PriceAlert>> GetActiveAlertsForUserAsync(string appUserId)
+        // Every alert the user owns, pending and already fired alike -- the
+        // wallet lists both, and the caller tells them apart by TriggeredAt.
+        // There is deliberately no IsActive filter here: rows that fired
+        // before IsActive was ever written to still carry IsActive = true,
+        // and rows that fire now carry false, so filtering on it would hide
+        // one half or the other depending on when the alert happened to go
+        // off.
+        public async Task<List<PriceAlert>> GetAlertsForUserAsync(string appUserId)
         {
             return await _context
                 .PriceAlerts.Include(a => a.Stock)
-                .Where(a => a.AppUserId == appUserId && a.IsActive)
+                .Where(a => a.AppUserId == appUserId)
                 .OrderByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 
+        // The TriggeredAt clause is what actually stops an alert firing twice.
+        // IsActive is checked alongside it rather than instead of it: alerts
+        // that fired before IsActive started being written still have it set
+        // to true, so it cannot be trusted alone on existing data.
         public async Task<List<PriceAlert>> GetAllUntriggeredActiveAlertsAsync()
         {
             return await _context
                 .PriceAlerts.Include(a => a.Stock)
                 .Where(a => a.IsActive && a.TriggeredAt == null)
                 .ToListAsync();
+        }
+
+        public Task<bool> HasPendingDuplicateAsync(
+            string appUserId,
+            int stockId,
+            decimal targetPrice,
+            PriceAlertCondition condition
+        )
+        {
+            return _context.PriceAlerts.AnyAsync(a =>
+                a.AppUserId == appUserId
+                && a.StockId == stockId
+                && a.TargetPrice == targetPrice
+                && a.Condition == condition
+                && a.TriggeredAt == null
+            );
         }
 
         public async Task UpdateAsync(PriceAlert alert)
