@@ -23,7 +23,7 @@ import Tile from "../../Components/Tile/Tile"
 import MarketTicker from "../../Components/MarketTicker/MarketTicker"
 import StockComment from "../../Components/StockComment/StockComment"
 import { useAuth } from "../../Context/useAuth"
-import { searchStocksBySymbolAPI, searchStocksByCompanyNameAPI } from "../../Services/StockService"
+import { searchStocksAPI } from "../../Services/StockService"
 import PurchasePortfolio from "../../Components/Portfolio/PurchasePortfolio/PurchasePortfolio"
 import GuestCallout from "../../Components/Dashboard/GuestCallout"
 import { useLanguage } from "../../i18n/useLanguage"
@@ -146,14 +146,10 @@ const SearchPage = () => {
     if (!queryValue) return
 
     try {
-      const response = queryValue.length <= 5
-        ? await searchStocksBySymbolAPI(queryValue.toUpperCase())
-        : await searchStocksByCompanyNameAPI(queryValue)
+      const results = await searchStocksAPI(queryValue)
 
-      if (response && Array.isArray(response.data)) {
-        setSearchResult(response.data)
-        setServerError("")
-      }
+      setSearchResult(results)
+      setServerError("")
     } catch (error) {
       console.error("Search API Error:", error)
       setServerError(t("search.error.offline"))
