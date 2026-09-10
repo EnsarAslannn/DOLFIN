@@ -73,6 +73,18 @@ describe("handleError", () => {
         expect(window.location.href).toBe("/login")
     })
 
+    // The sign-in and sign-up calls opt out: a 401 there is the verdict on the
+    // credentials just submitted, so the page must stay put and say why.
+    it("surfaces the reason instead of redirecting when the redirect is opted out of", () => {
+        handleError(axiosErrorWith(401, "Invalid username or password"), {
+            redirectOnUnauthorized: false,
+        })
+
+        expect(toast.warning).toHaveBeenCalledWith("Invalid username or password")
+        expect(toast.warning).not.toHaveBeenCalledWith("Please login")
+        expect(window.location.href).toBe("/current")
+    })
+
     it("passes through a plain string error body", () => {
         handleError(axiosErrorWith(400, "Insufficient funds."))
 

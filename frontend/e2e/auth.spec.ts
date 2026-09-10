@@ -66,6 +66,32 @@ test.describe("authentication flow", () => {
         await expect(page.getByText("Parola zorunludur")).toBeVisible()
     })
 
+    // A wrong password answers with 401 exactly as an expired session does.
+    // Reading it as the latter sent the user to the login page they were
+    // already on -- a full app reload -- and replaced the server's reason with
+    // a generic "Please login".
+    test("keeps a rejected sign-in on the form and says why", async ({ page }) => {
+        await page.route("**/api/account/{profile,session}", (route) =>
+            route.fulfill({ status: 401, body: "" }),
+        )
+        await page.route("**/api/account/login", (route) =>
+            route.fulfill({
+                status: 401,
+                contentType: "application/json",
+                body: JSON.stringify("Invalid username or password"),
+            }),
+        )
+
+        await page.goto("/login")
+        await page.getByLabel("Kullanıcı adı").fill("e2e_test_user")
+        await page.getByLabel("Parola").fill("WrongPassword1234!@#")
+        await page.getByRole("button", { name: "Giriş Yap" }).click()
+
+        await expect(page.getByText("Invalid username or password")).toBeVisible()
+        await expect(page.getByText("Please login")).toHaveCount(0)
+        await expect(page).toHaveURL(/\/login$/)
+    })
+
     test("logs in successfully and lands on the search page", async ({ page }) => {
         const user = { userName: "e2e_test_user", email: "e2e@test.com", walletBalance: 0 }
 
