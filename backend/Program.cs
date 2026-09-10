@@ -22,14 +22,54 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
+    // The levels below are the defaults; ReadFrom.Configuration lets the
+    // `Serilog` section in appsettings/environment override them, so the log
+    // volume can be turned up on a deployment without a code change. Before
+    // this call that section was read by nothing at all. The sinks stay in
+    // code on purpose -- a typo in configuration should not be able to leave
+    // production writing its logs nowhere.
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+    .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console()
     .WriteTo.File("Logs/dolfin-log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
+// The origins the deployed frontends are actually served from. These stay in
+// code because getting CORS wrong locks every browser out of the API, and an
+// environment variable that is missing or mistyped must not be able to cause
+// that.
+string[] defaultCorsOrigins =
+[
+    "https://www.dol-fin.com",
+    "https://dol-fin.com",
+    "https://ensaraslannn.github.io",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://localhost:7109",
+    "http://localhost:5002",
+];
+
+// Anything a particular deployment needs on top -- a preview URL, a new
+// domain -- arrives as `AllowedOrigins`, a comma- or semicolon-separated
+// list. It adds to the defaults rather than replacing them. The setting was
+// documented in .env.example and set in appsettings.json long before anything
+// read it, so setting it used to do nothing at all.
+var corsOrigins = defaultCorsOrigins
+    .Concat(
+        (builder.Configuration["AllowedOrigins"] ?? string.Empty).Split(
+            [',', ';'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        )
+    )
+    // A trailing slash makes an origin match nothing -- the browser never
+    // sends one in the Origin header.
+    .Select(origin => origin.TrimEnd('/'))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 
 builder.Services.AddCors(options =>
 {
@@ -37,15 +77,8 @@ builder.Services.AddCors(options =>
         "DolfinCorsPolicy",
         policy =>
         {
-            policy.WithOrigins(
-                    "https://www.dol-fin.com",
-                    "https://dol-fin.com",
-                    "https://ensaraslannn.github.io",
-                    "http://localhost:5173",
-                    "http://localhost:3000",
-                    "https://localhost:7109",
-                    "http://localhost:5002"
-                )
+            policy
+                .WithOrigins(corsOrigins)
                 .WithMethods("GET", "POST", "PUT", "DELETE")
                 .WithHeaders("Content-Type", "X-CSRF-TOKEN")
                 .AllowCredentials();
