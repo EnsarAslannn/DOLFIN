@@ -176,7 +176,7 @@ namespace api.Controllers
         /// <response code="403">The comment belongs to a different user.</response>
         /// <response code="404">No comment exists with that id.</response>
         [HttpDelete("{id:int}")]
-        [ProducesResponseType(typeof(api.Models.Comment), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -208,7 +208,13 @@ namespace api.Controllers
                 await _stockCacheInvalidator.InvalidateStockAsync(existingComment.StockId.Value);
             }
 
-            return Ok(commentModel);
+            // The entity itself used to go out here, which put the author's
+            // internal user id on the wire and made this the one action that
+            // did not answer in the shape the rest of the controller does.
+            // DeleteAsync does not load the author, so the name is taken from
+            // the copy fetched for the ownership check above.
+            commentModel.AppUser = existingComment.AppUser;
+            return Ok(commentModel.ToCommentDto());
         }
     }
 }
