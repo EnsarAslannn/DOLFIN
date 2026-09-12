@@ -4,6 +4,7 @@ import { auth } from "./locales/auth"
 import { comments } from "./locales/comments"
 import { common } from "./locales/common"
 import { company } from "./locales/company"
+import { errors } from "./locales/errors"
 import { home } from "./locales/home"
 import { portfolio } from "./locales/portfolio"
 import { search } from "./locales/search"
@@ -15,6 +16,7 @@ const bundles = [
   comments,
   common,
   company,
+  errors,
   home,
   portfolio,
   search,
@@ -29,6 +31,7 @@ type EnglishBundle = (typeof alerts)["en"] &
   (typeof comments)["en"] &
   (typeof common)["en"] &
   (typeof company)["en"] &
+  (typeof errors)["en"] &
   (typeof home)["en"] &
   (typeof portfolio)["en"] &
   (typeof search)["en"] &

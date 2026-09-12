@@ -59,10 +59,13 @@ namespace api.Service
             };
         }
 
-        public async Task<List<string>> GetAllocationWarningsAsync(AppUser user)
+        // Warnings come back as data, not as finished English sentences: the
+        // wallet renders them in whichever language it is showing, and a
+        // sentence composed here could only ever have been in one.
+        public async Task<List<AllocationWarningDto>> GetAllocationWarningsAsync(AppUser user)
         {
             var metrics = await GetMetricsAsync(user);
-            var warnings = new List<string>();
+            var warnings = new List<AllocationWarningDto>();
 
             foreach (
                 var allocation in metrics.Allocations.Where(a =>
@@ -71,7 +74,14 @@ namespace api.Service
             )
             {
                 warnings.Add(
-                    $"{allocation.Symbol} is {allocation.AllocationPercent:F1}% of your portfolio. Consider diversifying."
+                    new AllocationWarningDto
+                    {
+                        Code = ErrorCodes.PortfolioWarningConcentration,
+                        Symbol = allocation.Symbol,
+                        Percent = allocation.AllocationPercent,
+                        Message =
+                            $"{allocation.Symbol} is {allocation.AllocationPercent:F1}% of your portfolio. Consider diversifying.",
+                    }
                 );
             }
 
@@ -83,7 +93,14 @@ namespace api.Service
             foreach (var sector in overConcentratedSectors)
             {
                 warnings.Add(
-                    $"{sector.Industry} makes up {sector.Percent:F1}% of your portfolio. High sector concentration risk."
+                    new AllocationWarningDto
+                    {
+                        Code = ErrorCodes.PortfolioWarningSector,
+                        Industry = sector.Industry,
+                        Percent = sector.Percent,
+                        Message =
+                            $"{sector.Industry} makes up {sector.Percent:F1}% of your portfolio. High sector concentration risk.",
+                    }
                 );
             }
 

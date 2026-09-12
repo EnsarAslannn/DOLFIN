@@ -33,6 +33,7 @@ const makeAlert = (overrides: Partial<PriceAlert> = {}): PriceAlert => ({
     condition: "GreaterThanOrEqual",
     isActive: true,
     triggeredAt: null,
+    triggeredPrice: null,
     createdAt: "2026-03-04T10:30:00Z",
     ...overrides,
 })

@@ -58,7 +58,7 @@ namespace api.Controllers
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
 
             if (user == null)
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(ApiErrors.InvalidCredentials());
 
             var result = await _signInManager.CheckPasswordSignInAsync(
                 user,
@@ -67,10 +67,10 @@ namespace api.Controllers
             );
 
             if (result.IsLockedOut)
-                return Unauthorized("Account is temporarily locked due to too many failed login attempts. Please try again later.");
+                return Unauthorized(ApiErrors.LockedOut());
 
             if (!result.Succeeded)
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(ApiErrors.InvalidCredentials());
 
             SetAuthCookie(await _tokenService.CreateToken(user));
 
@@ -212,7 +212,7 @@ namespace api.Controllers
 
             var user = await User.GetAuthenticatedUserAsync(_userManager);
             if (user == null)
-                return Unauthorized("User identity context could not be resolved from token claims.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             return Ok(new { user.WalletBalance, user.UserName, user.Email });
         }

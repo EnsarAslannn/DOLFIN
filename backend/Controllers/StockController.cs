@@ -1,4 +1,5 @@
 using api.Dtos.Stock;
+using api.Extensions;
 using api.Helpers;
 using api.Interfaces;
 using api.Mappers;
@@ -89,7 +90,7 @@ namespace api.Controllers
         {
             if (await _stockRepo.GetBySymbolAsync(stockDto.Symbol) != null)
             {
-                return Conflict($"A stock with symbol '{stockDto.Symbol.Trim().ToUpperInvariant()}' already exists.");
+                return Conflict(ApiErrors.StockSymbolTaken(stockDto.Symbol.Trim().ToUpperInvariant()));
             }
 
             var stockModel = stockDto.ToStockFromCreateDto();
@@ -127,7 +128,7 @@ namespace api.Controllers
             var conflicting = await _stockRepo.GetBySymbolAsync(updateDto.Symbol);
             if (conflicting != null && conflicting.Id != id)
             {
-                return Conflict($"A stock with symbol '{updateDto.Symbol.Trim().ToUpperInvariant()}' already exists.");
+                return Conflict(ApiErrors.StockSymbolTaken(updateDto.Symbol.Trim().ToUpperInvariant()));
             }
 
             var stockModel = await _stockRepo.UpdateAsync(id, updateDto);
@@ -180,7 +181,7 @@ namespace api.Controllers
 
             if (stocks == null || !stocks.Any())
             {
-                return NotFound("Trend stocks not found in database.");
+                return NotFound(ApiErrors.StockTrendsNotFound());
             }
 
             return Ok(stocks);

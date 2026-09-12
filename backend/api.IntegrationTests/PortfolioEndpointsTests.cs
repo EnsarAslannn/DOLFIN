@@ -66,5 +66,49 @@ namespace api.IntegrationTests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
+
+        // The error reaches the client as a code and the figures behind it, so
+        // the wording can be written in whichever language the app is showing.
+        // It used to arrive only as an English sentence, which is what a
+        // Turkish user then read.
+        [Fact]
+        public async Task AddPortfolio_WithoutFunds_AnswersWithACodeAndTheFigures()
+        {
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var response = await client.PostAsJsonAsync(
+                "/api/portfolio",
+                new TradeRequestDto { Symbol = "AAPL", Quantity = 1 }
+            );
+
+            var error = await response.Content.ReadFromJsonAsync<ApiErrorDto>();
+
+            Assert.NotNull(error);
+            Assert.Equal(api.Models.ErrorCodes.PortfolioInsufficientFunds, error!.Code);
+            Assert.NotNull(error.Args);
+            Assert.True(error.Args!.ContainsKey("required"));
+            Assert.True(error.Args.ContainsKey("available"));
+            // Figures travel as data, so they are formatted the same way
+            // whatever culture the server happens to be running under.
+            Assert.DoesNotContain(",", error.Args["required"]);
+            // The English sentence stays, for anything reading the API directly.
+            Assert.False(string.IsNullOrWhiteSpace(error.Message));
+        }
+
+        [Fact]
+        public async Task Deposit_NonPositiveAmount_AnswersWithItsOwnCode()
+        {
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var response = await client.PostAsJsonAsync(
+                "/api/portfolio/deposit",
+                new { amount = -5m }
+            );
+
+            // Validation catches this before the service does, so the body is
+            // a ValidationProblemDetails rather than an ApiErrorDto -- the
+            // point here is only that it is still refused.
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
     }
 }

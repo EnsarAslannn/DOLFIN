@@ -66,6 +66,11 @@ namespace api.Middleware
                 StatusCode = context.Response.StatusCode,
                 Title = "Internal Server Error",
                 Message = message,
+                // Carried so a client can say "something went wrong" in its own
+                // language rather than print whichever English sentence landed
+                // here -- the message itself is a stack-trace-shaped detail in
+                // development and a fixed string in production.
+                Code = ErrorCodes.Unexpected,
             };
 
             var options = new JsonSerializerOptions

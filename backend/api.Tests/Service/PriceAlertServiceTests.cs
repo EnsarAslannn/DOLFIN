@@ -27,23 +27,23 @@ namespace api.Tests.Service
         ) => new(alertRepo.Object, stockRepo.Object, new Mock<ILogger<PriceAlertService>>().Object);
 
         [Fact]
-        public async Task CreateAlertAsync_ZeroOrNegativeTargetPrice_ThrowsArgumentException()
+        public async Task CreateAlertAsync_ZeroOrNegativeTargetPrice_ThrowsDomainException()
         {
             var service = CreateService(new Mock<IPriceAlertRepository>(), new Mock<IStockRepository>());
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.CreateAlertAsync(MakeUser(), 1, 0m, PriceAlertCondition.GreaterThanOrEqual)
             );
         }
 
         [Fact]
-        public async Task CreateAlertAsync_StockNotFound_ThrowsInvalidOperationException()
+        public async Task CreateAlertAsync_StockNotFound_ThrowsDomainException()
         {
             var stockRepo = new Mock<IStockRepository>();
             stockRepo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Stock?)null);
             var service = CreateService(new Mock<IPriceAlertRepository>(), stockRepo);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.CreateAlertAsync(MakeUser(), 99, 200m, PriceAlertCondition.GreaterThanOrEqual)
             );
         }
@@ -73,7 +73,7 @@ namespace api.Tests.Service
         // and each copy raised its own identical notification the moment the
         // price crossed.
         [Fact]
-        public async Task CreateAlertAsync_IdenticalAlertAlreadyPending_ThrowsInvalidOperationException()
+        public async Task CreateAlertAsync_IdenticalAlertAlreadyPending_ThrowsDomainException()
         {
             var user = MakeUser();
             var stock = MakeStock();
@@ -94,7 +94,7 @@ namespace api.Tests.Service
 
             var service = CreateService(alertRepo, stockRepo);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () =>
                     service.CreateAlertAsync(
                         user,
@@ -169,6 +169,10 @@ namespace api.Tests.Service
             // A fired alert is no longer being watched. Nothing used to write
             // this flag, which left it permanently true on every row.
             Assert.False(alert.IsActive);
+            // The price that actually fired used to be formatted into an
+            // English sentence and then discarded; a client cannot say
+            // "rose to 210" in any other language without it.
+            Assert.Equal(210m, alert.TriggeredPrice);
             alertRepo.Verify(r => r.UpdateAsync(alert), Times.Once);
             alertRepo.Verify(
                 r =>

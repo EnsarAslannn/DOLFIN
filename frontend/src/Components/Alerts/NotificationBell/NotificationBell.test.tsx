@@ -24,6 +24,10 @@ const makeNotification = (
     id: 1,
     priceAlertId: 1,
     message: "TSLA reached 260.00 (target 250.00).",
+    symbol: "TSLA",
+    condition: "GreaterThanOrEqual",
+    targetPrice: 250,
+    triggeredPrice: 260,
     isRead: false,
     createdAt: new Date().toISOString(),
     ...overrides,
@@ -86,11 +90,11 @@ describe("NotificationBell", () => {
         renderBell()
 
         await waitFor(() => expect(listNotifications).toHaveBeenCalled())
-        expect(screen.queryByText(/TSLA reached/)).not.toBeInTheDocument()
+        expect(screen.queryByText(/TSLA/)).not.toBeInTheDocument()
 
         await openPanel()
 
-        expect(screen.getByText(/TSLA reached/)).toBeInTheDocument()
+        expect(screen.getByText(/TSLA/)).toBeInTheDocument()
     })
 
     it("points a user with no alerts at the wallet", async () => {
@@ -111,7 +115,7 @@ describe("NotificationBell", () => {
         const user = await openPanel()
 
         const panel = screen.getByRole("region", { name: /fiyat alarmı bildirimleri/i })
-        await user.click(within(panel).getByText(/TSLA reached/))
+        await user.click(within(panel).getByText(/TSLA/))
 
         expect(markRead).toHaveBeenCalledWith(9)
     })
@@ -125,7 +129,7 @@ describe("NotificationBell", () => {
         renderBell()
         const user = await openPanel()
 
-        await user.click(screen.getByText(/TSLA reached/))
+        await user.click(screen.getByText(/TSLA/))
 
         await waitFor(() =>
             expect(
@@ -159,7 +163,7 @@ describe("NotificationBell", () => {
 
         await user.keyboard("{Escape}")
 
-        expect(screen.queryByText(/TSLA reached/)).not.toBeInTheDocument()
+        expect(screen.queryByText(/TSLA/)).not.toBeInTheDocument()
     })
 
     // The wallet page can add or remove an alert, and neither component can

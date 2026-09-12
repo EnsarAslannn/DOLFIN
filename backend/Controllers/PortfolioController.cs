@@ -3,6 +3,7 @@ using api.Dtos.Portfolio;
 using api.Extensions;
 using api.Helpers;
 using api.Interfaces;
+using api.Service;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -45,7 +46,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var userPortfolio = await _portfolioService.GetUserPortfolioAsync(appUser);
             return Ok(userPortfolio);
@@ -65,7 +66,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var metrics = await _analyticsService.GetMetricsAsync(appUser);
             return Ok(metrics);
@@ -85,7 +86,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var warnings = await _analyticsService.GetAllocationWarningsAsync(appUser);
             return Ok(warnings);
@@ -105,7 +106,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var recommendation = await _rebalancingService.GetRecommendationAsync(appUser);
             return Ok(recommendation);
@@ -129,7 +130,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var transactions = await _portfolioService.GetTransactionHistoryAsync(appUser, query);
             return Ok(transactions);
@@ -152,20 +153,16 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.BuyStockAsync(appUser, request.Symbol, request.Quantity);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -182,20 +179,16 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.SellStockAsync(appUser, request.Symbol, request.Quantity);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -212,16 +205,16 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.DepositFundsAsync(appUser, request.Amount);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -238,20 +231,16 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.WithdrawFundsAsync(appUser, request.Amount);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
     }

@@ -89,15 +89,24 @@ namespace api.Repository
             return notification;
         }
 
+        // The alert and its stock come along because the notification DTO
+        // carries the symbol, the target and the price that fired -- a client
+        // needs those to write the sentence in its own language rather than
+        // reprint the English one stored on the row.
         public async Task<AlertNotification?> GetNotificationByIdAsync(int id)
         {
-            return await _context.AlertNotifications.FirstOrDefaultAsync(n => n.Id == id);
+            return await _context
+                .AlertNotifications.Include(n => n.PriceAlert)
+                .ThenInclude(a => a.Stock)
+                .FirstOrDefaultAsync(n => n.Id == id);
         }
 
         public async Task<List<AlertNotification>> GetNotificationsForUserAsync(string appUserId)
         {
             return await _context
-                .AlertNotifications.Where(n => n.AppUserId == appUserId)
+                .AlertNotifications.Include(n => n.PriceAlert)
+                .ThenInclude(a => a.Stock)
+                .Where(n => n.AppUserId == appUserId)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
         }

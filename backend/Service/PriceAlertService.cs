@@ -1,3 +1,4 @@
+using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using Microsoft.Extensions.Logging;
@@ -29,11 +30,14 @@ namespace api.Service
         )
         {
             if (targetPrice <= 0)
-                throw new ArgumentException("Target price must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.AlertTargetPriceNotPositive,
+                    "Target price must be greater than 0"
+                );
 
             var stock = await _stockRepo.GetByIdAsync(stockId);
             if (stock == null)
-                throw new InvalidOperationException("Stock not found");
+                throw new DomainException(ErrorCodes.AlertStockNotFound, "Stock not found");
 
             // The endpoint has always documented a 400 for a duplicate alert;
             // nothing checked for one, so the same watch could be set any
@@ -43,8 +47,14 @@ namespace api.Service
                 await _alertRepo.HasPendingDuplicateAsync(user.Id, stockId, targetPrice, condition)
             )
             {
-                throw new InvalidOperationException(
-                    "You already have a pending alert for this stock at this price."
+                throw new DomainException(
+                    ErrorCodes.AlertDuplicatePending,
+                    "You already have a pending alert for this stock at this price.",
+                    new Dictionary<string, string>
+                    {
+                        ["symbol"] = stock.Symbol,
+                        ["targetPrice"] = targetPrice.ToInvariantAmount(),
+                    }
                 );
             }
 
@@ -102,6 +112,7 @@ namespace api.Service
                 // stops watching it.
                 alert.TriggeredAt = DateTime.UtcNow;
                 alert.IsActive = false;
+                alert.TriggeredPrice = currentPrice;
                 await _alertRepo.UpdateAsync(alert);
 
                 await _alertRepo.CreateNotificationAsync(
@@ -110,7 +121,7 @@ namespace api.Service
                         PriceAlertId = alert.Id,
                         AppUserId = alert.AppUserId,
                         Message =
-                            $"{alert.Stock.Symbol} reached {currentPrice:F2} (target {alert.TargetPrice:F2}).",
+                            $"{alert.Stock.Symbol} reached {currentPrice.ToInvariantAmount()} (target {alert.TargetPrice.ToInvariantAmount()}).",
                     }
                 );
 

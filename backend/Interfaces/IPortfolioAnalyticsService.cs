@@ -7,6 +7,6 @@ namespace api.Interfaces
     {
         Task<PortfolioMetricsDto> GetMetricsAsync(AppUser user);
 
-        Task<List<string>> GetAllocationWarningsAsync(AppUser user);
+        Task<List<AllocationWarningDto>> GetAllocationWarningsAsync(AppUser user);
     }
 }

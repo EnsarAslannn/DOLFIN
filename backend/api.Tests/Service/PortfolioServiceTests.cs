@@ -66,7 +66,7 @@ namespace api.Tests.Service
         }
 
         [Fact]
-        public async Task BuyStockAsync_ZeroOrNegativeQuantity_ThrowsArgumentException()
+        public async Task BuyStockAsync_ZeroOrNegativeQuantity_ThrowsDomainException()
         {
             var service = CreateService(
                 new Mock<IPortfolioRepository>(),
@@ -75,13 +75,13 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.BuyStockAsync(MakeUser(), "AAPL", 0)
             );
         }
 
         [Fact]
-        public async Task BuyStockAsync_InsufficientFunds_ThrowsInvalidOperationException()
+        public async Task BuyStockAsync_InsufficientFunds_ThrowsDomainException()
         {
             var user = MakeUser(walletBalance: 50m);
             var stock = MakeStock(purchase: 100m);
@@ -96,7 +96,7 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.BuyStockAsync(user, "AAPL", 1)
             );
         }
@@ -176,7 +176,7 @@ namespace api.Tests.Service
         }
 
         [Fact]
-        public async Task BuyStockAsync_WalletUpdateConcurrencyFailure_ThrowsInvalidOperationException()
+        public async Task BuyStockAsync_WalletUpdateConcurrencyFailure_ThrowsDomainException()
         {
             var user = MakeUser(walletBalance: 1000m);
             var stock = MakeStock(purchase: 100m);
@@ -203,13 +203,13 @@ namespace api.Tests.Service
                 userManager
             );
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.BuyStockAsync(user, "AAPL", 5)
             );
         }
 
         [Fact]
-        public async Task SellStockAsync_ZeroOrNegativeQuantity_ThrowsArgumentException()
+        public async Task SellStockAsync_ZeroOrNegativeQuantity_ThrowsDomainException()
         {
             var service = CreateService(
                 new Mock<IPortfolioRepository>(),
@@ -218,13 +218,13 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.SellStockAsync(MakeUser(), "AAPL", 0)
             );
         }
 
         [Fact]
-        public async Task SellStockAsync_InsufficientQuantity_ThrowsInvalidOperationException()
+        public async Task SellStockAsync_InsufficientQuantity_ThrowsDomainException()
         {
             var user = MakeUser();
             var stock = MakeStock();
@@ -245,7 +245,7 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.SellStockAsync(user, "AAPL", 5)
             );
         }
@@ -323,7 +323,7 @@ namespace api.Tests.Service
         }
 
         [Fact]
-        public async Task SellStockAsync_PortfolioUpdateConcurrencyConflict_ThrowsInvalidOperationException()
+        public async Task SellStockAsync_PortfolioUpdateConcurrencyConflict_ThrowsDomainException()
         {
             var user = MakeUser();
             var stock = MakeStock();
@@ -352,13 +352,13 @@ namespace api.Tests.Service
                 userManager
             );
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.SellStockAsync(user, "AAPL", 4)
             );
         }
 
         [Fact]
-        public async Task DepositFundsAsync_ZeroOrNegativeAmount_ThrowsArgumentException()
+        public async Task DepositFundsAsync_ZeroOrNegativeAmount_ThrowsDomainException()
         {
             var service = CreateService(
                 new Mock<IPortfolioRepository>(),
@@ -367,7 +367,7 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.DepositFundsAsync(MakeUser(), 0m)
             );
         }
@@ -401,7 +401,7 @@ namespace api.Tests.Service
         }
 
         [Fact]
-        public async Task WithdrawFundsAsync_ZeroOrNegativeAmount_ThrowsArgumentException()
+        public async Task WithdrawFundsAsync_ZeroOrNegativeAmount_ThrowsDomainException()
         {
             var service = CreateService(
                 new Mock<IPortfolioRepository>(),
@@ -410,13 +410,13 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.WithdrawFundsAsync(MakeUser(), 0m)
             );
         }
 
         [Fact]
-        public async Task WithdrawFundsAsync_InsufficientFunds_ThrowsInvalidOperationException()
+        public async Task WithdrawFundsAsync_InsufficientFunds_ThrowsDomainException()
         {
             var user = MakeUser(walletBalance: 10m);
 
@@ -427,7 +427,7 @@ namespace api.Tests.Service
                 MockUserManager.Create()
             );
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.WithdrawFundsAsync(user, 50m)
             );
         }

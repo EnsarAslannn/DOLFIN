@@ -98,12 +98,12 @@ namespace api.Controllers
         {
             if (!await _stockRepo.StockExists(stockId))
             {
-                return BadRequest("Stock does not exist");
+                return BadRequest(ApiErrors.CommentStockNotFound());
             }
 
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var commentModel = commentDto.ToCommentFromCreate(stockId, appUser.Id);
             await _commentRepo.CreateAsync(commentModel);
@@ -138,12 +138,12 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var existingComment = await _commentRepo.GetByIdAsync(id);
             if (existingComment == null)
             {
-                return NotFound("Comment not found");
+                return NotFound(ApiErrors.CommentNotFound());
             }
             if (existingComment.AppUserId != appUser.Id)
             {
@@ -157,7 +157,7 @@ namespace api.Controllers
 
             if (comment == null)
             {
-                return NotFound("Comment not found");
+                return NotFound(ApiErrors.CommentNotFound());
             }
 
             if (existingComment.StockId.HasValue)
@@ -184,12 +184,12 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var existingComment = await _commentRepo.GetByIdAsync(id);
             if (existingComment == null)
             {
-                return NotFound("Comment does not exist");
+                return NotFound(ApiErrors.CommentNotFound());
             }
             if (existingComment.AppUserId != appUser.Id)
             {
@@ -200,7 +200,7 @@ namespace api.Controllers
 
             if (commentModel == null)
             {
-                return NotFound("Comment does not exist");
+                return NotFound(ApiErrors.CommentNotFound());
             }
 
             if (existingComment.StockId.HasValue)

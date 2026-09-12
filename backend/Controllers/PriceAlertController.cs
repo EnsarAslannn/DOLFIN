@@ -1,6 +1,7 @@
 using api.Dtos.Alerts;
 using api.Extensions;
 using api.Interfaces;
+using api.Service;
 using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -48,7 +49,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
@@ -60,13 +61,9 @@ namespace api.Controllers
                 );
                 return CreatedAtAction(nameof(GetAlerts), null, alert.ToPriceAlertDto());
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -87,7 +84,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var alerts = await _alertService.GetAlertsAsync(appUser);
             return Ok(alerts.Select(a => a.ToPriceAlertDto()));
@@ -112,11 +109,11 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var alert = await _alertService.GetAlertByIdAsync(id);
             if (alert == null)
-                return NotFound("Alert not found");
+                return NotFound(ApiErrors.AlertNotFound());
 
             if (alert.AppUserId != appUser.Id)
                 return Forbid();
@@ -135,7 +132,7 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var notifications = await _alertService.GetNotificationsAsync(appUser);
             return Ok(notifications.Select(n => n.ToAlertNotificationDto()));
@@ -156,11 +153,11 @@ namespace api.Controllers
         {
             var appUser = await User.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var notification = await _alertService.GetNotificationByIdAsync(id);
             if (notification == null)
-                return NotFound("Notification not found");
+                return NotFound(ApiErrors.AlertNotificationNotFound());
 
             if (notification.AppUserId != appUser.Id)
                 return Forbid();
