@@ -15,6 +15,8 @@ import EmptyState from "../../Components/Dashboard/EmptyState"
 import TransactionHistory from "../../Components/Portfolio/TransactionHistory/TransactionHistory"
 import PriceAlerts from "../../Components/Alerts/PriceAlerts/PriceAlerts"
 import PortfolioHealth from "../../Components/Portfolio/PortfolioHealth/PortfolioHealth"
+import Sparkline from "../../Components/Sparkline/Sparkline"
+import { stockPriceHistoryAPI } from "../../Services/StockService"
 import { Link } from "react-router-dom"
 import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
 import { useLanguage } from "../../i18n/useLanguage"
@@ -34,6 +36,8 @@ const WalletPage = () => {
     const [liveBalance, setLiveBalance] = useState<number>(0)
     const [metrics, setMetrics] = useState<PortfolioMetrics | null>(null)
     const [transactions, setTransactions] = useState<Transaction[]>([])
+    // Keyed by stock id, which is what PortfolioDto.Id carries.
+    const [priceHistory, setPriceHistory] = useState<Map<number, number[]>>(new Map())
 
     const getWalletPortfolio = () => {
         portfolioGetAPI()
@@ -76,6 +80,48 @@ const WalletPage = () => {
         }
         loadWalletData()
     }, [user])
+
+    // One request for every position rather than one per row. The list of ids
+    // is joined into the dependency so this re-runs when the holdings change
+    // and not on every poll that leaves them alone -- the line only gains a
+    // point a minute, and it is redrawn by the poll below anyway.
+    const heldStockIds = (portfolioValues ?? []).map((item) => item.id)
+    const heldStockIdKey = heldStockIds.join(",")
+
+    useEffect(() => {
+        let active = true
+
+        const loadHistory = async () => {
+            if (!user || heldStockIds.length === 0) {
+                if (active) setPriceHistory(new Map())
+                return
+            }
+
+            try {
+                const res = await stockPriceHistoryAPI(heldStockIds)
+                if (!active || !res?.data) return
+
+                setPriceHistory(
+                    new Map(
+                        res.data.map((series) => [
+                            series.stockId,
+                            series.points.map((point) => point.price),
+                        ]),
+                    ),
+                )
+            } catch (e) {
+                // A missing line is a cosmetic loss; the figures beside it are
+                // the page's actual job and they are already on screen.
+                console.error(e)
+            }
+        }
+
+        loadHistory()
+        return () => {
+            active = false
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, heldStockIdKey])
 
     // Only the price-driven figures are polled: the history changes when this
     // user trades, and a trade already refreshes it. Polling pauses while the
@@ -306,6 +352,7 @@ const WalletPage = () => {
                             <thead>
                                 <tr className="border-b border-band-line/8 font-mono text-caption font-bold uppercase tracking-label-lg text-band-muted">
                                     <th className="py-4 px-6">{t("wallet.col.asset")}</th>
+                                    <th className="py-4 px-6 text-right">{t("wallet.col.trend")}</th>
                                     <th className="py-4 px-6 text-right">{t("wallet.col.marketPrice")}</th>
                                     <th className="py-4 px-6 text-right">{t("wallet.col.gainLoss")}</th>
                                     <th className="py-4 px-6 text-right">{t("wallet.col.allocation")}</th>
@@ -331,6 +378,9 @@ const WalletPage = () => {
                                             </div>
                                         </div>
                                     </td>
+                                    {/* Cash is the unit every other price is quoted in, so there is
+                                        nothing here for a line to show. */}
+                                    <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">—</td>
                                     <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">$1.00</td>
                                     <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">—</td>
                                     <td className="px-6 py-4 text-right">
@@ -374,6 +424,14 @@ const WalletPage = () => {
                                                         <span className="text-body font-normal text-band-ink">{item.companyName}</span>
                                                         <span className="font-mono text-caption font-normal tracking-wide text-band-muted">{symbolUpper}</span>
                                                     </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-end">
+                                                    <Sparkline
+                                                        prices={priceHistory.get(item.id) ?? []}
+                                                        symbol={symbolUpper}
+                                                    />
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right font-mono text-body font-normal text-band-muted">${livePrice.toFixed(2)}</td>

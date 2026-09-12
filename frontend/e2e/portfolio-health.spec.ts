@@ -120,3 +120,60 @@ test.describe("portfolio health", () => {
         await expect(page.getByText(/aşırı büyüyen bir kalem yok/i)).toBeVisible()
     })
 })
+
+test.describe("price history", () => {
+    // The walk had been moving prices on a timer and keeping none of it, so
+    // there was never a line to draw. This is that line, on the wallet.
+    test("a position row carries a sparkline of its recent prices", async ({ page }) => {
+        await mockWallet(page, { warnings: [], rebalance: twoHoldings })
+        await page.route("**/api/stock/history**", (route) =>
+            route.fulfill(
+                json([
+                    {
+                        stockId: 42,
+                        symbol: "TSLA",
+                        points: [
+                            { price: 240, recordedAt: "2026-09-12T09:00:00Z" },
+                            { price: 245, recordedAt: "2026-09-12T09:01:00Z" },
+                            { price: 264, recordedAt: "2026-09-12T09:02:00Z" },
+                        ],
+                    },
+                ]),
+            ),
+        )
+
+        await page.goto("/wallet")
+
+        // The label is what a reader who cannot see the line gets, so it is
+        // also the honest thing to assert on.
+        await expect(page.getByRole("img", { name: /TSLA son dönemde %10\.0 yükseldi/ })).toBeVisible()
+    })
+
+    test("a stock with nothing recorded says so rather than drawing a dot", async ({ page }) => {
+        await mockWallet(page, { warnings: [], rebalance: twoHoldings })
+        await page.route("**/api/stock/history**", (route) =>
+            route.fulfill(json([{ stockId: 42, symbol: "TSLA", points: [] }])),
+        )
+
+        await page.goto("/wallet")
+
+        await expect(page.getByText(/henüz geçmiş yok/i).first()).toBeVisible()
+    })
+
+    // One request for the whole set, not one per row.
+    test("asks for every held position in a single request", async ({ page }) => {
+        const requests: string[] = []
+
+        await mockWallet(page, { warnings: [], rebalance: twoHoldings })
+        await page.route("**/api/stock/history**", (route) => {
+            requests.push(route.request().url())
+            return route.fulfill(json([{ stockId: 42, symbol: "TSLA", points: [] }]))
+        })
+
+        await page.goto("/wallet")
+        await expect(page.getByText(/henüz geçmiş yok/i).first()).toBeVisible()
+
+        expect(requests).toHaveLength(1)
+        expect(requests[0]).toContain("StockIds=42")
+    })
+})

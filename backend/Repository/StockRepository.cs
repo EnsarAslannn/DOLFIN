@@ -138,6 +138,19 @@ namespace api.Repository
             return existingStock;
         }
 
+        public async Task<Dictionary<int, string>> GetSymbolsByIdsAsync(
+            IReadOnlyCollection<int> stockIds
+        )
+        {
+            if (stockIds.Count == 0)
+                return [];
+
+            return await _context
+                .Stock.Where(s => stockIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Symbol })
+                .ToDictionaryAsync(s => s.Id, s => s.Symbol);
+        }
+
         public async Task<List<Stock>> GetMarketTrendsAsync()
         {
             var trendSymbols = new List<string>

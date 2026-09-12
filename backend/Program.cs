@@ -343,6 +343,7 @@ builder.Services.AddScoped<IPriceAlertRepository, PriceAlertRepository>();
 builder.Services.AddScoped<IPriceAlertService, PriceAlertService>();
 builder.Services.AddSingleton(PriceAlertOptions.FromConfiguration(builder.Configuration));
 builder.Services.AddSingleton(PriceSimulationOptions.FromConfiguration(builder.Configuration));
+builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
 builder.Services.AddScoped<IPriceSimulationService, PriceSimulationService>();
 builder.Services.AddHostedService<PriceAlertBackgroundService>();
 builder.Services.AddHostedService<PriceSimulationBackgroundService>();

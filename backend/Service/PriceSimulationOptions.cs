@@ -10,6 +10,13 @@ namespace api.Service
 
         public decimal MinPrice { get; set; } = 1.00m;
 
+        /// <summary>
+        /// How long a recorded price is kept. At one tick a minute across the
+        /// demo catalog this is a few tens of thousands of rows, and without a
+        /// ceiling the table grows for as long as the process runs.
+        /// </summary>
+        public int HistoryRetentionHours { get; set; } = 48;
+
         public static PriceSimulationOptions FromConfiguration(IConfiguration configuration)
         {
             var section = configuration.GetSection("PriceSimulation");
@@ -21,6 +28,8 @@ namespace api.Service
                 IntervalSeconds = section.GetValue<double?>("IntervalSeconds") ?? defaults.IntervalSeconds,
                 MaxMovePercent = section.GetValue<decimal?>("MaxMovePercent") ?? defaults.MaxMovePercent,
                 MinPrice = section.GetValue<decimal?>("MinPrice") ?? defaults.MinPrice,
+                HistoryRetentionHours =
+                    section.GetValue<int?>("HistoryRetentionHours") ?? defaults.HistoryRetentionHours,
             };
         }
     }

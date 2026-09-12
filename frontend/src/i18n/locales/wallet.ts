@@ -63,6 +63,12 @@ export const wallet = {
     "health.action.Hold": "Hold",
     "health.table.label": "Rebalancing suggestions",
 
+    // The sparkline on each position row.
+    "sparkline.empty": "No history yet",
+    "sparkline.label.up": "{{symbol}} is up {{percent}}% over the recent window",
+    "sparkline.label.down": "{{symbol}} is down {{percent}}% over the recent window",
+    "wallet.col.trend": "Recent",
+
     "wallet.toast.invalidAmount": "Please enter a valid amount greater than 0",
     "wallet.toast.depositFailed": "Deposit failed. Please try again.",
     "wallet.toast.noUsd": "You do not have any USD balance to sell!",
@@ -130,6 +136,11 @@ export const wallet = {
     "health.action.Sell": "{{quantity}} sat",
     "health.action.Hold": "Tut",
     "health.table.label": "Yeniden dengeleme önerileri",
+
+    "sparkline.empty": "Henüz geçmiş yok",
+    "sparkline.label.up": "{{symbol}} son dönemde %{{percent}} yükseldi",
+    "sparkline.label.down": "{{symbol}} son dönemde %{{percent}} düştü",
+    "wallet.col.trend": "Son hareket",
 
     "wallet.toast.invalidAmount": "Lütfen 0'dan büyük geçerli bir tutar girin",
     "wallet.toast.depositFailed": "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.",

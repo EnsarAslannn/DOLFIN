@@ -1,5 +1,6 @@
 import axiosInstance from "../Helpers/AxiosInstance"
 import type { StockSearchResult } from "../Models/StockSearchResult"
+import type { StockPriceHistory } from "../Models/Portfolio"
 
 export const searchStocksBySymbolAPI = (symbol: string) => {
     return axiosInstance.get<StockSearchResult[]>("stock", { params: { Symbol: symbol } })
@@ -47,4 +48,17 @@ export const searchStocksAPI = async (term: string): Promise<StockSearchResult[]
     }
 
     return results
+}
+
+/**
+ * Recent prices for several stocks at once.
+ *
+ * One request for the whole set rather than one per row: the wallet draws a
+ * line for every position it shows, and a page of ten would otherwise be ten
+ * round trips for a few dozen numbers each.
+ */
+export const stockPriceHistoryAPI = (stockIds: number[], points = 30) => {
+    return axiosInstance.get<StockPriceHistory[]>("stock/history", {
+        params: { StockIds: stockIds.join(","), Points: points },
+    })
 }

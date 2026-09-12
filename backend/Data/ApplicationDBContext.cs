@@ -23,6 +23,8 @@ namespace api.Data
 
         public DbSet<AlertNotification> AlertNotifications { get; set; }
 
+        public DbSet<PriceHistoryPoint> PriceHistory { get; set; }
+
         public DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -74,6 +76,18 @@ namespace api.Data
                 .HasOne(a => a.Stock)
                 .WithMany()
                 .HasForeignKey(a => a.StockId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // The only query against this table asks for a set of stocks and
+            // takes the newest rows of each, and the retention sweep deletes by
+            // time -- both are served by this one index.
+            builder.Entity<PriceHistoryPoint>().HasIndex(p => new { p.StockId, p.RecordedAt });
+
+            builder
+                .Entity<PriceHistoryPoint>()
+                .HasOne(p => p.Stock)
+                .WithMany()
+                .HasForeignKey(p => p.StockId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<AlertNotification>().HasIndex(n => n.AppUserId);

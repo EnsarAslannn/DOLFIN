@@ -16,10 +16,12 @@ namespace api.Controllers
     public class StockController : ControllerBase
     {
         private readonly IStockRepository _stockRepo;
+        private readonly IPriceHistoryRepository _historyRepo;
 
-        public StockController(IStockRepository stockRepo)
+        public StockController(IStockRepository stockRepo, IPriceHistoryRepository historyRepo)
         {
             _stockRepo = stockRepo;
+            _historyRepo = historyRepo;
         }
 
         /// <summary>
@@ -185,6 +187,52 @@ namespace api.Controllers
             }
 
             return Ok(stocks);
+        }
+
+        /// <summary>
+        /// Gets recent price points for one or more stocks, oldest first.
+        /// Open to anonymous callers.
+        /// </summary>
+        /// <remarks>
+        /// Points are written by the price simulation, one per stock per tick,
+        /// and kept for a bounded window — so this is the recent shape of a
+        /// price rather than its whole life. A stock with no points yet comes
+        /// back with an empty list rather than being left out, so a caller can
+        /// line the answer up with what it asked for.
+        ///
+        /// Several ids are taken at once deliberately: the wallet draws a line
+        /// per position and would otherwise make one request per row.
+        /// </remarks>
+        /// <param name="query">Which stocks, and how many points each.</param>
+        /// <response code="200">The requested history, one entry per stock asked for.</response>
+        /// <response code="400">The query parameters failed validation.</response>
+        [HttpGet("history")]
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(List<StockPriceHistoryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPriceHistory([FromQuery] PriceHistoryQueryObject query)
+        {
+            var stockIds = query.ParseStockIds();
+            if (stockIds.Count == 0)
+            {
+                return Ok(new List<StockPriceHistoryDto>());
+            }
+
+            var history = await _historyRepo.GetRecentAsync(stockIds, query.Points);
+            var symbols = await _stockRepo.GetSymbolsByIdsAsync(stockIds);
+
+            var result = stockIds
+                .Select(id => new StockPriceHistoryDto
+                {
+                    StockId = id,
+                    Symbol = symbols.TryGetValue(id, out var symbol) ? symbol : string.Empty,
+                    Points = history.TryGetValue(id, out var points)
+                        ? points.Select(p => p.ToPricePointDto()).ToList()
+                        : [],
+                })
+                .ToList();
+
+            return Ok(result);
         }
     }
 }

@@ -85,3 +85,16 @@ export type RebalancingRecommendation = {
   /** The API's own English summary, kept as a fallback. */
   summary: string
 }
+
+// Mirrors StockPriceHistoryDto. Points come back oldest first so a chart can
+// be drawn left to right without reversing them.
+export type PricePoint = {
+  price: number
+  recordedAt: string
+}
+
+export type StockPriceHistory = {
+  stockId: number
+  symbol: string
+  points: PricePoint[]
+}

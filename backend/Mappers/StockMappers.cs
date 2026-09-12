@@ -20,6 +20,11 @@ namespace api.Mappers
             };
         }
 
+        public static PricePointDto ToPricePointDto(this PriceHistoryPoint point)
+        {
+            return new PricePointDto { Price = point.Price, RecordedAt = point.RecordedAt };
+        }
+
         public static Stock ToStockFromCreateDto(this CreateStockRequestDto stockDto)
         {
             return new Stock
