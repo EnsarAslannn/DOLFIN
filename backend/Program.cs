@@ -414,6 +414,25 @@ using (var scope = app.Services.CreateScope())
 
 app.UseForwardedHeaders();
 
+// First in the pipeline so the headers reach every response, including the
+// ones that never get as far as a controller. UseForwardedHeaders runs ahead
+// of it only because HSTS below needs to know whether the original request
+// was HTTPS.
+app.UseMiddleware<api.Middleware.SecurityHeadersMiddleware>();
+
+// Strict-Transport-Security, at the framework default of 30 days with no
+// preload and no includeSubDomains -- long enough to be worth having, short
+// enough to back out of. It is skipped outside production because a developer
+// on http://localhost would otherwise be pinned to HTTPS by their browser for
+// a month. UseHsts emits nothing for a plain-HTTP request either way, which is
+// why the forwarded-headers step above has to come first: behind Railway's
+// proxy, TLS is terminated before the request reaches us and X-Forwarded-Proto
+// is the only evidence it was ever HTTPS.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.UseSerilogRequestLogging();
 
 app.UseMiddleware<api.Middleware.ExceptionMiddleware>();
