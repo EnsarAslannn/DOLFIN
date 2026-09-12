@@ -210,7 +210,7 @@ namespace api.Controllers
         {
             IssueCsrfCookie();
 
-            var user = await User.GetAuthenticatedUserAsync(_userManager);
+            var user = await this.GetAuthenticatedUserAsync(_userManager);
             if (user == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -239,7 +239,7 @@ namespace api.Controllers
             if (User.Identity?.IsAuthenticated != true)
                 return NoContent();
 
-            var user = await User.GetAuthenticatedUserAsync(_userManager);
+            var user = await this.GetAuthenticatedUserAsync(_userManager);
             if (user == null)
                 return NoContent();
 

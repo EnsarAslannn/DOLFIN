@@ -3,6 +3,7 @@ using System.Text;
 using api.Caching;
 using api.Data;
 using api.Diagnostics;
+using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using api.Repository;
@@ -309,7 +310,14 @@ builder
                 if (user == null || currentStamp != stampClaim)
                 {
                     context.Fail("Token has been revoked.");
+                    return;
                 }
+
+                // The row is already loaded, and this runs in the request's own
+                // scope, so the controller about to run can have this instance
+                // instead of fetching the same user again. It halves the user
+                // lookups on every authenticated request.
+                context.HttpContext.StoreAuthenticatedUser(user);
             }
         };
     });

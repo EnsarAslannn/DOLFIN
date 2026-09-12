@@ -101,7 +101,7 @@ namespace api.Controllers
                 return BadRequest(ApiErrors.CommentStockNotFound());
             }
 
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -136,7 +136,7 @@ namespace api.Controllers
             [FromBody] UpdateCommentRequestDto updateDto
         )
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -182,7 +182,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 

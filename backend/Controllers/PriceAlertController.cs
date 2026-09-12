@@ -47,7 +47,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreatePriceAlertRequestDto dto)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -82,7 +82,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<PriceAlertDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAlerts()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -107,7 +107,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -130,7 +130,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<AlertNotificationDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetNotifications()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -151,7 +151,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> MarkNotificationRead([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 

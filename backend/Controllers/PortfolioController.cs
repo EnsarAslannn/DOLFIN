@@ -44,7 +44,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<PortfolioDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserPortfolio()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -64,7 +64,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(PortfolioMetricsDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMetrics()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -84,7 +84,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllocationWarnings()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -104,7 +104,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(RebalancingRecommendationDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRebalancingRecommendation()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -128,7 +128,7 @@ namespace api.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTransactionHistory([FromQuery] TransactionQueryObject query)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -151,7 +151,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPortfolio([FromBody] TradeRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -177,7 +177,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SellPortfolio([FromBody] TradeRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -203,7 +203,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DepositFunds([FromBody] AmountRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
@@ -229,7 +229,7 @@ namespace api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> WithdrawFunds([FromBody] AmountRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
                 return Unauthorized(ApiErrors.UserContextNotFound());
 
