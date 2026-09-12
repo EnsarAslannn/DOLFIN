@@ -25,6 +25,8 @@ namespace api.Data
 
         public DbSet<PriceHistoryPoint> PriceHistory { get; set; }
 
+        public DbSet<WatchlistEntry> WatchlistEntries { get; set; }
+
         public DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -88,6 +90,29 @@ namespace api.Data
                 .HasOne(p => p.Stock)
                 .WithMany()
                 .HasForeignKey(p => p.StockId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique per user and stock: following the same company twice is
+            // not a thing a list like this can mean, and enforcing it here is
+            // what makes the check in the service a race the database still
+            // catches.
+            builder
+                .Entity<WatchlistEntry>()
+                .HasIndex(w => new { w.AppUserId, w.StockId })
+                .IsUnique();
+
+            builder
+                .Entity<WatchlistEntry>()
+                .HasOne(w => w.AppUser)
+                .WithMany()
+                .HasForeignKey(w => w.AppUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .Entity<WatchlistEntry>()
+                .HasOne(w => w.Stock)
+                .WithMany()
+                .HasForeignKey(w => w.StockId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<AlertNotification>().HasIndex(n => n.AppUserId);

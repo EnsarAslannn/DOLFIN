@@ -11,12 +11,16 @@ interface Props {
   searchResults: StockSearchResult[]
   onPortfolioCreate: (e: SyntheticEvent) => void
   hasSearched?: boolean
+  watchedStockIds?: Set<number>
+  onWatchToggle?: (stockId: number, symbol: string) => void
 }
 
 const CardList: React.FC<Props> = ({
   searchResults,
   onPortfolioCreate,
   hasSearched = false,
+  watchedStockIds,
+  onWatchToggle,
 }: Props) => {
   const prefersReducedMotion = usePrefersReducedMotion()
   const { t } = useLanguage()
@@ -56,12 +60,16 @@ const CardList: React.FC<Props> = ({
       {searchResults.map((result, index) => {
         const currentSymbol = result.symbol || result.Symbol || `stock-${index}`
 
+        const stockId = result.id ?? result.Id
+
         return (
           <Card
             id={currentSymbol}
             key={currentSymbol}
             searchResult={result}
             onPortfolioCreate={onPortfolioCreate}
+            isWatched={stockId !== undefined && (watchedStockIds?.has(stockId) ?? false)}
+            onWatchToggle={onWatchToggle}
           />
         )
       })}

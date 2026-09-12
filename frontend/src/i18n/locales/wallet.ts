@@ -69,6 +69,30 @@ export const wallet = {
     "sparkline.label.down": "{{symbol}} is down {{percent}}% over the recent window",
     "wallet.col.trend": "Recent",
 
+    // The watchlist: following a company without owning it, and without
+    // having to name a price to watch for.
+    "watchlist.eyebrow": "Watchlist",
+    "watchlist.title": "Companies you are following",
+    "watchlist.lead":
+      "Somewhere to keep a company you have not made up your mind about. No position, no target price.",
+    "watchlist.loading": "Reading your watchlist",
+    "watchlist.empty.title": "Nothing on the list",
+    "watchlist.empty.description":
+      "Follow a company from the search page and it shows up here with its current price.",
+    "watchlist.empty.cta": "Find a company",
+    "watchlist.table.label": "Watchlist",
+    "watchlist.col.company": "Company",
+    "watchlist.col.sector": "Sector",
+    "watchlist.col.price": "Price",
+    "watchlist.col.action": "",
+    "watchlist.remove": "Unfollow",
+    "watchlist.remove.aria": "Stop following {{symbol}}",
+    "watchlist.follow": "Follow",
+    "watchlist.following": "Following",
+    "watchlist.follow.aria": "Follow {{symbol}}",
+    "watchlist.toast.added": "{{symbol}} added to your watchlist",
+    "watchlist.toast.removed": "{{symbol}} removed from your watchlist",
+
     "wallet.toast.invalidAmount": "Please enter a valid amount greater than 0",
     "wallet.toast.depositFailed": "Deposit failed. Please try again.",
     "wallet.toast.noUsd": "You do not have any USD balance to sell!",
@@ -141,6 +165,28 @@ export const wallet = {
     "sparkline.label.up": "{{symbol}} son dönemde %{{percent}} yükseldi",
     "sparkline.label.down": "{{symbol}} son dönemde %{{percent}} düştü",
     "wallet.col.trend": "Son hareket",
+
+    "watchlist.eyebrow": "İzleme listesi",
+    "watchlist.title": "Takip ettiğiniz şirketler",
+    "watchlist.lead":
+      "Hakkında henüz karar vermediğiniz şirketleri tutacağınız yer. Pozisyon yok, hedef fiyat yok.",
+    "watchlist.loading": "İzleme listeniz okunuyor",
+    "watchlist.empty.title": "Listede bir şey yok",
+    "watchlist.empty.description":
+      "Arama sayfasından bir şirketi takibe alın; güncel fiyatıyla birlikte burada görünsün.",
+    "watchlist.empty.cta": "Şirket bul",
+    "watchlist.table.label": "İzleme listesi",
+    "watchlist.col.company": "Şirket",
+    "watchlist.col.sector": "Sektör",
+    "watchlist.col.price": "Fiyat",
+    "watchlist.col.action": "",
+    "watchlist.remove": "Takibi bırak",
+    "watchlist.remove.aria": "{{symbol}} takibini bırak",
+    "watchlist.follow": "Takip et",
+    "watchlist.following": "Takipte",
+    "watchlist.follow.aria": "{{symbol}} takibe al",
+    "watchlist.toast.added": "{{symbol}} izleme listenize eklendi",
+    "watchlist.toast.removed": "{{symbol}} izleme listenizden çıkarıldı",
 
     "wallet.toast.invalidAmount": "Lütfen 0'dan büyük geçerli bir tutar girin",
     "wallet.toast.depositFailed": "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.",

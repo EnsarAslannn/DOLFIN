@@ -16,6 +16,7 @@ import TransactionHistory from "../../Components/Portfolio/TransactionHistory/Tr
 import PriceAlerts from "../../Components/Alerts/PriceAlerts/PriceAlerts"
 import PortfolioHealth from "../../Components/Portfolio/PortfolioHealth/PortfolioHealth"
 import Sparkline from "../../Components/Sparkline/Sparkline"
+import Watchlist from "../../Components/Portfolio/Watchlist/Watchlist"
 import { stockPriceHistoryAPI } from "../../Services/StockService"
 import { Link } from "react-router-dom"
 import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
@@ -499,11 +500,18 @@ const WalletPage = () => {
                 <PortfolioHealth />
             </Band>
 
+            {/* Following sits next to alerts: they are the two ways of keeping
+                an eye on something you do not own, one with a price in mind
+                and one without. */}
             <Band tone="cream" className="py-section">
-                <PriceAlerts />
+                <Watchlist />
             </Band>
 
             <Band tone="dark" className="py-section">
+                <PriceAlerts />
+            </Band>
+
+            <Band tone="cream" className="py-section">
                 <TransactionHistory transactions={transactions} />
             </Band>
 

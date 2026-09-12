@@ -1,6 +1,7 @@
 import React, { type SyntheticEvent } from "react"
 import { motion } from "framer-motion"
 import AddPortfolio from "../Portfolio/AddPortfolio/AddPortfolio"
+import WatchButton from "../Portfolio/Watchlist/WatchButton"
 import { Link } from "react-router-dom"
 import { companyLogos } from "../../Components/Table/TestData"
 import GlassLogo from "../Dashboard/GlassLogo"
@@ -13,12 +14,21 @@ interface Props {
   id: string
   searchResult: StockSearchResult
   onPortfolioCreate: (e: SyntheticEvent) => void
+  isWatched?: boolean
+  /** Absent for a visitor with no account: there is nothing to follow with. */
+  onWatchToggle?: (stockId: number, symbol: string) => void
 }
 
 export const resultGridClass =
   "grid grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-[minmax(0,2.4fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_auto] md:items-center"
 
-const Card: React.FC<Props> = ({ id, searchResult, onPortfolioCreate }: Props) => {
+const Card: React.FC<Props> = ({
+  id,
+  searchResult,
+  onPortfolioCreate,
+  isWatched = false,
+  onWatchToggle,
+}: Props) => {
   const { t } = useLanguage()
   const symbol = searchResult.symbol || searchResult.Symbol || ""
   const name =
@@ -32,6 +42,7 @@ const Card: React.FC<Props> = ({ id, searchResult, onPortfolioCreate }: Props) =
     searchResult.Industry ||
     t("search.industry.fallback")
   const marketCap = searchResult.marketCap || searchResult.MarketCap || 0
+  const stockId = searchResult.id ?? searchResult.Id
 
   const symbolUpper = symbol.toUpperCase()
   const isPositive = price > 150
@@ -109,7 +120,16 @@ const Card: React.FC<Props> = ({ id, searchResult, onPortfolioCreate }: Props) =
         </span>
       </div>
 
-      <AddPortfolio onPortfolioCreate={onPortfolioCreate} symbol={symbolUpper} />
+      <div className="flex items-center gap-2">
+        {onWatchToggle && stockId !== undefined && (
+          <WatchButton
+            symbol={symbolUpper}
+            isWatched={isWatched}
+            onToggle={() => onWatchToggle(stockId, symbolUpper)}
+          />
+        )}
+        <AddPortfolio onPortfolioCreate={onPortfolioCreate} symbol={symbolUpper} />
+      </div>
     </motion.div>
   )
 }
