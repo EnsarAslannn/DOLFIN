@@ -143,7 +143,7 @@ namespace api.IntegrationTests
             }
 
             var response = await client.GetAsync("/api/alerts/notifications");
-            var notifications = await response.Content.ReadFromJsonAsync<List<AlertNotificationDto>>();
+            var notifications = JsonSerializer.Deserialize<List<AlertNotificationDto>>(await response.Content.ReadAsStringAsync(), JsonOptions);
 
             Assert.Contains(notifications!, n => n.Message.Contains(stock.Symbol));
         }
@@ -291,13 +291,13 @@ namespace api.IntegrationTests
             }
 
             var notificationsResponse = await client.GetAsync("/api/alerts/notifications");
-            var notifications = await notificationsResponse.Content.ReadFromJsonAsync<List<AlertNotificationDto>>();
+            var notifications = JsonSerializer.Deserialize<List<AlertNotificationDto>>(await notificationsResponse.Content.ReadAsStringAsync(), JsonOptions);
             var target = notifications!.First(n => n.Message.Contains(stock.Symbol));
 
             var response = await client.PostAsync($"/api/alerts/notifications/{target.Id}/read", null);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var updated = await response.Content.ReadFromJsonAsync<AlertNotificationDto>();
+            var updated = JsonSerializer.Deserialize<AlertNotificationDto>(await response.Content.ReadAsStringAsync(), JsonOptions);
             Assert.True(updated!.IsRead);
         }
 

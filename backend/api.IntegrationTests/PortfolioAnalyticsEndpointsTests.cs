@@ -57,8 +57,16 @@ namespace api.IntegrationTests
             var response = await client.GetAsync("/api/portfolio/warnings");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var warnings = await response.Content.ReadFromJsonAsync<List<string>>();
-            Assert.Contains(warnings!, w => w.Contains("AAPL"));
+            // Warnings come back as data rather than as finished English
+            // sentences, so the wallet can word them in whichever language it
+            // is showing.
+            var warnings = await response.Content.ReadFromJsonAsync<List<AllocationWarningDto>>();
+            var warning = Assert.Single(
+                warnings!,
+                w => w.Code == api.Models.ErrorCodes.PortfolioWarningConcentration
+            );
+            Assert.Equal("AAPL", warning.Symbol);
+            Assert.True(warning.Percent > 40m);
         }
 
         [Fact]

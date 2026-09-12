@@ -502,9 +502,18 @@ app.UseMiddleware<api.Middleware.ExceptionMiddleware>();
 
 app.UseRouting();
 app.UseCors("DolfinCorsPolicy");
-app.UseRateLimiter();
 app.UseStaticFiles();
 app.UseAuthentication();
+
+// After authentication, not before it. The "write" policy partitions by user
+// id, and the limiter reads that off HttpContext.User -- which is empty until
+// authentication has run. Sitting ahead of it, every authenticated caller fell
+// through to the IP fallback and quietly shared one budget with everybody else
+// behind the same address, which is the exact behaviour partitioning by user
+// exists to avoid. The "auth" policy is unaffected either way: it partitions by
+// IP, on endpoints that have no user yet.
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.Use(
