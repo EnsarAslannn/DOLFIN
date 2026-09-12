@@ -2,6 +2,10 @@ import axiosInstance from "../Helpers/AxiosInstance"
 import { handleError } from "../Helpers/ErrorHandler"
 import type { UserProfile } from "../Models/User"
 
+// A 401 from these two endpoints is the answer to the credentials just
+// submitted, not an expired session, so the generic redirect is switched off:
+// bouncing to /login from the login form reloads the app and swallows the
+// reason ("Invalid username or password", or the lockout notice) the API sent.
 export const loginAPI = async (username: string, password: string) => {
   try {
     const data = await axiosInstance.post<UserProfile>("account/login", {
@@ -10,7 +14,7 @@ export const loginAPI = async (username: string, password: string) => {
     })
     return data
   } catch (error) {
-    handleError(error)
+    handleError(error, { redirectOnUnauthorized: false })
   }
 }
 
@@ -27,7 +31,7 @@ export const registerAPI = async (
     })
     return data
   } catch (error) {
-    handleError(error)
+    handleError(error, { redirectOnUnauthorized: false })
   }
 }
 

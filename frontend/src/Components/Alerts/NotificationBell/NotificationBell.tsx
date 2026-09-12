@@ -5,6 +5,7 @@ import {
   alertNotificationsGetAPI,
 } from "../../../Services/AlertService"
 import { formatRelativeTime } from "../../../Helpers/dateTime"
+import { alertNotificationText } from "../../../Helpers/alertNotificationText"
 import { subscribeToAlertChanges } from "../../../Helpers/alertEvents"
 import { usePollWhileVisible } from "../../../Helpers/usePollWhileVisible"
 import { useLanguage } from "../../../i18n/useLanguage"
@@ -216,7 +217,7 @@ const NotificationBell = ({ isLight }: Props) => {
                           notification.isRead ? mutedClass : strongClass
                         }`}
                       >
-                        {notification.message}
+                        {alertNotificationText(notification, t)}
                       </span>
                       <span
                         className={`font-mono text-caption font-normal ${mutedClass}`}

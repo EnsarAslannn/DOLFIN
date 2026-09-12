@@ -112,7 +112,15 @@ namespace api.Tests.Service
 
             var warnings = await service.GetAllocationWarningsAsync(MakeUser());
 
-            Assert.Contains(warnings, w => w.Contains("AAPL"));
+            var warning = Assert.Single(
+                warnings,
+                w => w.Code == ErrorCodes.PortfolioWarningConcentration
+            );
+            Assert.Equal("AAPL", warning.Symbol);
+            Assert.Null(warning.Industry);
+            // The figure comes back as a number, not baked into a sentence, so
+            // the client can put it where its own grammar wants it.
+            Assert.True(warning.Percent > 40m);
         }
 
         [Fact]
@@ -128,7 +136,10 @@ namespace api.Tests.Service
 
             var warnings = await service.GetAllocationWarningsAsync(MakeUser());
 
-            Assert.Contains(warnings, w => w.Contains("Technology") && w.Contains("concentration"));
+            Assert.Contains(
+                warnings,
+                w => w.Code == ErrorCodes.PortfolioWarningSector && w.Industry == "Technology"
+            );
         }
 
         [Fact]

@@ -143,9 +143,96 @@ namespace api.IntegrationTests
             }
 
             var response = await client.GetAsync("/api/alerts/notifications");
-            var notifications = await response.Content.ReadFromJsonAsync<List<AlertNotificationDto>>();
+            var notifications = JsonSerializer.Deserialize<List<AlertNotificationDto>>(await response.Content.ReadAsStringAsync(), JsonOptions);
 
             Assert.Contains(notifications!, n => n.Message.Contains(stock.Symbol));
+        }
+
+        [Fact]
+        public async Task CreateAlert_IdenticalAlertAlreadyPending_ReturnsBadRequest()
+        {
+            var stock = await CreateStockAsAdminAsync(150m);
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var request = new CreatePriceAlertRequestDto
+            {
+                StockId = stock.Id,
+                TargetPrice = 200m,
+                Condition = PriceAlertCondition.GreaterThanOrEqual,
+            };
+
+            var first = await client.PostAsJsonAsync("/api/alerts", request);
+            Assert.Equal(HttpStatusCode.Created, first.StatusCode);
+
+            var second = await client.PostAsJsonAsync("/api/alerts", request);
+            Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+        }
+
+        // A duplicate is only a duplicate within one account -- two users
+        // watching the same price is the normal case, not a conflict.
+        [Fact]
+        public async Task CreateAlert_AnotherUserWatchingTheSamePrice_IsNotADuplicate()
+        {
+            var stock = await CreateStockAsAdminAsync(150m);
+            var request = new CreatePriceAlertRequestDto
+            {
+                StockId = stock.Id,
+                TargetPrice = 200m,
+                Condition = PriceAlertCondition.GreaterThanOrEqual,
+            };
+
+            var first = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+            Assert.Equal(
+                HttpStatusCode.Created,
+                (await first.PostAsJsonAsync("/api/alerts", request)).StatusCode
+            );
+
+            var second = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+            Assert.Equal(
+                HttpStatusCode.Created,
+                (await second.PostAsJsonAsync("/api/alerts", request)).StatusCode
+            );
+        }
+
+        // The wallet lists pending and fired alerts together and tells them
+        // apart by triggeredAt, so firing an alert must not drop it out of
+        // this list. Firing now clears IsActive, which is exactly why the list
+        // query must not filter on that flag.
+        [Fact]
+        public async Task GetAlerts_StillListsAnAlertAfterItHasFired()
+        {
+            var stock = await CreateStockAsAdminAsync(210m);
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var created = await client.PostAsJsonAsync(
+                "/api/alerts",
+                new CreatePriceAlertRequestDto
+                {
+                    StockId = stock.Id,
+                    TargetPrice = 200m,
+                    Condition = PriceAlertCondition.GreaterThanOrEqual,
+                }
+            );
+            var alert = JsonSerializer.Deserialize<PriceAlertDto>(
+                await created.Content.ReadAsStringAsync(),
+                JsonOptions
+            );
+
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var alertService = scope.ServiceProvider.GetRequiredService<IPriceAlertService>();
+                await alertService.CheckAndTriggerAlertsAsync();
+            }
+
+            var response = await client.GetAsync("/api/alerts");
+            var alerts = JsonSerializer.Deserialize<List<PriceAlertDto>>(
+                await response.Content.ReadAsStringAsync(),
+                JsonOptions
+            );
+
+            var listed = Assert.Single(alerts!, a => a.Id == alert!.Id);
+            Assert.NotNull(listed.TriggeredAt);
+            Assert.False(listed.IsActive);
         }
 
         [Fact]
@@ -204,13 +291,13 @@ namespace api.IntegrationTests
             }
 
             var notificationsResponse = await client.GetAsync("/api/alerts/notifications");
-            var notifications = await notificationsResponse.Content.ReadFromJsonAsync<List<AlertNotificationDto>>();
+            var notifications = JsonSerializer.Deserialize<List<AlertNotificationDto>>(await notificationsResponse.Content.ReadAsStringAsync(), JsonOptions);
             var target = notifications!.First(n => n.Message.Contains(stock.Symbol));
 
             var response = await client.PostAsync($"/api/alerts/notifications/{target.Id}/read", null);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var updated = await response.Content.ReadFromJsonAsync<AlertNotificationDto>();
+            var updated = JsonSerializer.Deserialize<AlertNotificationDto>(await response.Content.ReadAsStringAsync(), JsonOptions);
             Assert.True(updated!.IsRead);
         }
 

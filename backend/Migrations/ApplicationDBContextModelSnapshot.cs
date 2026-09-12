@@ -397,6 +397,9 @@ namespace api.Migrations
                     b.Property<DateTime?>("TriggeredAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal?>("TriggeredPrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AppUserId");
@@ -404,6 +407,30 @@ namespace api.Migrations
                     b.HasIndex("StockId");
 
                     b.ToTable("PriceAlerts");
+                });
+
+            modelBuilder.Entity("api.Models.PriceHistoryPoint", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("RecordedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockId", "RecordedAt");
+
+                    b.ToTable("PriceHistory");
                 });
 
             modelBuilder.Entity("api.Models.Stock", b =>
@@ -481,6 +508,34 @@ namespace api.Migrations
                     b.HasIndex("AppUserId");
 
                     b.ToTable("Transactions");
+                });
+
+            modelBuilder.Entity("api.Models.WatchlistEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AppUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StockId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockId");
+
+                    b.HasIndex("AppUserId", "StockId")
+                        .IsUnique();
+
+                    b.ToTable("WatchlistEntries");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -600,6 +655,17 @@ namespace api.Migrations
                     b.Navigation("Stock");
                 });
 
+            modelBuilder.Entity("api.Models.PriceHistoryPoint", b =>
+                {
+                    b.HasOne("api.Models.Stock", "Stock")
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Stock");
+                });
+
             modelBuilder.Entity("api.Models.Transaction", b =>
                 {
                     b.HasOne("api.Models.AppUser", "AppUser")
@@ -609,6 +675,25 @@ namespace api.Migrations
                         .IsRequired();
 
                     b.Navigation("AppUser");
+                });
+
+            modelBuilder.Entity("api.Models.WatchlistEntry", b =>
+                {
+                    b.HasOne("api.Models.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("api.Models.Stock", "Stock")
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AppUser");
+
+                    b.Navigation("Stock");
                 });
 
             modelBuilder.Entity("api.Models.AppUser", b =>

@@ -1,5 +1,6 @@
 using api.Caching;
 using api.Dtos;
+using api.Extensions;
 using api.Dtos.Portfolio;
 using api.Helpers;
 using api.Interfaces;
@@ -65,13 +66,16 @@ namespace api.Service
         private const string ConcurrencyErrorMessage =
             "Your account was updated by another request while this operation was in progress. Please try again.";
 
+        private static DomainException ConcurrencyConflict() =>
+            new(ErrorCodes.PortfolioConcurrentUpdate, ConcurrencyErrorMessage);
+
         private static void EnsureIdentityUpdateSucceeded(IdentityResult updateResult)
         {
             if (updateResult.Succeeded)
                 return;
 
             if (updateResult.Errors.Any(e => e.Code == "ConcurrencyFailure"))
-                throw new InvalidOperationException(ConcurrencyErrorMessage);
+                throw ConcurrencyConflict();
 
             throw new Exception("Failed to update user wallet balance.");
         }
@@ -91,16 +95,27 @@ namespace api.Service
         public async Task<object> BuyStockAsync(AppUser user, string symbol, int quantity)
         {
             if (quantity <= 0)
-                throw new ArgumentException("Quantity must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.PortfolioQuantityNotPositive,
+                    "Quantity must be greater than 0"
+                );
 
             var stock = await _stockRepo.GetBySymbolAsync(symbol);
             if (stock == null)
-                throw new InvalidOperationException("Stock not found");
+                throw new DomainException(ErrorCodes.PortfolioStockNotFound, "Stock not found");
 
             decimal totalCost = stock.Purchase * quantity;
 
             if (user.WalletBalance < totalCost)
-                throw new InvalidOperationException($"Insufficient funds. Required: ${totalCost:F2}, Available: ${user.WalletBalance:F2}");
+                throw new DomainException(
+                    ErrorCodes.PortfolioInsufficientFunds,
+                    $"Insufficient funds. Required: ${totalCost.ToInvariantAmount()}, Available: ${user.WalletBalance.ToInvariantAmount()}",
+                    new Dictionary<string, string>
+                    {
+                        ["required"] = totalCost.ToInvariantAmount(),
+                        ["available"] = user.WalletBalance.ToInvariantAmount(),
+                    }
+                );
 
             object result;
             try
@@ -150,7 +165,7 @@ namespace api.Service
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException(ConcurrencyErrorMessage);
+                throw ConcurrencyConflict();
             }
 
             await InvalidatePortfolioCacheAsync(user.Id);
@@ -160,15 +175,27 @@ namespace api.Service
         public async Task<object> SellStockAsync(AppUser user, string symbol, int quantity)
         {
             if (quantity <= 0)
-                throw new ArgumentException("Quantity must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.PortfolioQuantityNotPositive,
+                    "Quantity must be greater than 0"
+                );
 
             var stock = await _stockRepo.GetBySymbolAsync(symbol);
             if (stock == null)
-                throw new InvalidOperationException("Stock not found");
+                throw new DomainException(ErrorCodes.PortfolioStockNotFound, "Stock not found");
 
             var existingPosition = await _portfolioRepo.GetByAppUserAndStockId(user.Id, stock.Id);
             if (existingPosition == null || existingPosition.Quantity < quantity)
-                throw new InvalidOperationException("Insufficient stock quantity in portfolio to execute this sale");
+                throw new DomainException(
+                    ErrorCodes.PortfolioInsufficientShares,
+                    "Insufficient stock quantity in portfolio to execute this sale",
+                    new Dictionary<string, string>
+                    {
+                        ["symbol"] = stock.Symbol,
+                        ["requested"] = quantity.ToInvariantAmount(),
+                        ["held"] = (existingPosition?.Quantity ?? 0).ToInvariantAmount(),
+                    }
+                );
 
             decimal totalRevenue = stock.Purchase * quantity;
 
@@ -206,7 +233,7 @@ namespace api.Service
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException(ConcurrencyErrorMessage);
+                throw ConcurrencyConflict();
             }
 
             await InvalidatePortfolioCacheAsync(user.Id);
@@ -216,7 +243,10 @@ namespace api.Service
         public async Task<object> DepositFundsAsync(AppUser user, decimal amount)
         {
             if (amount <= 0)
-                throw new ArgumentException("Deposit amount must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.PortfolioDepositNotPositive,
+                    "Deposit amount must be greater than 0"
+                );
 
             object result;
             try
@@ -242,7 +272,7 @@ namespace api.Service
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException(ConcurrencyErrorMessage);
+                throw ConcurrencyConflict();
             }
 
             await InvalidatePortfolioCacheAsync(user.Id);
@@ -252,10 +282,21 @@ namespace api.Service
         public async Task<object> WithdrawFundsAsync(AppUser user, decimal amount)
         {
             if (amount <= 0)
-                throw new ArgumentException("Withdraw amount must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.PortfolioWithdrawNotPositive,
+                    "Withdraw amount must be greater than 0"
+                );
 
             if (user.WalletBalance < amount)
-                throw new InvalidOperationException($"Insufficient funds. Available: ${user.WalletBalance:F2}");
+                throw new DomainException(
+                    ErrorCodes.PortfolioInsufficientBalance,
+                    $"Insufficient funds. Available: ${user.WalletBalance.ToInvariantAmount()}",
+                    new Dictionary<string, string>
+                    {
+                        ["requested"] = amount.ToInvariantAmount(),
+                        ["available"] = user.WalletBalance.ToInvariantAmount(),
+                    }
+                );
 
             object result;
             try
@@ -281,7 +322,7 @@ namespace api.Service
             }
             catch (DbUpdateConcurrencyException)
             {
-                throw new InvalidOperationException(ConcurrencyErrorMessage);
+                throw ConcurrencyConflict();
             }
 
             await InvalidatePortfolioCacheAsync(user.Id);

@@ -1,4 +1,5 @@
 using api.Dtos.Portfolio;
+using api.Extensions;
 using api.Interfaces;
 using api.Models;
 
@@ -24,6 +25,8 @@ namespace api.Service
                 return new RebalancingRecommendationDto
                 {
                     Adjustments = [],
+                    HoldingCount = 0,
+                    TargetAllocationPercent = 0m,
                     Summary = "No open positions to rebalance.",
                 };
             }
@@ -39,8 +42,13 @@ namespace api.Service
             return new RebalancingRecommendationDto
             {
                 Adjustments = adjustments,
+                // The figures travel as data so the wallet can write the
+                // summary in whichever language it is showing; the sentence
+                // below stays for anything reading the API directly.
+                HoldingCount = metrics.Allocations.Count,
+                TargetAllocationPercent = targetPercent,
                 Summary =
-                    $"Equal-weight target across {metrics.Allocations.Count} holding(s) is {targetPercent:F1}% each.",
+                    $"Equal-weight target across {metrics.Allocations.Count} holding(s) is {targetPercent.ToInvariantPercent()}% each.",
             };
         }
 

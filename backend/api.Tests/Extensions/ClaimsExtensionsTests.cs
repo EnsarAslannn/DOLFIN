@@ -86,6 +86,28 @@ namespace api.Tests.Extensions
             userManager.Verify(m => m.FindByIdAsync(It.IsAny<string>()), Times.Never);
         }
 
+        // A real token carries both. The id is what identity should hang off:
+        // a username is a field a user could later be allowed to change, and a
+        // claim naming one would then have quietly gone stale.
+        [Fact]
+        public async Task GetAuthenticatedUserAsync_WithBothClaims_PrefersTheId()
+        {
+            var user = new AppUser { Id = "u5", UserName = "trader5" };
+            var userManager = MockUserManager.Create();
+            userManager.Setup(m => m.FindByIdAsync("u5")).ReturnsAsync(user);
+
+            var principal = MakePrincipal(
+                new Claim(ClaimTypes.Name, "trader5"),
+                new Claim(ClaimTypes.NameIdentifier, "u5")
+            );
+
+            var result = await principal.GetAuthenticatedUserAsync(userManager.Object);
+
+            Assert.Same(user, result);
+            userManager.Verify(m => m.FindByIdAsync("u5"), Times.Once);
+            userManager.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        }
+
         [Fact]
         public async Task GetAuthenticatedUserAsync_NameClaimPresentButUnknownUser_ReturnsNull()
         {

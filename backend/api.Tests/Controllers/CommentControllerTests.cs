@@ -180,6 +180,37 @@ namespace api.Tests.Controllers
             Assert.IsType<OkObjectResult>(result);
         }
 
+        // This action used to return the EF entity itself, which put the
+        // author's internal user id on the wire and made it the odd one out in
+        // a controller that answers in DTOs everywhere else.
+        [Fact]
+        public async Task Delete_WhenOwner_AnswersWithADtoNotTheEntity()
+        {
+            var owner = MakeUser("owner-id", "owner");
+
+            var stored = MakeComment(1, owner.Id);
+            stored.AppUser = owner;
+
+            var commentRepo = new Mock<ICommentRepository>();
+            commentRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(stored);
+            // The delete path does not load the author, exactly as the
+            // repository behaves.
+            commentRepo.Setup(r => r.DeleteAsync(1)).ReturnsAsync(MakeComment(1, owner.Id));
+
+            var stockRepo = new Mock<IStockRepository>();
+            var userManager = MockUserManager.Create();
+            userManager.Setup(u => u.FindByNameAsync("owner")).ReturnsAsync(owner);
+
+            var controller = CreateController(commentRepo, stockRepo, userManager, "owner");
+
+            var result = Assert.IsType<OkObjectResult>(await controller.Delete(1));
+
+            var dto = Assert.IsType<CommentDto>(result.Value);
+            Assert.Equal(1, dto.Id);
+            Assert.Equal("Existing title", dto.Title);
+            Assert.Equal("owner", dto.CreatedBy);
+        }
+
         [Fact]
         public async Task Delete_WhenCommentMissing_ReturnsNotFound()
         {

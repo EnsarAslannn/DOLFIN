@@ -3,10 +3,12 @@ using api.Dtos.Portfolio;
 using api.Extensions;
 using api.Helpers;
 using api.Interfaces;
+using api.Service;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers
 {
@@ -43,9 +45,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<PortfolioDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetUserPortfolio()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var userPortfolio = await _portfolioService.GetUserPortfolioAsync(appUser);
             return Ok(userPortfolio);
@@ -63,9 +65,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(PortfolioMetricsDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetMetrics()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var metrics = await _analyticsService.GetMetricsAsync(appUser);
             return Ok(metrics);
@@ -83,9 +85,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<string>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllocationWarnings()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var warnings = await _analyticsService.GetAllocationWarningsAsync(appUser);
             return Ok(warnings);
@@ -103,9 +105,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(RebalancingRecommendationDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetRebalancingRecommendation()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var recommendation = await _rebalancingService.GetRecommendationAsync(appUser);
             return Ok(recommendation);
@@ -127,9 +129,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTransactionHistory([FromQuery] TransactionQueryObject query)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var transactions = await _portfolioService.GetTransactionHistoryAsync(appUser, query);
             return Ok(transactions);
@@ -146,26 +148,23 @@ namespace api.Controllers
         /// <response code="200">The trade succeeded; the response carries the updated position.</response>
         /// <response code="400">Unknown symbol, non-positive quantity, or insufficient funds.</response>
         [HttpPost]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPortfolio([FromBody] TradeRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.BuyStockAsync(appUser, request.Symbol, request.Quantity);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -176,26 +175,23 @@ namespace api.Controllers
         /// <response code="200">The trade succeeded; the response carries the updated position.</response>
         /// <response code="400">Unknown symbol, non-positive quantity, or more shares requested than held.</response>
         [HttpPost("sell")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SellPortfolio([FromBody] TradeRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.SellStockAsync(appUser, request.Symbol, request.Quantity);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -206,22 +202,23 @@ namespace api.Controllers
         /// <response code="200">The deposit was applied; the response carries the new balance.</response>
         /// <response code="400">The amount is not a positive value.</response>
         [HttpPost("deposit")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DepositFunds([FromBody] AmountRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.DepositFundsAsync(appUser, request.Amount);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
@@ -232,26 +229,23 @@ namespace api.Controllers
         /// <response code="200">The withdrawal was applied; the response carries the new balance.</response>
         /// <response code="400">The amount is not positive, or exceeds the available balance.</response>
         [HttpPost("withdraw")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> WithdrawFunds([FromBody] AmountRequestDto request)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
                 var result = await _portfolioService.WithdrawFundsAsync(appUser, request.Amount);
                 return Ok(result);
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
     }

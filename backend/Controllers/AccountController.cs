@@ -1,6 +1,7 @@
 using api.Dtos.Account;
 using api.Extensions;
 using api.Interfaces;
+using api.Service;
 using api.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
@@ -58,7 +59,7 @@ namespace api.Controllers
             var user = await _userManager.FindByNameAsync(loginDto.UserName);
 
             if (user == null)
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(ApiErrors.InvalidCredentials());
 
             var result = await _signInManager.CheckPasswordSignInAsync(
                 user,
@@ -67,10 +68,10 @@ namespace api.Controllers
             );
 
             if (result.IsLockedOut)
-                return Unauthorized("Account is temporarily locked due to too many failed login attempts. Please try again later.");
+                return Unauthorized(ApiErrors.LockedOut());
 
             if (!result.Succeeded)
-                return Unauthorized("Invalid username or password");
+                return Unauthorized(ApiErrors.InvalidCredentials());
 
             SetAuthCookie(await _tokenService.CreateToken(user));
 
@@ -154,27 +155,13 @@ namespace api.Controllers
                 await _userManager.UpdateSecurityStampAsync(user);
             }
 
-            Response.Cookies.Delete("access_token");
+            AuthCookie.Clear(Response);
             Response.Cookies.Delete("XSRF-TOKEN");
             Response.Cookies.Delete("af-token");
             return Ok();
         }
 
-        private void SetAuthCookie(string token)
-        {
-            Response.Cookies.Append(
-                "access_token",
-                token,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTimeOffset.UtcNow.AddHours(4),
-                }
-            );
-
-        }
+        private void SetAuthCookie(string token) => AuthCookie.Write(Response, token);
 
         private void IssueCsrfCookie()
         {
@@ -210,9 +197,9 @@ namespace api.Controllers
         {
             IssueCsrfCookie();
 
-            var user = await User.GetAuthenticatedUserAsync(_userManager);
+            var user = await this.GetAuthenticatedUserAsync(_userManager);
             if (user == null)
-                return Unauthorized("User identity context could not be resolved from token claims.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             return Ok(new { user.WalletBalance, user.UserName, user.Email });
         }
@@ -239,7 +226,7 @@ namespace api.Controllers
             if (User.Identity?.IsAuthenticated != true)
                 return NoContent();
 
-            var user = await User.GetAuthenticatedUserAsync(_userManager);
+            var user = await this.GetAuthenticatedUserAsync(_userManager);
             if (user == null)
                 return NoContent();
 

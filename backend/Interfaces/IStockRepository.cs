@@ -23,5 +23,13 @@ namespace api.Interfaces
         Task<List<Stock>> GetMarketTrendsAsync();
 
         Task<int> UpdatePricesAsync(Func<Stock, decimal> nextPrice);
+
+        /// <summary>
+        /// The symbols for a set of ids, in one query. The price-history
+        /// response labels each series with its ticker, and fetching the stocks
+        /// one at a time to read a single string off each is the N+1 the
+        /// interceptor exists to complain about.
+        /// </summary>
+        Task<Dictionary<int, string>> GetSymbolsByIdsAsync(IReadOnlyCollection<int> stockIds);
     }
 }

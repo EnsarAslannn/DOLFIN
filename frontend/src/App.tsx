@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css"
 import { ToastContainer } from "react-toastify"
 import { UserProvider } from "./Context/AuthContext"
 import { useHashScroll } from "./Helpers/useHashScroll"
+import SessionExpired from "./Components/SessionExpired/SessionExpired"
 
 function App() {
   useHashScroll()
@@ -14,6 +15,9 @@ function App() {
       <UserProvider>
         <Navbar />
         <Outlet />
+        {/* Inside the provider: it needs the auth context to know whether
+            there was a session to lose, and to clear it. */}
+        <SessionExpired />
         <ToastContainer theme="dark" position="bottom-right" />
       </UserProvider>
     </>

@@ -1,3 +1,4 @@
+using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using Microsoft.Extensions.Logging;
@@ -29,11 +30,33 @@ namespace api.Service
         )
         {
             if (targetPrice <= 0)
-                throw new ArgumentException("Target price must be greater than 0");
+                throw new DomainException(
+                    ErrorCodes.AlertTargetPriceNotPositive,
+                    "Target price must be greater than 0"
+                );
 
             var stock = await _stockRepo.GetByIdAsync(stockId);
             if (stock == null)
-                throw new InvalidOperationException("Stock not found");
+                throw new DomainException(ErrorCodes.AlertStockNotFound, "Stock not found");
+
+            // The endpoint has always documented a 400 for a duplicate alert;
+            // nothing checked for one, so the same watch could be set any
+            // number of times and would then raise that many identical
+            // notifications the moment it fired.
+            if (
+                await _alertRepo.HasPendingDuplicateAsync(user.Id, stockId, targetPrice, condition)
+            )
+            {
+                throw new DomainException(
+                    ErrorCodes.AlertDuplicatePending,
+                    "You already have a pending alert for this stock at this price.",
+                    new Dictionary<string, string>
+                    {
+                        ["symbol"] = stock.Symbol,
+                        ["targetPrice"] = targetPrice.ToInvariantAmount(),
+                    }
+                );
+            }
 
             var alert = new PriceAlert
             {
@@ -48,8 +71,8 @@ namespace api.Service
             return created;
         }
 
-        public Task<List<PriceAlert>> GetActiveAlertsAsync(AppUser user) =>
-            _alertRepo.GetActiveAlertsForUserAsync(user.Id);
+        public Task<List<PriceAlert>> GetAlertsAsync(AppUser user) =>
+            _alertRepo.GetAlertsForUserAsync(user.Id);
 
         public Task<PriceAlert?> GetAlertByIdAsync(int alertId) => _alertRepo.GetByIdAsync(alertId);
 
@@ -83,7 +106,13 @@ namespace api.Service
                 if (!shouldTrigger)
                     continue;
 
+                // IsActive is cleared alongside TriggeredAt so the flag stops
+                // being a field nothing ever wrote: an alert that has fired is
+                // no longer being watched, and this is the only thing that
+                // stops watching it.
                 alert.TriggeredAt = DateTime.UtcNow;
+                alert.IsActive = false;
+                alert.TriggeredPrice = currentPrice;
                 await _alertRepo.UpdateAsync(alert);
 
                 await _alertRepo.CreateNotificationAsync(
@@ -92,7 +121,7 @@ namespace api.Service
                         PriceAlertId = alert.Id,
                         AppUserId = alert.AppUserId,
                         Message =
-                            $"{alert.Stock.Symbol} reached {currentPrice:F2} (target {alert.TargetPrice:F2}).",
+                            $"{alert.Stock.Symbol} reached {currentPrice.ToInvariantAmount()} (target {alert.TargetPrice.ToInvariantAmount()}).",
                     }
                 );
 

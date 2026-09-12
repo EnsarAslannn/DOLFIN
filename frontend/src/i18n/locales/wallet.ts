@@ -33,6 +33,66 @@ export const wallet = {
       "Your balance is sitting idle. Search for a ticker to put it to work and it will appear here beside your cash.",
     "wallet.empty.cta": "Find a company",
 
+    // Portfolio health: the concentration warnings and the equal-weight
+    // rebalance the API has always computed and nothing ever displayed.
+    "health.eyebrow": "Portfolio health",
+    "health.title": "How your capital is spread",
+    "health.lead":
+      "Two reads on the same positions: where you are concentrated, and what an equal-weight book would look like.",
+    "health.loading": "Reading your allocation",
+    "health.empty.title": "Nothing to weigh yet",
+    "health.empty.description":
+      "Concentration and rebalancing need at least one open position. Buy something and this fills in.",
+
+    "health.warnings.title": "Concentration",
+    "health.warnings.clear":
+      "Nothing is oversized. No position is above 40% and no sector above 60%.",
+
+    "health.rebalance.title": "Equal-weight target",
+    "health.rebalance.summary":
+      "Spread evenly, each of your {{count}} holdings would sit at {{target}}%.",
+    "health.rebalance.none": "No open positions to rebalance.",
+    "health.rebalance.hint":
+      "A suggestion, not an order. Nothing here is bought or sold for you.",
+    "health.col.asset": "Asset",
+    "health.col.current": "Now",
+    "health.col.target": "Target",
+    "health.col.action": "Suggestion",
+    "health.action.Buy": "Buy {{quantity}}",
+    "health.action.Sell": "Sell {{quantity}}",
+    "health.action.Hold": "Hold",
+    "health.table.label": "Rebalancing suggestions",
+
+    // The sparkline on each position row.
+    "sparkline.empty": "No history yet",
+    "sparkline.label.up": "{{symbol}} is up {{percent}}% over the recent window",
+    "sparkline.label.down": "{{symbol}} is down {{percent}}% over the recent window",
+    "wallet.col.trend": "Recent",
+
+    // The watchlist: following a company without owning it, and without
+    // having to name a price to watch for.
+    "watchlist.eyebrow": "Watchlist",
+    "watchlist.title": "Companies you are following",
+    "watchlist.lead":
+      "Somewhere to keep a company you have not made up your mind about. No position, no target price.",
+    "watchlist.loading": "Reading your watchlist",
+    "watchlist.empty.title": "Nothing on the list",
+    "watchlist.empty.description":
+      "Follow a company from the search page and it shows up here with its current price.",
+    "watchlist.empty.cta": "Find a company",
+    "watchlist.table.label": "Watchlist",
+    "watchlist.col.company": "Company",
+    "watchlist.col.sector": "Sector",
+    "watchlist.col.price": "Price",
+    "watchlist.col.action": "",
+    "watchlist.remove": "Unfollow",
+    "watchlist.remove.aria": "Stop following {{symbol}}",
+    "watchlist.follow": "Follow",
+    "watchlist.following": "Following",
+    "watchlist.follow.aria": "Follow {{symbol}}",
+    "watchlist.toast.added": "{{symbol}} added to your watchlist",
+    "watchlist.toast.removed": "{{symbol}} removed from your watchlist",
+
     "wallet.toast.invalidAmount": "Please enter a valid amount greater than 0",
     "wallet.toast.depositFailed": "Deposit failed. Please try again.",
     "wallet.toast.noUsd": "You do not have any USD balance to sell!",
@@ -72,6 +132,61 @@ export const wallet = {
     "wallet.empty.description":
       "Bakiyeniz şu an boşta duruyor. Değerlendirmek için bir hisse arayın; aldığınız hisse burada nakdinizin yanında görünecek.",
     "wallet.empty.cta": "Şirket bul",
+
+    "health.eyebrow": "Portföy sağlığı",
+    "health.title": "Sermayeniz nasıl dağılmış",
+    "health.lead":
+      "Aynı pozisyonlara iki bakış: nerede yoğunlaştığınız ve eşit ağırlıklı bir portföyün nasıl görüneceği.",
+    "health.loading": "Dağılımınız okunuyor",
+    "health.empty.title": "Henüz tartılacak bir şey yok",
+    "health.empty.description":
+      "Yoğunlaşma ve yeniden dengeleme için en az bir açık pozisyon gerekir. Bir şey aldığınızda burası dolar.",
+
+    "health.warnings.title": "Yoğunlaşma",
+    "health.warnings.clear":
+      "Aşırı büyüyen bir kalem yok. Hiçbir pozisyon %40'ın, hiçbir sektör %60'ın üzerinde değil.",
+
+    "health.rebalance.title": "Eşit ağırlık hedefi",
+    "health.rebalance.summary":
+      "Eşit dağıtıldığında {{count}} pozisyonunuzun her biri %{{target}} olurdu.",
+    "health.rebalance.none": "Yeniden dengelenecek açık pozisyon yok.",
+    "health.rebalance.hint":
+      "Bu bir öneri, emir değil. Burada sizin adınıza hiçbir alım satım yapılmaz.",
+    "health.col.asset": "Varlık",
+    "health.col.current": "Şu an",
+    "health.col.target": "Hedef",
+    "health.col.action": "Öneri",
+    "health.action.Buy": "{{quantity}} al",
+    "health.action.Sell": "{{quantity}} sat",
+    "health.action.Hold": "Tut",
+    "health.table.label": "Yeniden dengeleme önerileri",
+
+    "sparkline.empty": "Henüz geçmiş yok",
+    "sparkline.label.up": "{{symbol}} son dönemde %{{percent}} yükseldi",
+    "sparkline.label.down": "{{symbol}} son dönemde %{{percent}} düştü",
+    "wallet.col.trend": "Son hareket",
+
+    "watchlist.eyebrow": "İzleme listesi",
+    "watchlist.title": "Takip ettiğiniz şirketler",
+    "watchlist.lead":
+      "Hakkında henüz karar vermediğiniz şirketleri tutacağınız yer. Pozisyon yok, hedef fiyat yok.",
+    "watchlist.loading": "İzleme listeniz okunuyor",
+    "watchlist.empty.title": "Listede bir şey yok",
+    "watchlist.empty.description":
+      "Arama sayfasından bir şirketi takibe alın; güncel fiyatıyla birlikte burada görünsün.",
+    "watchlist.empty.cta": "Şirket bul",
+    "watchlist.table.label": "İzleme listesi",
+    "watchlist.col.company": "Şirket",
+    "watchlist.col.sector": "Sektör",
+    "watchlist.col.price": "Fiyat",
+    "watchlist.col.action": "",
+    "watchlist.remove": "Takibi bırak",
+    "watchlist.remove.aria": "{{symbol}} takibini bırak",
+    "watchlist.follow": "Takip et",
+    "watchlist.following": "Takipte",
+    "watchlist.follow.aria": "{{symbol}} takibe al",
+    "watchlist.toast.added": "{{symbol}} izleme listenize eklendi",
+    "watchlist.toast.removed": "{{symbol}} izleme listenizden çıkarıldı",
 
     "wallet.toast.invalidAmount": "Lütfen 0'dan büyük geçerli bir tutar girin",
     "wallet.toast.depositFailed": "Para yatırma işlemi başarısız oldu. Lütfen tekrar deneyin.",

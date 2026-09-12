@@ -20,6 +20,25 @@ namespace api.Mappers
             };
         }
 
+        public static PricePointDto ToPricePointDto(this PriceHistoryPoint point)
+        {
+            return new PricePointDto { Price = point.Price, RecordedAt = point.RecordedAt };
+        }
+
+        public static WatchlistItemDto ToWatchlistItemDto(this WatchlistEntry entry)
+        {
+            return new WatchlistItemDto
+            {
+                Id = entry.Id,
+                StockId = entry.StockId,
+                Symbol = entry.Stock.Symbol,
+                CompanyName = entry.Stock.CompanyName,
+                Industry = entry.Stock.Industry,
+                Purchase = entry.Stock.Purchase,
+                CreatedAt = entry.CreatedAt,
+            };
+        }
+
         public static Stock ToStockFromCreateDto(this CreateStockRequestDto stockDto)
         {
             return new Stock

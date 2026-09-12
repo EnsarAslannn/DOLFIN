@@ -1,11 +1,13 @@
 using api.Dtos.Alerts;
 using api.Extensions;
 using api.Interfaces;
+using api.Service;
 using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers
 {
@@ -32,18 +34,24 @@ namespace api.Controllers
         /// A background service re-checks active alerts on an interval and
         /// raises a notification once the condition is met, so alerts do not
         /// fire in real time.
+        ///
+        /// The same stock, price and direction cannot be watched twice at
+        /// once: while an identical alert is still pending this is rejected as
+        /// a duplicate. Once that alert has fired, setting it again is allowed
+        /// — that is how a watch is re-armed.
         /// </remarks>
         /// <param name="dto">The stock, target price and trigger condition (above or below).</param>
         /// <response code="201">The alert was created.</response>
-        /// <response code="400">Unknown stock, invalid target price, or a duplicate alert.</response>
+        /// <response code="400">Unknown stock, invalid target price, or an identical alert is already pending.</response>
         [HttpPost]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(typeof(PriceAlertDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreatePriceAlertRequestDto dto)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             try
             {
@@ -55,29 +63,32 @@ namespace api.Controllers
                 );
                 return CreatedAtAction(nameof(GetAlerts), null, alert.ToPriceAlertDto());
             }
-            catch (ArgumentException ex)
+            catch (DomainException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
+                return BadRequest(ex.ToApiError());
             }
         }
 
         /// <summary>
-        /// Lists the signed-in user's alerts that have not fired yet.
+        /// Lists all of the signed-in user's price alerts, newest first.
         /// </summary>
-        /// <response code="200">The user's active alerts.</response>
+        /// <remarks>
+        /// Both alerts still waiting on their condition and alerts that have
+        /// already fired are returned — the wallet shows the two together.
+        /// <c>triggeredAt</c> is what tells them apart: it is null while the
+        /// alert is still being watched and carries the firing time once it
+        /// has gone off. Deleting an alert is what removes it from this list.
+        /// </remarks>
+        /// <response code="200">The user's alerts, pending and fired alike.</response>
         [HttpGet]
         [ProducesResponseType(typeof(List<PriceAlertDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAlerts()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
-            var alerts = await _alertService.GetActiveAlertsAsync(appUser);
+            var alerts = await _alertService.GetAlertsAsync(appUser);
             return Ok(alerts.Select(a => a.ToPriceAlertDto()));
         }
 
@@ -93,18 +104,19 @@ namespace api.Controllers
         /// <response code="403">The alert belongs to a different user.</response>
         /// <response code="404">No alert exists with that id.</response>
         [HttpDelete("{id:int}")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var alert = await _alertService.GetAlertByIdAsync(id);
             if (alert == null)
-                return NotFound("Alert not found");
+                return NotFound(ApiErrors.AlertNotFound());
 
             if (alert.AppUserId != appUser.Id)
                 return Forbid();
@@ -121,9 +133,9 @@ namespace api.Controllers
         [ProducesResponseType(typeof(List<AlertNotificationDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetNotifications()
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var notifications = await _alertService.GetNotificationsAsync(appUser);
             return Ok(notifications.Select(n => n.ToAlertNotificationDto()));
@@ -136,19 +148,25 @@ namespace api.Controllers
         /// <response code="200">The updated notification.</response>
         /// <response code="403">The notification belongs to a different user.</response>
         /// <response code="404">No notification exists with that id.</response>
+        // Deliberately outside the "write" rate limit. "Mark all read" in the
+        // navbar bell fires one of these per unread notification, all at once
+        // and with no ceiling, so a per-minute budget would break the feature
+        // for exactly the users who most need it. It flips a boolean on a row
+        // the caller already owns, which is not worth defending at this cost.
+        // The bulk endpoint that would make this moot is a separate change.
         [HttpPost("notifications/{id:int}/read")]
         [ProducesResponseType(typeof(AlertNotificationDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> MarkNotificationRead([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var notification = await _alertService.GetNotificationByIdAsync(id);
             if (notification == null)
-                return NotFound("Notification not found");
+                return NotFound(ApiErrors.AlertNotificationNotFound());
 
             if (notification.AppUserId != appUser.Id)
                 return Forbid();

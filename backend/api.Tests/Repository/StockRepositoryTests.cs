@@ -102,6 +102,40 @@ namespace api.Tests.Repository
             Assert.Equal("MSFT", result[0].Symbol);
         }
 
+        // Nobody types a company's capitalisation into a search box. The real
+        // guard for this is the integration test against PostgreSQL, whose
+        // LIKE is case-sensitive where InMemory's Contains is not -- this one
+        // only keeps the lowering from being dropped from the query shape.
+        [Fact]
+        public async Task GetAllAsync_FiltersByCompanyName_IgnoringCase()
+        {
+            var context = await SeedAsync(
+                MakeStock("AAPL", companyName: "Apple Inc."),
+                MakeStock("MSFT", companyName: "Microsoft Corporation")
+            );
+            var repo = new StockRepository(context);
+
+            var result = await repo.GetAllAsync(new QueryObject { CompanyName = "microsoft" });
+
+            Assert.Single(result);
+            Assert.Equal("MSFT", result[0].Symbol);
+        }
+
+        [Fact]
+        public async Task GetAllAsync_FiltersBySymbol_IgnoringCase()
+        {
+            var context = await SeedAsync(
+                MakeStock("AAPL", companyName: "Apple Inc."),
+                MakeStock("MSFT", companyName: "Microsoft Corporation")
+            );
+            var repo = new StockRepository(context);
+
+            var result = await repo.GetAllAsync(new QueryObject { Symbol = "msft" });
+
+            Assert.Single(result);
+            Assert.Equal("MSFT", result[0].Symbol);
+        }
+
         [Fact]
         public async Task GetAllAsync_SortsByMarketCapDescending()
         {

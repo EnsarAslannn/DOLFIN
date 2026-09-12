@@ -41,14 +41,24 @@ namespace api.Repository
         {
             var stocks = _context.Stock.AsQueryable();
 
+            // Lowered on both sides rather than left to a bare Contains: that
+            // compiles to a plain LIKE, which PostgreSQL matches
+            // case-sensitively, so searching "microsoft" found nothing while
+            // "Microsoft" found the row. Npgsql turns this into
+            // `lower(col) LIKE '%term%'`. EF.Functions.ILike would read better
+            // but has no implementation on the InMemory provider the unit
+            // tests run against, and a leading wildcard rules out an index
+            // either way, so nothing is given up here.
             if (!string.IsNullOrWhiteSpace(query.CompanyName))
             {
-                stocks = stocks.Where(s => s.CompanyName.Contains(query.CompanyName));
+                var companyName = query.CompanyName.ToLower();
+                stocks = stocks.Where(s => s.CompanyName.ToLower().Contains(companyName));
             }
 
             if (!string.IsNullOrWhiteSpace(query.Symbol))
             {
-                stocks = stocks.Where(s => s.Symbol.Contains(query.Symbol));
+                var symbol = query.Symbol.ToLower();
+                stocks = stocks.Where(s => s.Symbol.ToLower().Contains(symbol));
             }
 
             if (!string.IsNullOrWhiteSpace(query.SortBy))
@@ -126,6 +136,19 @@ namespace api.Repository
             await _context.SaveChangesAsync();
 
             return existingStock;
+        }
+
+        public async Task<Dictionary<int, string>> GetSymbolsByIdsAsync(
+            IReadOnlyCollection<int> stockIds
+        )
+        {
+            if (stockIds.Count == 0)
+                return [];
+
+            return await _context
+                .Stock.Where(s => stockIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Symbol })
+                .ToDictionaryAsync(s => s.Id, s => s.Symbol);
         }
 
         public async Task<List<Stock>> GetMarketTrendsAsync()

@@ -27,23 +27,23 @@ namespace api.Tests.Service
         ) => new(alertRepo.Object, stockRepo.Object, new Mock<ILogger<PriceAlertService>>().Object);
 
         [Fact]
-        public async Task CreateAlertAsync_ZeroOrNegativeTargetPrice_ThrowsArgumentException()
+        public async Task CreateAlertAsync_ZeroOrNegativeTargetPrice_ThrowsDomainException()
         {
             var service = CreateService(new Mock<IPriceAlertRepository>(), new Mock<IStockRepository>());
 
-            await Assert.ThrowsAsync<ArgumentException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.CreateAlertAsync(MakeUser(), 1, 0m, PriceAlertCondition.GreaterThanOrEqual)
             );
         }
 
         [Fact]
-        public async Task CreateAlertAsync_StockNotFound_ThrowsInvalidOperationException()
+        public async Task CreateAlertAsync_StockNotFound_ThrowsDomainException()
         {
             var stockRepo = new Mock<IStockRepository>();
             stockRepo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Stock?)null);
             var service = CreateService(new Mock<IPriceAlertRepository>(), stockRepo);
 
-            await Assert.ThrowsAsync<InvalidOperationException>(
+            await Assert.ThrowsAsync<DomainException>(
                 () => service.CreateAlertAsync(MakeUser(), 99, 200m, PriceAlertCondition.GreaterThanOrEqual)
             );
         }
@@ -65,6 +65,79 @@ namespace api.Tests.Service
 
             Assert.Equal(user.Id, alert.AppUserId);
             Assert.Equal(stock.Id, alert.StockId);
+            Assert.Equal(200m, alert.TargetPrice);
+            alertRepo.Verify(r => r.CreateAsync(It.IsAny<PriceAlert>()), Times.Once);
+        }
+
+        // Without this check the same watch could be set any number of times,
+        // and each copy raised its own identical notification the moment the
+        // price crossed.
+        [Fact]
+        public async Task CreateAlertAsync_IdenticalAlertAlreadyPending_ThrowsDomainException()
+        {
+            var user = MakeUser();
+            var stock = MakeStock();
+            var stockRepo = new Mock<IStockRepository>();
+            stockRepo.Setup(r => r.GetByIdAsync(stock.Id)).ReturnsAsync(stock);
+
+            var alertRepo = new Mock<IPriceAlertRepository>();
+            alertRepo
+                .Setup(r =>
+                    r.HasPendingDuplicateAsync(
+                        user.Id,
+                        stock.Id,
+                        200m,
+                        PriceAlertCondition.GreaterThanOrEqual
+                    )
+                )
+                .ReturnsAsync(true);
+
+            var service = CreateService(alertRepo, stockRepo);
+
+            await Assert.ThrowsAsync<DomainException>(
+                () =>
+                    service.CreateAlertAsync(
+                        user,
+                        stock.Id,
+                        200m,
+                        PriceAlertCondition.GreaterThanOrEqual
+                    )
+            );
+            alertRepo.Verify(r => r.CreateAsync(It.IsAny<PriceAlert>()), Times.Never);
+        }
+
+        // Only a *pending* duplicate is rejected. Re-setting a watch that has
+        // already gone off is how a user re-arms it.
+        [Fact]
+        public async Task CreateAlertAsync_MatchingAlertAlreadyFired_CreatesANewOne()
+        {
+            var user = MakeUser();
+            var stock = MakeStock();
+            var stockRepo = new Mock<IStockRepository>();
+            stockRepo.Setup(r => r.GetByIdAsync(stock.Id)).ReturnsAsync(stock);
+
+            var alertRepo = new Mock<IPriceAlertRepository>();
+            alertRepo
+                .Setup(r =>
+                    r.HasPendingDuplicateAsync(
+                        It.IsAny<string>(),
+                        It.IsAny<int>(),
+                        It.IsAny<decimal>(),
+                        It.IsAny<PriceAlertCondition>()
+                    )
+                )
+                .ReturnsAsync(false);
+            alertRepo.Setup(r => r.CreateAsync(It.IsAny<PriceAlert>())).ReturnsAsync((PriceAlert a) => a);
+
+            var service = CreateService(alertRepo, stockRepo);
+
+            var alert = await service.CreateAlertAsync(
+                user,
+                stock.Id,
+                200m,
+                PriceAlertCondition.GreaterThanOrEqual
+            );
+
             Assert.Equal(200m, alert.TargetPrice);
             alertRepo.Verify(r => r.CreateAsync(It.IsAny<PriceAlert>()), Times.Once);
         }
@@ -93,6 +166,13 @@ namespace api.Tests.Service
 
             Assert.Equal(1, triggeredCount);
             Assert.NotNull(alert.TriggeredAt);
+            // A fired alert is no longer being watched. Nothing used to write
+            // this flag, which left it permanently true on every row.
+            Assert.False(alert.IsActive);
+            // The price that actually fired used to be formatted into an
+            // English sentence and then discarded; a client cannot say
+            // "rose to 210" in any other language without it.
+            Assert.Equal(210m, alert.TriggeredPrice);
             alertRepo.Verify(r => r.UpdateAsync(alert), Times.Once);
             alertRepo.Verify(
                 r =>
@@ -129,6 +209,7 @@ namespace api.Tests.Service
 
             Assert.Equal(0, triggeredCount);
             Assert.Null(alert.TriggeredAt);
+            Assert.True(alert.IsActive);
             alertRepo.Verify(r => r.CreateNotificationAsync(It.IsAny<AlertNotification>()), Times.Never);
         }
 

@@ -11,6 +11,11 @@ namespace api.IntegrationTests
         private const string TestJwtSigningKey =
             "integration-test-signing-key-that-is-at-least-64-bytes-long-for-hs512-0000";
 
+        public const string ConfiguredCorsOrigin = "https://cors-config-probe.example";
+
+        public const string ConfiguredCorsOriginWithTrailingSlash =
+            "https://cors-slash-probe.example";
+
         private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:17-alpine").Build();
 
         private readonly RedisContainer _redis = new RedisBuilder("redis:7-alpine").Build();
@@ -35,6 +40,19 @@ namespace api.IntegrationTests
             Environment.SetEnvironmentVariable("PriceAlerts__Enabled", "false");
             Environment.SetEnvironmentVariable("RateLimiting__AuthPermitLimit", "1000");
             Environment.SetEnvironmentVariable("RateLimiting__AuthWindowSeconds", "60");
+            // Raised for the same reason as the auth limit: the suite writes
+            // constantly and would otherwise throttle itself. The test that
+            // actually exercises the limit builds its own host with
+            // WithWebHostBuilder and a limit of one.
+            Environment.SetEnvironmentVariable("RateLimiting__WritePermitLimit", "1000");
+            Environment.SetEnvironmentVariable("RateLimiting__WriteWindowSeconds", "60");
+            // Two extra CORS origins so CorsPolicyTests can prove the setting
+            // is read at all; the trailing slash on the second is deliberate,
+            // since a browser never sends one in the Origin header.
+            Environment.SetEnvironmentVariable(
+                "AllowedOrigins",
+                $"{ConfiguredCorsOrigin},{ConfiguredCorsOriginWithTrailingSlash}/"
+            );
         }
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)

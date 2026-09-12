@@ -40,6 +40,39 @@ namespace api.IntegrationTests
             Assert.Contains(stocks!, s => s.Symbol == "AAPL" && s.CompanyName == "Apple Inc.");
         }
 
+        // PostgreSQL's LIKE is case-sensitive, so a bare Contains() filter let
+        // "Microsoft" match while "microsoft" returned nothing. The InMemory
+        // provider the unit tests run on compares case-insensitively and can
+        // never catch that -- this is the test that does.
+        [Theory]
+        [InlineData("microsoft")]
+        [InlineData("MICROSOFT")]
+        [InlineData("Microsoft")]
+        public async Task GetAll_FiltersByCompanyName_RegardlessOfCase(string term)
+        {
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var response = await client.GetAsync($"/api/stock?companyName={term}&pageSize=100");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stocks = await response.Content.ReadFromJsonAsync<List<StockDto>>();
+            Assert.Contains(stocks!, s => s.Symbol == "MSFT");
+        }
+
+        [Theory]
+        [InlineData("aapl")]
+        [InlineData("AAPL")]
+        public async Task GetAll_FiltersBySymbol_RegardlessOfCase(string term)
+        {
+            var client = await AuthHelper.CreateAuthenticatedClientAsync(_factory);
+
+            var response = await client.GetAsync($"/api/stock?symbol={term}&pageSize=100");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var stocks = await response.Content.ReadFromJsonAsync<List<StockDto>>();
+            Assert.Contains(stocks!, s => s.Symbol == "AAPL");
+        }
+
         [Fact]
         public async Task Create_AsAdmin_SucceedsAndIsRetrievableById()
         {

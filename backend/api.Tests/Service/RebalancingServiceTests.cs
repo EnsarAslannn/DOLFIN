@@ -42,7 +42,33 @@ namespace api.Tests.Service
             var recommendation = await service.GetRecommendationAsync(MakeUser());
 
             Assert.Empty(recommendation.Adjustments);
+            Assert.Equal(0, recommendation.HoldingCount);
             Assert.Contains("No open positions", recommendation.Summary);
+        }
+
+        // The wallet writes its own summary from these two figures, so they
+        // have to be on the response rather than only inside the English
+        // sentence.
+        [Fact]
+        public async Task GetRecommendationAsync_ReportsTheTargetAsFiguresNotOnlyProse()
+        {
+            var metrics = new PortfolioMetricsDto
+            {
+                CurrentValue = 1000m,
+                Allocations =
+                [
+                    MakeAllocation(1, "AAPL", allocationPercent: 90m, currentValue: 900m, currentPrice: 100m),
+                    MakeAllocation(2, "WMT", allocationPercent: 10m, currentValue: 100m, currentPrice: 50m),
+                ],
+            };
+            var service = CreateService(metrics);
+
+            var recommendation = await service.GetRecommendationAsync(MakeUser());
+
+            Assert.Equal(2, recommendation.HoldingCount);
+            Assert.Equal(50m, recommendation.TargetAllocationPercent);
+            // Formatted the same way on every host, since a client reads it back.
+            Assert.Contains("50.0%", recommendation.Summary);
         }
 
         [Fact]

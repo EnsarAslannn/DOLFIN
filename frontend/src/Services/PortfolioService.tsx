@@ -1,5 +1,11 @@
 import axiosInstance from "../Helpers/AxiosInstance"
-import type { PortfolioGet, PortfolioMetrics, Transaction } from "../Models/Portfolio"
+import type {
+    AllocationWarning,
+    PortfolioGet,
+    PortfolioMetrics,
+    RebalancingRecommendation,
+    Transaction,
+} from "../Models/Portfolio"
 import { handleError } from "../Helpers/ErrorHandler"
 
 export const portfolioAddAPI = async (symbol: string, quantity: number) => {
@@ -73,6 +79,28 @@ export const portfolioTransactionsAPI = async (pageNumber = 1, pageSize = 20) =>
         const data = await axiosInstance.get<Transaction[]>("portfolio/transactions", {
             params: { pageNumber, pageSize },
         })
+        return data
+    } catch (error) {
+        handleError(error)
+    }
+}
+
+// The API has computed both of these since the analytics work landed, and
+// nothing ever asked for them -- there was no service function here at all,
+// so RebalancingService and the concentration warnings ran for an audience of
+// their own tests.
+export const portfolioWarningsAPI = async () => {
+    try {
+        const data = await axiosInstance.get<AllocationWarning[]>("portfolio/warnings")
+        return data
+    } catch (error) {
+        handleError(error)
+    }
+}
+
+export const portfolioRebalanceAPI = async () => {
+    try {
+        const data = await axiosInstance.get<RebalancingRecommendation>("portfolio/rebalance")
         return data
     } catch (error) {
         handleError(error)

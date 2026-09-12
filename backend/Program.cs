@@ -3,6 +3,7 @@ using System.Text;
 using api.Caching;
 using api.Data;
 using api.Diagnostics;
+using api.Extensions;
 using api.Interfaces;
 using api.Models;
 using api.Repository;
@@ -22,14 +23,54 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
+    // The levels below are the defaults; ReadFrom.Configuration lets the
+    // `Serilog` section in appsettings/environment override them, so the log
+    // volume can be turned up on a deployment without a code change. Before
+    // this call that section was read by nothing at all. The sinks stay in
+    // code on purpose -- a typo in configuration should not be able to leave
+    // production writing its logs nowhere.
     .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
     .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+    .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console()
     .WriteTo.File("Logs/dolfin-log-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
+// The origins the deployed frontends are actually served from. These stay in
+// code because getting CORS wrong locks every browser out of the API, and an
+// environment variable that is missing or mistyped must not be able to cause
+// that.
+string[] defaultCorsOrigins =
+[
+    "https://www.dol-fin.com",
+    "https://dol-fin.com",
+    "https://ensaraslannn.github.io",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://localhost:7109",
+    "http://localhost:5002",
+];
+
+// Anything a particular deployment needs on top -- a preview URL, a new
+// domain -- arrives as `AllowedOrigins`, a comma- or semicolon-separated
+// list. It adds to the defaults rather than replacing them. The setting was
+// documented in .env.example and set in appsettings.json long before anything
+// read it, so setting it used to do nothing at all.
+var corsOrigins = defaultCorsOrigins
+    .Concat(
+        (builder.Configuration["AllowedOrigins"] ?? string.Empty).Split(
+            [',', ';'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+        )
+    )
+    // A trailing slash makes an origin match nothing -- the browser never
+    // sends one in the Origin header.
+    .Select(origin => origin.TrimEnd('/'))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 
 builder.Services.AddCors(options =>
 {
@@ -37,15 +78,8 @@ builder.Services.AddCors(options =>
         "DolfinCorsPolicy",
         policy =>
         {
-            policy.WithOrigins(
-                    "https://www.dol-fin.com",
-                    "https://dol-fin.com",
-                    "https://ensaraslannn.github.io",
-                    "http://localhost:5173",
-                    "http://localhost:3000",
-                    "https://localhost:7109",
-                    "http://localhost:5002"
-                )
+            policy
+                .WithOrigins(corsOrigins)
                 .WithMethods("GET", "POST", "PUT", "DELETE")
                 .WithHeaders("Content-Type", "X-CSRF-TOKEN")
                 .AllowCredentials();
@@ -251,7 +285,7 @@ builder
             OnMessageReceived = context =>
             {
                 if (string.IsNullOrEmpty(context.Token) &&
-                    context.Request.Cookies.TryGetValue("access_token", out var cookieToken))
+                    context.Request.Cookies.TryGetValue(AuthCookie.Name, out var cookieToken))
                 {
                     context.Token = cookieToken;
                 }
@@ -276,6 +310,35 @@ builder
                 if (user == null || currentStamp != stampClaim)
                 {
                     context.Fail("Token has been revoked.");
+                    return;
+                }
+
+                // The row is already loaded, and this runs in the request's own
+                // scope, so the controller about to run can have this instance
+                // instead of fetching the same user again. It halves the user
+                // lookups on every authenticated request.
+                context.HttpContext.StoreAuthenticatedUser(user);
+
+                // A session used to end four hours after sign-in and not a
+                // minute later, however busy the user was -- mid-trade, mid-form,
+                // whatever they were doing. Renewing a token that is over
+                // halfway through its life keeps an active session alive
+                // without a refresh-token round trip: the security stamp is
+                // checked on every request anyway, so a revoked session still
+                // dies here on the next call rather than being extended.
+                //
+                // Only the cookie is renewed, never the identity behind it. The
+                // new token is minted from the user just re-read from the
+                // database, so a role or stamp that changed is picked up rather
+                // than carried forward from the old claims.
+                if (AuthCookie.ShouldRenew(context.SecurityToken.ValidTo, DateTime.UtcNow))
+                {
+                    var tokenService =
+                        context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                    AuthCookie.Write(
+                        context.HttpContext.Response,
+                        await tokenService.CreateToken(user)
+                    );
                 }
             }
         };
@@ -302,6 +365,8 @@ builder.Services.AddScoped<IPriceAlertRepository, PriceAlertRepository>();
 builder.Services.AddScoped<IPriceAlertService, PriceAlertService>();
 builder.Services.AddSingleton(PriceAlertOptions.FromConfiguration(builder.Configuration));
 builder.Services.AddSingleton(PriceSimulationOptions.FromConfiguration(builder.Configuration));
+builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
+builder.Services.AddScoped<IWatchlistRepository, WatchlistRepository>();
 builder.Services.AddScoped<IPriceSimulationService, PriceSimulationService>();
 builder.Services.AddHostedService<PriceAlertBackgroundService>();
 builder.Services.AddHostedService<PriceSimulationBackgroundService>();
@@ -348,6 +413,37 @@ builder.Services.AddRateLimiter(options =>
                 }
             )
     );
+
+    var writeRateLimitPermits =
+        builder.Configuration.GetValue<int?>("RateLimiting:WritePermitLimit") ?? 30;
+    var writeRateLimitWindow = TimeSpan.FromSeconds(
+        builder.Configuration.GetValue<int?>("RateLimiting:WriteWindowSeconds") ?? 60
+    );
+
+    // Trading, moving money and posting comments were unlimited: only sign-in
+    // and sign-up were ever throttled, so an account could hammer the wallet
+    // and the discussion as fast as it could open connections.
+    //
+    // Partitioned by user id rather than by IP, which is the difference that
+    // matters for an authenticated endpoint: an IP partition would make one
+    // office network, or one mobile carrier's NAT, share a single budget
+    // between everybody behind it. The IP is only the fallback for a request
+    // that somehow arrives without an identity.
+    options.AddPolicy(
+        "write",
+        httpContext =>
+            System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown",
+                factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = writeRateLimitPermits,
+                    Window = writeRateLimitWindow,
+                    QueueLimit = 0,
+                }
+            )
+    );
 });
 
 var app = builder.Build();
@@ -381,15 +477,43 @@ using (var scope = app.Services.CreateScope())
 
 app.UseForwardedHeaders();
 
+// First in the pipeline so the headers reach every response, including the
+// ones that never get as far as a controller. UseForwardedHeaders runs ahead
+// of it only because HSTS below needs to know whether the original request
+// was HTTPS.
+app.UseMiddleware<api.Middleware.SecurityHeadersMiddleware>();
+
+// Strict-Transport-Security, at the framework default of 30 days with no
+// preload and no includeSubDomains -- long enough to be worth having, short
+// enough to back out of. It is skipped outside production because a developer
+// on http://localhost would otherwise be pinned to HTTPS by their browser for
+// a month. UseHsts emits nothing for a plain-HTTP request either way, which is
+// why the forwarded-headers step above has to come first: behind Railway's
+// proxy, TLS is terminated before the request reaches us and X-Forwarded-Proto
+// is the only evidence it was ever HTTPS.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
 app.UseSerilogRequestLogging();
 
 app.UseMiddleware<api.Middleware.ExceptionMiddleware>();
 
 app.UseRouting();
 app.UseCors("DolfinCorsPolicy");
-app.UseRateLimiter();
 app.UseStaticFiles();
 app.UseAuthentication();
+
+// After authentication, not before it. The "write" policy partitions by user
+// id, and the limiter reads that off HttpContext.User -- which is empty until
+// authentication has run. Sitting ahead of it, every authenticated caller fell
+// through to the IP fallback and quietly shared one budget with everybody else
+// behind the same address, which is the exact behaviour partitioning by user
+// exists to avoid. The "auth" policy is unaffected either way: it partitions by
+// IP, on endpoints that have no user yet.
+app.UseRateLimiter();
+
 app.UseAuthorization();
 
 app.Use(

@@ -23,7 +23,13 @@ import Tile from "../../Components/Tile/Tile"
 import MarketTicker from "../../Components/MarketTicker/MarketTicker"
 import StockComment from "../../Components/StockComment/StockComment"
 import { useAuth } from "../../Context/useAuth"
-import { searchStocksBySymbolAPI, searchStocksByCompanyNameAPI } from "../../Services/StockService"
+import { searchStocksAPI } from "../../Services/StockService"
+import {
+  watchlistAddAPI,
+  watchlistGetAPI,
+  watchlistRemoveAPI,
+} from "../../Services/WatchlistService"
+import { notifyWatchlistChanged } from "../../Helpers/watchlistEvents"
 import PurchasePortfolio from "../../Components/Portfolio/PurchasePortfolio/PurchasePortfolio"
 import GuestCallout from "../../Components/Dashboard/GuestCallout"
 import { useLanguage } from "../../i18n/useLanguage"
@@ -41,6 +47,64 @@ const SearchPage = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [modalMode, setModalMode] = useState<"BUY" | "SELL">("BUY")
   const [selectedStock, setSelectedStock] = useState<{ symbol: string; price: number; maxQuantity?: number } | null>(null)
+
+  // Which results already carry a follow. Held as a set of stock ids because
+  // that is what the card has to ask about, once per row.
+  const [watchedStockIds, setWatchedStockIds] = useState<Set<number>>(new Set())
+
+  useEffect(() => {
+    let active = true
+
+    const loadWatchlist = async () => {
+      if (!user) {
+        if (active) setWatchedStockIds(new Set())
+        return
+      }
+
+      const res = await watchlistGetAPI()
+      if (active && res?.data) {
+        setWatchedStockIds(new Set(res.data.map((item) => item.stockId)))
+      }
+    }
+
+    loadWatchlist()
+    return () => {
+      active = false
+    }
+  }, [user])
+
+  // Flipped locally before the request so the button answers the click; a
+  // failed call is put back, since a control that lies about what it did is
+  // worse than one that is briefly slow.
+  const handleWatchToggle = async (stockId: number, symbol: string) => {
+    const wasWatched = watchedStockIds.has(stockId)
+
+    setWatchedStockIds((previous) => {
+      const next = new Set(previous)
+      if (wasWatched) next.delete(stockId)
+      else next.add(stockId)
+      return next
+    })
+
+    const res = wasWatched
+      ? await watchlistRemoveAPI(stockId)
+      : await watchlistAddAPI(stockId)
+
+    if (!res) {
+      setWatchedStockIds((previous) => {
+        const next = new Set(previous)
+        if (wasWatched) next.add(stockId)
+        else next.delete(stockId)
+        return next
+      })
+      return
+    }
+
+    toast.success(
+      t(wasWatched ? "watchlist.toast.removed" : "watchlist.toast.added", { symbol }),
+    )
+    notifyWatchlistChanged()
+  }
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
@@ -146,14 +210,10 @@ const SearchPage = () => {
     if (!queryValue) return
 
     try {
-      const response = queryValue.length <= 5
-        ? await searchStocksBySymbolAPI(queryValue.toUpperCase())
-        : await searchStocksByCompanyNameAPI(queryValue)
+      const results = await searchStocksAPI(queryValue)
 
-      if (response && Array.isArray(response.data)) {
-        setSearchResult(response.data)
-        setServerError("")
-      }
+      setSearchResult(results)
+      setServerError("")
     } catch (error) {
       console.error("Search API Error:", error)
       setServerError(t("search.error.offline"))
@@ -319,6 +379,8 @@ const SearchPage = () => {
             searchResults={searchResult}
             onPortfolioCreate={onPortfolioCreateTrigger}
             hasSearched={Boolean(search.trim())}
+            watchedStockIds={watchedStockIds}
+            onWatchToggle={user ? handleWatchToggle : undefined}
           />
         </section>
       </Band>

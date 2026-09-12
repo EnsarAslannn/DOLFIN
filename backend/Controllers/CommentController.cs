@@ -7,6 +7,7 @@ using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers
 {
@@ -88,6 +89,7 @@ namespace api.Controllers
         /// <response code="201">The comment was created.</response>
         /// <response code="400">No stock exists with that id, or the body failed validation.</response>
         [HttpPost("{stockId:int}")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(typeof(CommentDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -98,12 +100,12 @@ namespace api.Controllers
         {
             if (!await _stockRepo.StockExists(stockId))
             {
-                return BadRequest("Stock does not exist");
+                return BadRequest(ApiErrors.CommentStockNotFound());
             }
 
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var commentModel = commentDto.ToCommentFromCreate(stockId, appUser.Id);
             await _commentRepo.CreateAsync(commentModel);
@@ -126,6 +128,7 @@ namespace api.Controllers
         /// <response code="403">The comment belongs to a different user.</response>
         /// <response code="404">No comment exists with that id.</response>
         [HttpPut("{id:int}")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -136,14 +139,14 @@ namespace api.Controllers
             [FromBody] UpdateCommentRequestDto updateDto
         )
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var existingComment = await _commentRepo.GetByIdAsync(id);
             if (existingComment == null)
             {
-                return NotFound("Comment not found");
+                return NotFound(ApiErrors.CommentNotFound());
             }
             if (existingComment.AppUserId != appUser.Id)
             {
@@ -157,7 +160,7 @@ namespace api.Controllers
 
             if (comment == null)
             {
-                return NotFound("Comment not found");
+                return NotFound(ApiErrors.CommentNotFound());
             }
 
             if (existingComment.StockId.HasValue)
@@ -176,20 +179,21 @@ namespace api.Controllers
         /// <response code="403">The comment belongs to a different user.</response>
         /// <response code="404">No comment exists with that id.</response>
         [HttpDelete("{id:int}")]
-        [ProducesResponseType(typeof(api.Models.Comment), StatusCodes.Status200OK)]
+        [EnableRateLimiting("write")]
+        [ProducesResponseType(typeof(CommentDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            var appUser = await User.GetAuthenticatedUserAsync(_userManager);
+            var appUser = await this.GetAuthenticatedUserAsync(_userManager);
             if (appUser == null)
-                return Unauthorized("User context not found.");
+                return Unauthorized(ApiErrors.UserContextNotFound());
 
             var existingComment = await _commentRepo.GetByIdAsync(id);
             if (existingComment == null)
             {
-                return NotFound("Comment does not exist");
+                return NotFound(ApiErrors.CommentNotFound());
             }
             if (existingComment.AppUserId != appUser.Id)
             {
@@ -200,7 +204,7 @@ namespace api.Controllers
 
             if (commentModel == null)
             {
-                return NotFound("Comment does not exist");
+                return NotFound(ApiErrors.CommentNotFound());
             }
 
             if (existingComment.StockId.HasValue)
@@ -208,7 +212,13 @@ namespace api.Controllers
                 await _stockCacheInvalidator.InvalidateStockAsync(existingComment.StockId.Value);
             }
 
-            return Ok(commentModel);
+            // The entity itself used to go out here, which put the author's
+            // internal user id on the wire and made this the one action that
+            // did not answer in the shape the rest of the controller does.
+            // DeleteAsync does not load the author, so the name is taken from
+            // the copy fetched for the ownership check above.
+            commentModel.AppUser = existingComment.AppUser;
+            return Ok(commentModel.ToCommentDto());
         }
     }
 }

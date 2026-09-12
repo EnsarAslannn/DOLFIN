@@ -11,6 +11,12 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
+  # The vulnerable-package check below is only useful if something runs it.
+  # Nothing did between pushes, so an advisory published against an unchanged
+  # dependency sat unreported until the next unrelated commit.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
 
 jobs:
   build-and-test:

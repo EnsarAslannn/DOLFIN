@@ -118,6 +118,13 @@ namespace api.Repository
 
         public Task<bool> StockExists(int id) => _inner.StockExists(id);
 
+        // Uncached: it reads one column of rows the caller has just been
+        // handed history for, and the price-history response it labels is
+        // uncached itself.
+        public Task<Dictionary<int, string>> GetSymbolsByIdsAsync(
+            IReadOnlyCollection<int> stockIds
+        ) => _inner.GetSymbolsByIdsAsync(stockIds);
+
         public async Task<Stock> CreateAsync(Stock stockModel)
         {
             var created = await _inner.CreateAsync(stockModel);

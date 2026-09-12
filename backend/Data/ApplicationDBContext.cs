@@ -23,6 +23,10 @@ namespace api.Data
 
         public DbSet<AlertNotification> AlertNotifications { get; set; }
 
+        public DbSet<PriceHistoryPoint> PriceHistory { get; set; }
+
+        public DbSet<WatchlistEntry> WatchlistEntries { get; set; }
+
         public DbSet<Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey> DataProtectionKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -74,6 +78,41 @@ namespace api.Data
                 .HasOne(a => a.Stock)
                 .WithMany()
                 .HasForeignKey(a => a.StockId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // The only query against this table asks for a set of stocks and
+            // takes the newest rows of each, and the retention sweep deletes by
+            // time -- both are served by this one index.
+            builder.Entity<PriceHistoryPoint>().HasIndex(p => new { p.StockId, p.RecordedAt });
+
+            builder
+                .Entity<PriceHistoryPoint>()
+                .HasOne(p => p.Stock)
+                .WithMany()
+                .HasForeignKey(p => p.StockId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique per user and stock: following the same company twice is
+            // not a thing a list like this can mean, and enforcing it here is
+            // what makes the check in the service a race the database still
+            // catches.
+            builder
+                .Entity<WatchlistEntry>()
+                .HasIndex(w => new { w.AppUserId, w.StockId })
+                .IsUnique();
+
+            builder
+                .Entity<WatchlistEntry>()
+                .HasOne(w => w.AppUser)
+                .WithMany()
+                .HasForeignKey(w => w.AppUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .Entity<WatchlistEntry>()
+                .HasOne(w => w.Stock)
+                .WithMany()
+                .HasForeignKey(w => w.StockId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<AlertNotification>().HasIndex(n => n.AppUserId);
