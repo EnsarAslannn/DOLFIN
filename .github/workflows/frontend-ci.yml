@@ -11,6 +11,12 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-ci.yml"
+  # A vulnerability is disclosed against a dependency that has not changed,
+  # in code that has not changed, so nothing here would ever run to find it.
+  # Both workflows wake up weekly for that reason alone.
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
 
 defaults:
   run:
@@ -33,6 +39,21 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # The backend has had `dotnet list package --vulnerable` since its
+      # workflow was written; the frontend had no equivalent, so a known
+      # advisory against anything in node_modules went unreported here.
+      #
+      # It gates on high and above rather than on everything: a moderate
+      # advisory in a dev-only dependency should be visible in the log, not
+      # a red build that blocks an unrelated change until someone upstream
+      # ships a patch. `npm audit` alone never fails the step, so the two
+      # runs are deliberate -- the first reports, the second decides.
+      - name: Report known vulnerabilities
+        run: npm audit || true
+
+      - name: Fail on high or critical vulnerabilities
+        run: npm audit --audit-level=high
 
       - name: Lint
         run: npm run lint
