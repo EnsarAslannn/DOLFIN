@@ -3,6 +3,7 @@ import { AxiosError, type AxiosResponse } from "axios"
 import { toast } from "react-toastify"
 import { handleError } from "./ErrorHandler"
 import { translate } from "../i18n"
+import { subscribeToSessionExpiry } from "./sessionEvents"
 
 // Copy is read from the dictionary rather than pasted in, so these assert that
 // the right key was chosen and stay quiet when the wording is reworded.
@@ -72,23 +73,34 @@ describe("handleError", () => {
         )
     })
 
-    it("sends an unauthenticated user to the login page", () => {
+    // The app shell decides what to do about a lost session. Assigning
+    // window.location.href reloaded the whole application to reach a page the
+    // router already knows, taking the screen with it.
+    it("raises a session-expired event rather than reloading the page", () => {
+        const heard = vi.fn()
+        const unsubscribe = subscribeToSessionExpiry(heard)
+
         handleError(axiosErrorWith(401, {}))
 
-        expect(toast.warning).toHaveBeenCalledWith(tr("error.session.expired"))
-        expect(window.location.href).toBe("/login")
+        expect(heard).toHaveBeenCalledTimes(1)
+        expect(window.location.href).toBe("/current")
+        unsubscribe()
     })
 
     // The sign-in and sign-up calls opt out: a 401 there is the verdict on the
     // credentials just submitted, so the page must stay put and say why.
-    it("surfaces the reason instead of redirecting when the redirect is opted out of", () => {
+    it("surfaces the reason instead of announcing a lost session", () => {
+        const heard = vi.fn()
+        const unsubscribe = subscribeToSessionExpiry(heard)
+
         handleError(axiosErrorWith(401, "Invalid username or password"), {
             redirectOnUnauthorized: false,
         })
 
         expect(toast.warning).toHaveBeenCalledWith("Invalid username or password")
-        expect(toast.warning).not.toHaveBeenCalledWith(tr("error.session.expired"))
+        expect(heard).not.toHaveBeenCalled()
         expect(window.location.href).toBe("/current")
+        unsubscribe()
     })
 
     it("passes through a plain string error body", () => {

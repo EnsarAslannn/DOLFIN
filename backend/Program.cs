@@ -285,7 +285,7 @@ builder
             OnMessageReceived = context =>
             {
                 if (string.IsNullOrEmpty(context.Token) &&
-                    context.Request.Cookies.TryGetValue("access_token", out var cookieToken))
+                    context.Request.Cookies.TryGetValue(AuthCookie.Name, out var cookieToken))
                 {
                     context.Token = cookieToken;
                 }
@@ -318,6 +318,28 @@ builder
                 // instead of fetching the same user again. It halves the user
                 // lookups on every authenticated request.
                 context.HttpContext.StoreAuthenticatedUser(user);
+
+                // A session used to end four hours after sign-in and not a
+                // minute later, however busy the user was -- mid-trade, mid-form,
+                // whatever they were doing. Renewing a token that is over
+                // halfway through its life keeps an active session alive
+                // without a refresh-token round trip: the security stamp is
+                // checked on every request anyway, so a revoked session still
+                // dies here on the next call rather than being extended.
+                //
+                // Only the cookie is renewed, never the identity behind it. The
+                // new token is minted from the user just re-read from the
+                // database, so a role or stamp that changed is picked up rather
+                // than carried forward from the old claims.
+                if (AuthCookie.ShouldRenew(context.SecurityToken.ValidTo, DateTime.UtcNow))
+                {
+                    var tokenService =
+                        context.HttpContext.RequestServices.GetRequiredService<ITokenService>();
+                    AuthCookie.Write(
+                        context.HttpContext.Response,
+                        await tokenService.CreateToken(user)
+                    );
+                }
             }
         };
     });

@@ -1,6 +1,7 @@
 import axios from "axios"
 import { toast } from "react-toastify"
 import { readStoredLanguage, translate } from "../i18n"
+import { notifySessionExpired } from "./sessionEvents"
 import type { TranslationKey } from "../i18n"
 
 type HandleErrorOptions = {
@@ -98,8 +99,12 @@ export const handleError = (
    }
 
    if (err.status == 401 && redirectOnUnauthorized) {
-      toast.warning(say("error.session.expired"))
-      window.location.href = "/login"
+      // Handed to the app shell rather than acted on here. Assigning
+      // window.location.href reloaded the entire application to reach a page
+      // the router already knows, taking whatever was on screen with it --
+      // including a half-filled form the user could otherwise have come back
+      // to after signing in again.
+      notifySessionExpired()
       return
    }
 

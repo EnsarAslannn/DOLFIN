@@ -53,7 +53,7 @@ namespace api.Service
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(4),
+                Expires = DateTime.UtcNow.Add(AuthCookie.Lifetime),
                 SigningCredentials = creds,
                 Issuer = _config["JWT:Issuer"],
                 Audience = _config["JWT:Audience"],

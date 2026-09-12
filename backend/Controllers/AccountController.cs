@@ -1,6 +1,7 @@
 using api.Dtos.Account;
 using api.Extensions;
 using api.Interfaces;
+using api.Service;
 using api.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
@@ -154,27 +155,13 @@ namespace api.Controllers
                 await _userManager.UpdateSecurityStampAsync(user);
             }
 
-            Response.Cookies.Delete("access_token");
+            AuthCookie.Clear(Response);
             Response.Cookies.Delete("XSRF-TOKEN");
             Response.Cookies.Delete("af-token");
             return Ok();
         }
 
-        private void SetAuthCookie(string token)
-        {
-            Response.Cookies.Append(
-                "access_token",
-                token,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTimeOffset.UtcNow.AddHours(4),
-                }
-            );
-
-        }
+        private void SetAuthCookie(string token) => AuthCookie.Write(Response, token);
 
         private void IssueCsrfCookie()
         {

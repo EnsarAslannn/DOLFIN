@@ -17,6 +17,13 @@ export const common = {
     "nav.closeMenu": "Close menu",
     "nav.mobileLabel": "Mobile",
 
+    // Shown when a session ends mid-use -- the token expired, or it was
+    // revoked -- instead of reloading the whole app onto the sign-in page.
+    "session.expired.title": "Your session has ended",
+    "session.expired.description":
+      "You have been signed out. Sign in again to pick up where you left off.",
+    "session.expired.cta": "Sign in again",
+
     "footer.tagline":
       "Find the signal beneath the noise. Fundamentals, filings and portfolio tracking in one sandboxed terminal.",
     "footer.col.platform": "Platform",
@@ -46,6 +53,11 @@ export const common = {
     "nav.openMenu": "Menüyü aç",
     "nav.closeMenu": "Menüyü kapat",
     "nav.mobileLabel": "Mobil",
+
+    "session.expired.title": "Oturumunuz sona erdi",
+    "session.expired.description":
+      "Oturumunuz kapatıldı. Kaldığınız yerden devam etmek için tekrar giriş yapın.",
+    "session.expired.cta": "Tekrar giriş yap",
 
     "footer.tagline":
       "Gürültünün altındaki sinyali bulun. Temel veriler, resmi raporlar ve portföy takibi tek bir korumalı terminalde.",
