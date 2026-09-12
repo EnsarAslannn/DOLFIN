@@ -14,6 +14,7 @@ import GlassLogo from "../../Components/Dashboard/GlassLogo"
 import EmptyState from "../../Components/Dashboard/EmptyState"
 import TransactionHistory from "../../Components/Portfolio/TransactionHistory/TransactionHistory"
 import PriceAlerts from "../../Components/Alerts/PriceAlerts/PriceAlerts"
+import PortfolioHealth from "../../Components/Portfolio/PortfolioHealth/PortfolioHealth"
 import { Link } from "react-router-dom"
 import { usePollWhileVisible } from "../../Helpers/usePollWhileVisible"
 import { useLanguage } from "../../i18n/useLanguage"
@@ -431,11 +432,20 @@ const WalletPage = () => {
                 )}
             </Band>
 
+            {/* The health read belongs directly under the positions it is
+                about. The bands alternate dark/cream down the page, so
+                inserting one shifts the two below it rather than leaving two
+                of the same tone touching, which renders as a single block
+                with doubled padding and no seam. */}
             <Band tone="dark" className="py-section">
-                <PriceAlerts />
+                <PortfolioHealth />
             </Band>
 
             <Band tone="cream" className="py-section">
+                <PriceAlerts />
+            </Band>
+
+            <Band tone="dark" className="py-section">
                 <TransactionHistory transactions={transactions} />
             </Band>
 

@@ -19,5 +19,8 @@ namespace api.Extensions
 
         public static string ToInvariantAmount(this int value) =>
             value.ToString(CultureInfo.InvariantCulture);
+
+        public static string ToInvariantPercent(this decimal value) =>
+            value.ToString("F1", CultureInfo.InvariantCulture);
     }
 }

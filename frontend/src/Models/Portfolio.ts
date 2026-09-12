@@ -51,3 +51,37 @@ export type Transaction = {
   totalAmount: number
   timestamp: string
 }
+
+// Mirrors AllocationWarningDto. The API sends the pieces rather than a
+// finished sentence so the wallet can word it in whichever language it is
+// showing; `message` is the English fallback for an unrecognised code.
+export type AllocationWarningCode =
+  | "portfolio.warning.concentration"
+  | "portfolio.warning.sector"
+
+export type AllocationWarning = {
+  code: AllocationWarningCode | string
+  symbol: string | null
+  industry: string | null
+  percent: number
+  message: string
+}
+
+export type RebalanceAction = "Buy" | "Sell" | "Hold"
+
+export type StockAdjustment = {
+  stockId: number
+  symbol: string
+  currentAllocationPercent: number
+  targetAllocationPercent: number
+  action: RebalanceAction | string
+  suggestedQuantity: number
+}
+
+export type RebalancingRecommendation = {
+  adjustments: StockAdjustment[]
+  holdingCount: number
+  targetAllocationPercent: number
+  /** The API's own English summary, kept as a fallback. */
+  summary: string
+}

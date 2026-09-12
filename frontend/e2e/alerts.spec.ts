@@ -31,7 +31,14 @@ test.describe("price alerts", () => {
                     {
                         id: 1,
                         priceAlertId: 1,
+                        // The API still sends its own English sentence; the
+                        // bell composes one from the fields beside it instead,
+                        // so the line reads in the language of the page.
                         message: "TSLA reached 260.00 (target 250.00).",
+                        symbol: "TSLA",
+                        condition: "GreaterThanOrEqual",
+                        targetPrice: 250,
+                        triggeredPrice: 260,
                         isRead: read,
                         createdAt: new Date().toISOString(),
                     },
@@ -46,9 +53,9 @@ test.describe("price alerts", () => {
         await bell.click()
 
         const panel = page.getByRole("region", { name: /fiyat alarmı bildirimleri/i })
-        await expect(panel.getByText(/TSLA reached 260\.00/)).toBeVisible()
+        await expect(panel.getByText(/TSLA .*260\.00 seviyesine yükseldi/)).toBeVisible()
 
-        await panel.getByText(/TSLA reached 260\.00/).click()
+        await panel.getByText(/TSLA .*260\.00 seviyesine yükseldi/).click()
 
         await expect(page.getByRole("button", { name: /^bildirimler$/i })).toBeVisible()
     })
