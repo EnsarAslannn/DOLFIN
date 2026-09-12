@@ -389,6 +389,37 @@ builder.Services.AddRateLimiter(options =>
                 }
             )
     );
+
+    var writeRateLimitPermits =
+        builder.Configuration.GetValue<int?>("RateLimiting:WritePermitLimit") ?? 30;
+    var writeRateLimitWindow = TimeSpan.FromSeconds(
+        builder.Configuration.GetValue<int?>("RateLimiting:WriteWindowSeconds") ?? 60
+    );
+
+    // Trading, moving money and posting comments were unlimited: only sign-in
+    // and sign-up were ever throttled, so an account could hammer the wallet
+    // and the discussion as fast as it could open connections.
+    //
+    // Partitioned by user id rather than by IP, which is the difference that
+    // matters for an authenticated endpoint: an IP partition would make one
+    // office network, or one mobile carrier's NAT, share a single budget
+    // between everybody behind it. The IP is only the fallback for a request
+    // that somehow arrives without an identity.
+    options.AddPolicy(
+        "write",
+        httpContext =>
+            System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown",
+                factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = writeRateLimitPermits,
+                    Window = writeRateLimitWindow,
+                    QueueLimit = 0,
+                }
+            )
+    );
 });
 
 var app = builder.Build();

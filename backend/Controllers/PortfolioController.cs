@@ -8,6 +8,7 @@ using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers
 {
@@ -147,6 +148,7 @@ namespace api.Controllers
         /// <response code="200">The trade succeeded; the response carries the updated position.</response>
         /// <response code="400">Unknown symbol, non-positive quantity, or insufficient funds.</response>
         [HttpPost]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddPortfolio([FromBody] TradeRequestDto request)
@@ -173,6 +175,7 @@ namespace api.Controllers
         /// <response code="200">The trade succeeded; the response carries the updated position.</response>
         /// <response code="400">Unknown symbol, non-positive quantity, or more shares requested than held.</response>
         [HttpPost("sell")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SellPortfolio([FromBody] TradeRequestDto request)
@@ -199,6 +202,7 @@ namespace api.Controllers
         /// <response code="200">The deposit was applied; the response carries the new balance.</response>
         /// <response code="400">The amount is not a positive value.</response>
         [HttpPost("deposit")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DepositFunds([FromBody] AmountRequestDto request)
@@ -225,6 +229,7 @@ namespace api.Controllers
         /// <response code="200">The withdrawal was applied; the response carries the new balance.</response>
         /// <response code="400">The amount is not positive, or exceeds the available balance.</response>
         [HttpPost("withdraw")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> WithdrawFunds([FromBody] AmountRequestDto request)

@@ -7,6 +7,7 @@ using api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace api.Controllers
 {
@@ -43,6 +44,7 @@ namespace api.Controllers
         /// <response code="201">The alert was created.</response>
         /// <response code="400">Unknown stock, invalid target price, or an identical alert is already pending.</response>
         [HttpPost]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(typeof(PriceAlertDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] CreatePriceAlertRequestDto dto)
@@ -102,6 +104,7 @@ namespace api.Controllers
         /// <response code="403">The alert belongs to a different user.</response>
         /// <response code="404">No alert exists with that id.</response>
         [HttpDelete("{id:int}")]
+        [EnableRateLimiting("write")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -145,6 +148,12 @@ namespace api.Controllers
         /// <response code="200">The updated notification.</response>
         /// <response code="403">The notification belongs to a different user.</response>
         /// <response code="404">No notification exists with that id.</response>
+        // Deliberately outside the "write" rate limit. "Mark all read" in the
+        // navbar bell fires one of these per unread notification, all at once
+        // and with no ceiling, so a per-minute budget would break the feature
+        // for exactly the users who most need it. It flips a boolean on a row
+        // the caller already owns, which is not worth defending at this cost.
+        // The bulk endpoint that would make this moot is a separate change.
         [HttpPost("notifications/{id:int}/read")]
         [ProducesResponseType(typeof(AlertNotificationDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

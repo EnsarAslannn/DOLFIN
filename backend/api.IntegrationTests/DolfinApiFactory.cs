@@ -40,6 +40,12 @@ namespace api.IntegrationTests
             Environment.SetEnvironmentVariable("PriceAlerts__Enabled", "false");
             Environment.SetEnvironmentVariable("RateLimiting__AuthPermitLimit", "1000");
             Environment.SetEnvironmentVariable("RateLimiting__AuthWindowSeconds", "60");
+            // Raised for the same reason as the auth limit: the suite writes
+            // constantly and would otherwise throttle itself. The test that
+            // actually exercises the limit builds its own host with
+            // WithWebHostBuilder and a limit of one.
+            Environment.SetEnvironmentVariable("RateLimiting__WritePermitLimit", "1000");
+            Environment.SetEnvironmentVariable("RateLimiting__WriteWindowSeconds", "60");
             // Two extra CORS origins so CorsPolicyTests can prove the setting
             // is read at all; the trailing slash on the second is deliberate,
             // since a browser never sends one in the Origin header.
