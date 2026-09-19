@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
-import { LuArrowUpRight, LuMessageCircle, LuSend, LuSparkles, LuX } from "react-icons/lu"
+import { LuArrowUpRight, LuMessageCircle, LuSend, LuSparkles, LuSquarePen, LuX } from "react-icons/lu"
 import { askDolfin } from "../../Services/ChatService"
 import { useLanguage } from "../../i18n/useLanguage"
 import type { ChatSource } from "../../Models/Chat"
@@ -13,13 +13,54 @@ type Message = {
   error?: boolean
 }
 
+const CHAT_STORAGE_KEY = "dolfin.chat.messages"
+const MAX_STORED_MESSAGES = 50
+
+const readStoredMessages = (): Message[] => {
+  try {
+    const stored = window.localStorage.getItem(CHAT_STORAGE_KEY)
+    if (!stored) return []
+
+    const parsed: unknown = JSON.parse(stored)
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter(
+        (message): message is Omit<Message, "id"> =>
+          typeof message === "object" &&
+          message !== null &&
+          (message.role === "user" || message.role === "assistant") &&
+          typeof message.content === "string" &&
+          message.content.length > 0 &&
+          message.content.length <= 4000 &&
+          (message.sources === undefined ||
+            (Array.isArray(message.sources) &&
+              message.sources.every(
+                (source: unknown) =>
+                  typeof source === "object" &&
+                  source !== null &&
+                  "title" in source &&
+                  "path" in source &&
+                  typeof source.title === "string" &&
+                  typeof source.path === "string" &&
+                  source.path.startsWith("/"),
+              ))),
+      )
+      .slice(-MAX_STORED_MESSAGES)
+      .map((message, index) => ({ ...message, id: index + 1 }))
+  } catch {
+    return []
+  }
+}
+
 const ChatWidget = () => {
   const { language, t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
   const [isSending, setIsSending] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([])
-  const nextId = useRef(1)
+  const [messages, setMessages] = useState<Message[]>(readStoredMessages)
+  const nextId = useRef(messages.length + 1)
+  const conversationVersion = useRef(0)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -46,6 +87,35 @@ const ChatWidget = () => {
     }
   }, [messages, isSending])
 
+  useEffect(() => {
+    try {
+      const messagesToStore = messages
+        .filter((message) => !message.error)
+        .slice(-MAX_STORED_MESSAGES)
+        .map(({ role, content, sources }) => ({
+          role,
+          content,
+          ...(sources && sources.length > 0 ? { sources } : {}),
+        }))
+
+      if (messagesToStore.length === 0) {
+        window.localStorage.removeItem(CHAT_STORAGE_KEY)
+      } else {
+        window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messagesToStore))
+      }
+    } catch {
+      // The assistant remains usable if storage is unavailable or full.
+    }
+  }, [messages])
+
+  const startNewConversation = () => {
+    conversationVersion.current += 1
+    setMessages([])
+    setInput("")
+    setIsSending(false)
+    requestAnimationFrame(() => inputRef.current?.focus())
+  }
+
   const send = async (event?: FormEvent) => {
     event?.preventDefault()
     const question = input.trim()
@@ -59,6 +129,7 @@ const ChatWidget = () => {
     setMessages((current) => [...current, userMessage])
     setInput("")
     setIsSending(true)
+    const activeConversation = conversationVersion.current
 
     try {
       const history = messages
@@ -66,6 +137,7 @@ const ChatWidget = () => {
         .slice(-8)
         .map(({ role, content }) => ({ role, content }))
       const response = await askDolfin(question, language, history)
+      if (activeConversation !== conversationVersion.current) return
       setMessages((current) => [
         ...current,
         {
@@ -76,6 +148,7 @@ const ChatWidget = () => {
         },
       ])
     } catch {
+      if (activeConversation !== conversationVersion.current) return
       setMessages((current) => [
         ...current,
         {
@@ -86,7 +159,9 @@ const ChatWidget = () => {
         },
       ])
     } finally {
-      setIsSending(false)
+      if (activeConversation === conversationVersion.current) {
+        setIsSending(false)
+      }
     }
   }
 
@@ -121,14 +196,25 @@ const ChatWidget = () => {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={closePanel}
-                aria-label={t("chat.close")}
-                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-icon text-ash-text transition-colors hover:bg-obsidian-button hover:text-pure-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-              >
-                <LuX className="h-5 w-5" aria-hidden="true" />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={startNewConversation}
+                  aria-label={t("chat.new")}
+                  title={t("chat.new")}
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-icon text-ash-text transition-colors hover:bg-obsidian-button hover:text-pure-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+                >
+                  <LuSquarePen className="h-[18px] w-[18px]" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={closePanel}
+                  aria-label={t("chat.close")}
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-icon text-ash-text transition-colors hover:bg-obsidian-button hover:text-pure-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+                >
+                  <LuX className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
             </div>
           </header>
 

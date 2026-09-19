@@ -28,9 +28,9 @@ test("assistant opens, answers from the site guide, and has no runtime errors", 
 
   await page.goto("/")
   await expect(page.locator(".vite-error-overlay")).toHaveCount(0)
-  await page.getByRole("button", { name: "DOL-FIN yardımcısını aç" }).click()
+  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
 
-  const dialog = page.getByRole("dialog", { name: "DOL-FIN yardımcısı" })
+  const dialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
   await expect(dialog).toBeVisible()
   await dialog.getByRole("textbox", { name: "Sorunuzu yazın" }).fill("Alarm nasıl kurulur?")
   await dialog.getByRole("button", { name: "Gönder" }).click()
@@ -41,19 +41,30 @@ test("assistant opens, answers from the site guide, and has no runtime errors", 
     "/wallet",
   )
   await page.screenshot({ path: testInfo.outputPath("chat-widget.png"), fullPage: true })
+
+  await page.reload()
+  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
+  const restoredDialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
+  await expect(restoredDialog.getByText("Alarm nasıl kurulur?")).toBeVisible()
+  await expect(restoredDialog.getByText("Cüzdan sayfasından bir fiyat alarmı kurabilirsiniz.")).toBeVisible()
+
+  await restoredDialog.getByRole("button", { name: "Yeni sohbet" }).click()
+  await expect(restoredDialog.getByText("Alarm nasıl kurulur?")).toHaveCount(0)
+  await expect(restoredDialog.getByRole("button", { name: "Nasıl portföy oluştururum?" })).toBeVisible()
   expect(errors).toEqual([])
 })
 
-test("assistant panel stays inside a mobile viewport", async ({ page }) => {
+test("assistant panel stays inside a mobile viewport", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/")
-  await page.getByRole("button", { name: "DOL-FIN yardımcısını aç" }).click()
+  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
 
-  const box = await page.getByRole("dialog", { name: "DOL-FIN yardımcısı" }).boundingBox()
+  const box = await page.getByRole("dialog", { name: "DOL-FIN asistanı" }).boundingBox()
 
   expect(box).not.toBeNull()
   expect(box!.x).toBeGreaterThanOrEqual(0)
   expect(box!.y).toBeGreaterThanOrEqual(0)
   expect(box!.x + box!.width).toBeLessThanOrEqual(390)
   expect(box!.y + box!.height).toBeLessThanOrEqual(844)
+  await page.screenshot({ path: testInfo.outputPath("chat-widget-mobile.png"), fullPage: true })
 })
