@@ -9,6 +9,7 @@ import { home } from "./locales/home"
 import { portfolio } from "./locales/portfolio"
 import { search } from "./locales/search"
 import { wallet } from "./locales/wallet"
+import { chat } from "./locales/chat"
 
 const bundles = [
   alerts,
@@ -21,6 +22,7 @@ const bundles = [
   portfolio,
   search,
   wallet,
+  chat,
 ]
 
 // English is the reference bundle: it defines every key the app may ask for,
@@ -36,6 +38,7 @@ type EnglishBundle = (typeof alerts)["en"] &
   (typeof portfolio)["en"] &
   (typeof search)["en"] &
   (typeof wallet)["en"]
+  & (typeof chat)["en"]
 
 export type TranslationKey = keyof EnglishBundle & string
 

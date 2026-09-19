@@ -111,6 +111,15 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions>(options 
 
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
+var chatOptions = ChatOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(chatOptions);
+builder.Services.AddSingleton<ISiteKnowledgeService, SiteKnowledgeService>();
+builder.Services.AddHttpClient<IChatCompletionClient, GatewayChatCompletionClient>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
+builder.Services.AddScoped<IChatService, ChatService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
@@ -440,6 +449,26 @@ builder.Services.AddRateLimiter(options =>
                 {
                     PermitLimit = writeRateLimitPermits,
                     Window = writeRateLimitWindow,
+                    QueueLimit = 0,
+                }
+            )
+    );
+
+    var chatPermitLimit = builder.Configuration.GetValue<int?>("RateLimiting:ChatPermitLimit") ?? 12;
+    var chatWindow = TimeSpan.FromSeconds(
+        builder.Configuration.GetValue<int?>("RateLimiting:ChatWindowSeconds") ?? 60
+    );
+    options.AddPolicy(
+        "chat",
+        httpContext =>
+            System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                    ?? "unknown",
+                factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = chatPermitLimit,
+                    Window = chatWindow,
                     QueueLimit = 0,
                 }
             )
