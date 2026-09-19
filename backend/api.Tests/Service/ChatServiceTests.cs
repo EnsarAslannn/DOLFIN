@@ -19,6 +19,8 @@ public class ChatServiceTests
         Assert.Contains("alarm", response.Answer, StringComparison.OrdinalIgnoreCase);
         Assert.NotEmpty(response.Sources);
         Assert.False(response.UsedAi);
+        Assert.NotEmpty(response.Suggestions);
+        Assert.All(response.Suggestions, suggestion => Assert.False(string.IsNullOrWhiteSpace(suggestion)));
     }
 
     [Fact]

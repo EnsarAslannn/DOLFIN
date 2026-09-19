@@ -32,4 +32,21 @@ public class SiteKnowledgeServiceTests
 
         Assert.Empty(matches);
     }
+
+    [Theory]
+    [InlineData("Sanal cüzdanıma nasıl para eklerim?", "tr", "bakiye")]
+    [InlineData("Where can I see my transaction history?", "en", "history")]
+    [InlineData("Bir hisseyi izleme listeme nasıl eklerim?", "tr", "izleme")]
+    [InlineData("Where are company financial statements?", "en", "statements")]
+    public void FindRelevant_ForExpandedProductTopics_ReturnsGuidance(
+        string question,
+        string language,
+        string expectedText
+    )
+    {
+        var matches = _service.FindRelevant(question, language, 3);
+
+        Assert.NotEmpty(matches);
+        Assert.Contains(expectedText, matches[0].Content, StringComparison.OrdinalIgnoreCase);
+    }
 }

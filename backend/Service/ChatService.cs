@@ -44,6 +44,11 @@ public class ChatService : IChatService
             .Select(item => new ChatSourceDto { Title = item.Title, Path = item.Path })
             .DistinctBy(source => source.Path)
             .ToList();
+        var suggestions = matches
+            .SelectMany(item => item.Suggestions ?? [])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToList();
 
         if (_options.Enabled && _completionClient.IsConfigured)
         {
@@ -70,6 +75,7 @@ public class ChatService : IChatService
                         Answer = answer.Trim(),
                         Sources = sources,
                         UsedAi = true,
+                        Suggestions = suggestions,
                     };
                 }
             }
@@ -84,6 +90,7 @@ public class ChatService : IChatService
             Answer = matches[0].Content,
             Sources = sources,
             UsedAi = false,
+            Suggestions = suggestions,
         };
     }
 }

@@ -12,4 +12,5 @@ export type ChatResponse = {
   answer: string
   sources: ChatSource[]
   usedAi: boolean
+  suggestions?: string[]
 }

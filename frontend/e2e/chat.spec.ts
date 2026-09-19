@@ -68,3 +68,69 @@ test("assistant panel stays inside a mobile viewport", async ({ page }, testInfo
   expect(box!.y + box!.height).toBeLessThanOrEqual(844)
   await page.screenshot({ path: testInfo.outputPath("chat-widget-mobile.png"), fullPage: true })
 })
+
+test("signed-in user can inspect a portfolio and confirm a simulated trade", async ({
+  page,
+}, testInfo) => {
+  await page.unroute("**/api/account/session")
+  await page.route("**/api/account/session", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ userName: "ada", email: "ada@example.com", walletBalance: 1000 }),
+    }),
+  )
+  await page.route("**/api/portfolio", (route) => {
+    if (route.request().method() === "POST") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "ok", newBalance: 700 }),
+      })
+    }
+
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          id: 1,
+          symbol: "AAPL",
+          companyName: "Apple",
+          purchase: 150,
+          lastDiv: 0,
+          industry: "Technology",
+          marketCap: 1,
+          quantity: 2,
+          averagePrice: 120,
+        },
+      ]),
+    })
+  })
+  await page.route("**/api/stock?*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([{ id: 1, symbol: "AAPL", companyName: "Apple", purchase: 150 }]),
+    }),
+  )
+
+  await page.goto("/")
+  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
+  const dialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
+
+  await dialog.getByRole("button", { name: "Portföyümü göster" }).click()
+  await expect(dialog.getByText(/AAPL: 2 adet/)).toBeVisible()
+  await expect(dialog.getByText(/Sanal bakiye: \$1,000\.00/)).toBeVisible()
+
+  await dialog.getByRole("button", { name: "Simülasyon işlemi" }).click()
+  await dialog.getByRole("textbox", { name: "Hisse kodu" }).fill("AAPL")
+  await dialog.getByRole("spinbutton", { name: "Adet" }).fill("2")
+  await dialog.getByRole("button", { name: "İşlemi önizle" }).click()
+  await expect(dialog.getByText("Tahmini toplam: $300.00")).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath("chat-simulated-trade.png") })
+
+  await dialog.getByRole("button", { name: "2 adet AAPL alımını onayla" }).click()
+  await expect(dialog.getByText(/2 adet AAPL alındı/)).toBeVisible()
+  await expect(page.getByText("$700.00", { exact: true })).toBeVisible()
+})

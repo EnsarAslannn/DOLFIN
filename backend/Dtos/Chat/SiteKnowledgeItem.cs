@@ -5,5 +5,6 @@ public sealed record SiteKnowledgeItem(
     string Title,
     string Content,
     string Path,
-    IReadOnlyList<string> Keywords
+    IReadOnlyList<string> Keywords,
+    IReadOnlyList<string>? Suggestions = null
 );

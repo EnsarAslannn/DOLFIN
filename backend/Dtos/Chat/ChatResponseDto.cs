@@ -7,6 +7,8 @@ public class ChatResponseDto
     public List<ChatSourceDto> Sources { get; set; } = [];
 
     public bool UsedAi { get; set; }
+
+    public List<string> Suggestions { get; set; } = [];
 }
 
 public class ChatSourceDto
