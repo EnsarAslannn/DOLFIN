@@ -1,8 +1,8 @@
 export const chat = {
   en: {
-    "chat.open": "Open DOL-FIN assistant",
-    "chat.close": "Close DOL-FIN assistant",
-    "chat.title": "DOL-FIN assistant",
+    "chat.open": "Open Assistant",
+    "chat.close": "Close Assistant",
+    "chat.title": "Assistant",
     "chat.status": "Grounded in the product guide",
     "chat.intro": "Let's explore the site together. Ask about portfolios, simulated data, or price alerts.",
     "chat.input": "Type your question",
@@ -55,9 +55,9 @@ export const chat = {
     "chat.trade.sold": "sold",
   },
   tr: {
-    "chat.open": "DOL-FIN asistanını aç",
-    "chat.close": "DOL-FIN asistanını kapat",
-    "chat.title": "DOL-FIN asistanı",
+    "chat.open": "Asistanı aç",
+    "chat.close": "Asistanı kapat",
+    "chat.title": "Asistan",
     "chat.status": "Ürün rehberine dayanır",
     "chat.intro": "Siteyi birlikte keşfedelim. Portföy, simülasyon verileri veya fiyat alarmları hakkında sorun.",
     "chat.input": "Sorunuzu yazın",

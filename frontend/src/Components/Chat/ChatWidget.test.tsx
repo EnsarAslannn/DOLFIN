@@ -47,9 +47,9 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
 
-    expect(screen.getByRole("dialog", { name: /dol-fin asistanı/i })).toBeInTheDocument()
+    expect(screen.getByRole("dialog", { name: /^asistan$/i })).toBeInTheDocument()
     expect(screen.getByText(/siteyi birlikte keşfedelim/i)).toBeInTheDocument()
   })
 
@@ -62,7 +62,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Alarm nasıl kurulur?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
 
@@ -86,7 +86,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     const input = screen.getByRole("textbox", { name: /sorunuzu yazın/i })
     await user.type(input, "Alarm nasıl kurulur?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
@@ -104,7 +104,7 @@ describe("ChatWidget", () => {
   it("closes the dialog on Escape and returns focus to the trigger", async () => {
     renderWidget()
     const user = userEvent.setup()
-    const trigger = screen.getByRole("button", { name: /dol-fin asistanını aç/i })
+    const trigger = screen.getByRole("button", { name: /asistanı aç/i })
 
     await user.click(trigger)
     await user.keyboard("{Escape}")
@@ -122,7 +122,7 @@ describe("ChatWidget", () => {
     const firstRender = renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Alarm nasıl kurulur?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
     expect(await screen.findByText("Cüzdan sayfasından alarm kurabilirsiniz.")).toBeInTheDocument()
@@ -135,7 +135,7 @@ describe("ChatWidget", () => {
 
     firstRender.unmount()
     renderWidget()
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
 
     expect(screen.queryByText("Alarm nasıl kurulur?")).not.toBeInTheDocument()
   })
@@ -149,14 +149,14 @@ describe("ChatWidget", () => {
     const firstRender = renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Alarm kartı nerede?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
     expect(await screen.findByText("Alarm kartını Cüzdan sayfasında bulabilirsiniz.")).toBeInTheDocument()
 
     firstRender.unmount()
     renderWidget()
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
 
     expect(screen.getByText("Alarm kartı nerede?")).toBeInTheDocument()
     expect(screen.getByText("Alarm kartını Cüzdan sayfasında bulabilirsiniz.")).toBeInTheDocument()
@@ -168,7 +168,7 @@ describe("ChatWidget", () => {
 
     renderWidget()
     const user = userEvent.setup()
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
 
     expect(screen.getByRole("button", { name: /nasıl portföy oluştururum/i })).toBeInTheDocument()
   })
@@ -183,7 +183,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Alarm nasıl kurulur?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
 
@@ -204,7 +204,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     const input = screen.getByRole("textbox", { name: /sorunuzu yazın/i })
     await user.type(input, "Alarm nasıl kurulur?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
@@ -227,7 +227,7 @@ describe("ChatWidget", () => {
     const firstRender = renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Saklanan soru")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
     await screen.findByText("Saklanan cevap")
@@ -237,7 +237,7 @@ describe("ChatWidget", () => {
 
     firstRender.unmount()
     renderWidget()
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
 
     expect(screen.queryByText("Saklanan soru")).not.toBeInTheDocument()
     expect(screen.getByRole("button", { name: /nasıl portföy oluştururum/i })).toBeInTheDocument()
@@ -266,7 +266,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.click(screen.getByRole("button", { name: /portföyümü göster/i }))
 
     expect(await screen.findByText(/AAPL: 2 adet/i)).toBeInTheDocument()
@@ -278,7 +278,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.click(screen.getByRole("button", { name: /portföyümü göster/i }))
 
     expect(await screen.findByText(/portföyünüzü görmek.*giriş yapın/i)).toBeInTheDocument()
@@ -301,7 +301,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.click(screen.getByRole("button", { name: /simülasyon işlemi/i }))
     await user.selectOptions(screen.getByRole("combobox", { name: "İşlem türü" }), "BUY")
     await user.type(screen.getByRole("textbox", { name: /hisse kodu/i }), "AAPL")
@@ -350,7 +350,7 @@ describe("ChatWidget", () => {
     renderWidget()
     const user = userEvent.setup()
 
-    await user.click(screen.getByRole("button", { name: /dol-fin asistanını aç/i }))
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
     await user.click(screen.getByRole("button", { name: /simülasyon işlemi/i }))
     await user.selectOptions(screen.getByRole("combobox", { name: "İşlem türü" }), "SELL")
     await user.type(screen.getByRole("textbox", { name: /hisse kodu/i }), "AAPL")

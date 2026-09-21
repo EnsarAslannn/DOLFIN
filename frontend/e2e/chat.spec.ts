@@ -28,9 +28,9 @@ test("assistant opens, answers from the site guide, and has no runtime errors", 
 
   await page.goto("/")
   await expect(page.locator(".vite-error-overlay")).toHaveCount(0)
-  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
+  await page.getByRole("button", { name: "Asistanı aç" }).click()
 
-  const dialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
+  const dialog = page.getByRole("dialog", { name: "Asistan" })
   await expect(dialog).toBeVisible()
   await dialog.getByRole("textbox", { name: "Sorunuzu yazın" }).fill("Alarm nasıl kurulur?")
   await dialog.getByRole("button", { name: "Gönder" }).click()
@@ -43,8 +43,8 @@ test("assistant opens, answers from the site guide, and has no runtime errors", 
   await page.screenshot({ path: testInfo.outputPath("chat-widget.png"), fullPage: true })
 
   await page.reload()
-  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
-  const restoredDialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
+  await page.getByRole("button", { name: "Asistanı aç" }).click()
+  const restoredDialog = page.getByRole("dialog", { name: "Asistan" })
   await expect(restoredDialog.getByText("Alarm nasıl kurulur?")).toBeVisible()
   await expect(restoredDialog.getByText("Cüzdan sayfasından bir fiyat alarmı kurabilirsiniz.")).toBeVisible()
 
@@ -57,9 +57,9 @@ test("assistant opens, answers from the site guide, and has no runtime errors", 
 test("assistant panel stays inside a mobile viewport", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/")
-  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
+  await page.getByRole("button", { name: "Asistanı aç" }).click()
 
-  const box = await page.getByRole("dialog", { name: "DOL-FIN asistanı" }).boundingBox()
+  const box = await page.getByRole("dialog", { name: "Asistan" }).boundingBox()
 
   expect(box).not.toBeNull()
   expect(box!.x).toBeGreaterThanOrEqual(0)
@@ -116,8 +116,8 @@ test("signed-in user can inspect a portfolio and confirm a simulated trade", asy
   )
 
   await page.goto("/")
-  await page.getByRole("button", { name: "DOL-FIN asistanını aç" }).click()
-  const dialog = page.getByRole("dialog", { name: "DOL-FIN asistanı" })
+  await page.getByRole("button", { name: "Asistanı aç" }).click()
+  const dialog = page.getByRole("dialog", { name: "Asistan" })
 
   await dialog.getByRole("button", { name: "Portföyümü göster" }).click()
   await expect(dialog.getByText(/AAPL: 2 adet/)).toBeVisible()
