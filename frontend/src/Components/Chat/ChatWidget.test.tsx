@@ -53,6 +53,18 @@ describe("ChatWidget", () => {
     expect(screen.getByText(/siteyi birlikte keşfedelim/i)).toBeInTheDocument()
   })
 
+  it("offers a prompt that helps users discover what they can ask", async () => {
+    renderWidget()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+    await user.click(screen.getByRole("button", { name: "Neler sorabilirim?" }))
+
+    expect(screen.getByRole("textbox", { name: /sorunuzu yazın/i })).toHaveValue(
+      "Neler sorabilirim?",
+    )
+  })
+
   it("sends a question and renders the grounded answer with its source", async () => {
     ask.mockResolvedValue({
       answer: "Cüzdan sayfasından yeni bir fiyat alarmı kurabilirsiniz.",

@@ -465,7 +465,11 @@ const ChatWidget = () => {
                     </button>
                   ))}
                   {messages.length === 0 &&
-                    [t("chat.suggestion.portfolio"), t("chat.suggestion.data")].map((suggestion) => (
+                    [
+                      t("chat.suggestion.portfolio"),
+                      t("chat.suggestion.help"),
+                      t("chat.suggestion.data"),
+                    ].map((suggestion) => (
                       <button
                         key={suggestion}
                         type="button"
