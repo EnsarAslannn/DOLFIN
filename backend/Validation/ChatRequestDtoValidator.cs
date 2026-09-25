@@ -31,5 +31,14 @@ public class ChatRequestDtoValidator : AbstractValidator<ChatRequestDto>
                 .MaximumLength(1000)
                 .WithMessage("History messages must not exceed 1000 characters");
         });
+
+        RuleFor(x => x.CurrentPath)
+            .MaximumLength(200)
+            .Matches("^/[A-Za-z0-9/_-]*$")
+            .When(x => !string.IsNullOrWhiteSpace(x.CurrentPath));
+
+        RuleFor(x => x.CurrentSymbol)
+            .Matches("^[A-Za-z]{1,10}$")
+            .When(x => !string.IsNullOrWhiteSpace(x.CurrentSymbol));
     }
 }

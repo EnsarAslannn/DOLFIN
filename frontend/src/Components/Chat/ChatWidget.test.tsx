@@ -37,6 +37,7 @@ describe("ChatWidget", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     window.localStorage.clear()
+    window.history.replaceState({}, "", "/")
     auth.mockReturnValue({
       user: null,
       updateWalletBalance: vi.fn(),
@@ -80,7 +81,9 @@ describe("ChatWidget", () => {
 
     expect(await screen.findByText(/cüzdan sayfasından/i)).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /fiyat alarmları/i })).toHaveAttribute("href", "/wallet")
-    expect(ask).toHaveBeenCalledWith("Alarm nasıl kurulur?", "tr", [])
+    expect(ask).toHaveBeenCalledWith("Alarm nasıl kurulur?", "tr", [], {
+      currentPath: "/",
+    })
   })
 
   it("includes the recent conversation when asking a follow-up", async () => {
@@ -107,10 +110,32 @@ describe("ChatWidget", () => {
     await user.type(input, "Peki hedef fiyat nerede?")
     await user.click(screen.getByRole("button", { name: /gönder/i }))
 
-    expect(ask).toHaveBeenLastCalledWith("Peki hedef fiyat nerede?", "tr", [
-      { role: "user", content: "Alarm nasıl kurulur?" },
-      { role: "assistant", content: "Cüzdan sayfasından alarm kurabilirsiniz." },
-    ])
+    expect(ask).toHaveBeenLastCalledWith(
+      "Peki hedef fiyat nerede?",
+      "tr",
+      [
+        { role: "user", content: "Alarm nasıl kurulur?" },
+        { role: "assistant", content: "Cüzdan sayfasından alarm kurabilirsiniz." },
+      ],
+      { currentPath: "/" },
+    )
+  })
+
+  it("sends the current route and company symbol as page context", async () => {
+    window.history.replaceState({}, "", "/company/AAPL/company-profile")
+    ask.mockResolvedValue({ answer: "Apple şirket profili.", sources: [], usedAi: false })
+    renderWidget()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+    await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Bu şirket hangisi?")
+    await user.click(screen.getByRole("button", { name: /gönder/i }))
+    await screen.findByText("Apple şirket profili.")
+
+    expect(ask).toHaveBeenCalledWith("Bu şirket hangisi?", "tr", [], {
+      currentPath: "/company/AAPL/company-profile",
+      currentSymbol: "AAPL",
+    })
   })
 
   it("closes the dialog on Escape and returns focus to the trigger", async () => {

@@ -1,6 +1,7 @@
 using api.Dtos.Chat;
 using api.Service;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Text.Json;
 
 namespace api.Tests.Service;
 
@@ -64,6 +65,29 @@ public class ChatServiceTests
 
         Assert.Contains("alarm", response.Answer, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(response.Sources, source => source.Title.Contains("alarm", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task AnswerAsync_ForAnAmbiguousQuestion_UsesTheCurrentPageForRetrieval()
+    {
+        var service = CreateService(new ChatOptions());
+        var request = JsonSerializer.Deserialize<ChatRequestDto>(
+            """
+            {
+              "message": "Burada ne yapabilirim?",
+              "language": "tr",
+              "history": [],
+              "currentPath": "/wallet"
+            }
+            """,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+        )!;
+
+        var response = await service.AnswerAsync(request, CancellationToken.None);
+
+        Assert.NotEmpty(response.Sources);
+        Assert.All(response.Sources, source => Assert.Equal("/wallet", source.Path));
+        Assert.Contains("portföy", response.Answer, StringComparison.OrdinalIgnoreCase);
     }
 
     private static ChatService CreateService(ChatOptions options) =>

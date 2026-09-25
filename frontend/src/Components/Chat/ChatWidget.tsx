@@ -17,6 +17,16 @@ import {
 
 const EMPTY_MESSAGES: Message[] = []
 
+const getPageContext = () => {
+  const currentPath = window.location.pathname
+  const companyMatch = currentPath.match(/^\/company\/([A-Za-z]{1,10})(?:\/|$)/)
+
+  return {
+    currentPath,
+    ...(companyMatch ? { currentSymbol: companyMatch[1].toUpperCase() } : {}),
+  }
+}
+
 type ChatWidgetSessionProps = {
   historyOwner: string | null
 }
@@ -284,7 +294,7 @@ const ChatWidgetSession = ({ historyOwner }: ChatWidgetSessionProps) => {
         .filter((message) => !message.error)
         .slice(-8)
         .map(({ role, content }) => ({ role, content }))
-      const response = await askDolfin(question, language, history)
+      const response = await askDolfin(question, language, history, getPageContext())
       if (activeConversation !== conversationVersion.current) return
       setMessages((current) => [
         ...current,

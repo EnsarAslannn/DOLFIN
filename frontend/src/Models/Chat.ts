@@ -8,6 +8,11 @@ export type ChatTurn = {
   content: string
 }
 
+export type ChatPageContext = {
+  currentPath: string
+  currentSymbol?: string
+}
+
 export type ChatResponse = {
   answer: string
   sources: ChatSource[]

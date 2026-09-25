@@ -7,6 +7,10 @@ public class ChatRequestDto
     public string Language { get; set; } = "tr";
 
     public List<ChatTurnDto> History { get; set; } = [];
+
+    public string? CurrentPath { get; set; }
+
+    public string? CurrentSymbol { get; set; }
 }
 
 public class ChatTurnDto

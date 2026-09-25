@@ -42,6 +42,12 @@ public class ChatService : IChatService
             matches = _knowledge.FindRelevant(contextualQuery, language, 3);
         }
 
+        var pageContext = BuildPageContext(request, language);
+        if (matches.Count == 0 && !string.IsNullOrWhiteSpace(pageContext))
+        {
+            matches = _knowledge.FindRelevant(pageContext, language, 3);
+        }
+
         if (matches.Count == 0)
         {
             return new ChatResponseDto
@@ -71,8 +77,8 @@ public class ChatService : IChatService
                     matches.Select(item => $"[{item.Title}]\n{item.Content}\nPath: {item.Path}")
                 );
                 var systemPrompt = language == "en"
-                    ? $"""You are DOL-FIN's concise product assistant. Answer only from the supplied context. Never present simulated data as live market data or give investment advice. If the context is insufficient, say so. Reply in English.\n\nCONTEXT\n{context}"""
-                    : $"""DOL-FIN'in kısa ve açık ürün yardımcısısın. Yalnızca verilen bağlamdan cevap ver. Simülasyon verilerini asla canlı piyasa verisi gibi sunma ve yatırım tavsiyesi verme. Bağlam yetersizse bunu söyle. Türkçe cevap ver.\n\nBAĞLAM\n{context}""";
+                    ? $"""You are DOL-FIN's concise product assistant. Answer only from the supplied context. Never present simulated data as live market data or give investment advice. If the context is insufficient, say so. Reply in English.\n\nCURRENT PAGE\n{pageContext}\n\nCONTEXT\n{context}"""
+                    : $"""DOL-FIN'in kısa ve açık ürün yardımcısısın. Yalnızca verilen bağlamdan cevap ver. Simülasyon verilerini asla canlı piyasa verisi gibi sunma ve yatırım tavsiyesi verme. Bağlam yetersizse bunu söyle. Türkçe cevap ver.\n\nMEVCUT SAYFA\n{pageContext}\n\nBAĞLAM\n{context}""";
                 var answer = await _completionClient.CompleteAsync(
                     systemPrompt,
                     request.History,
@@ -104,5 +110,29 @@ public class ChatService : IChatService
             UsedAi = false,
             Suggestions = suggestions,
         };
+    }
+
+    private static string BuildPageContext(ChatRequestDto request, string language)
+    {
+        var path = request.CurrentPath?.ToLowerInvariant() ?? string.Empty;
+        if (path.StartsWith("/wallet", StringComparison.Ordinal))
+        {
+            return language == "en" ? "portfolio wallet" : "portfoy cuzdan";
+        }
+
+        if (path.StartsWith("/search", StringComparison.Ordinal))
+        {
+            return language == "en" ? "company stock search" : "sirket hisse";
+        }
+
+        if (path.StartsWith("/company/", StringComparison.Ordinal))
+        {
+            var symbol = request.CurrentSymbol?.ToUpperInvariant() ?? string.Empty;
+            return language == "en"
+                ? $"{symbol} company financial statements"
+                : $"{symbol} sirket finansal tablo";
+        }
+
+        return path == "/" ? "DOL-FIN platform" : string.Empty;
     }
 }
