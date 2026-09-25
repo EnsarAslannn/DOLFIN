@@ -4,7 +4,13 @@ import userEvent from "@testing-library/user-event"
 import ChatWidget from "./ChatWidget"
 import { LanguageProvider } from "../../i18n/LanguageProvider"
 import { askDolfin } from "../../Services/ChatService"
-import { portfolioAddAPI, portfolioGetAPI, portfolioSellAPI } from "../../Services/PortfolioService"
+import {
+  portfolioAddAPI,
+  portfolioGetAPI,
+  portfolioMetricsAPI,
+  portfolioSellAPI,
+  portfolioWarningsAPI,
+} from "../../Services/PortfolioService"
 import { searchStocksBySymbolAPI } from "../../Services/StockService"
 import { useAuth } from "../../Context/useAuth"
 
@@ -14,13 +20,17 @@ vi.mock("../../Services/ChatService", () => ({
 vi.mock("../../Services/PortfolioService", () => ({
   portfolioAddAPI: vi.fn(),
   portfolioGetAPI: vi.fn(),
+  portfolioMetricsAPI: vi.fn(),
   portfolioSellAPI: vi.fn(),
+  portfolioWarningsAPI: vi.fn(),
 }))
 vi.mock("../../Services/StockService", () => ({ searchStocksBySymbolAPI: vi.fn() }))
 vi.mock("../../Context/useAuth", () => ({ useAuth: vi.fn() }))
 
 const ask = vi.mocked(askDolfin)
 const getPortfolio = vi.mocked(portfolioGetAPI)
+const getPortfolioMetrics = vi.mocked(portfolioMetricsAPI)
+const getPortfolioWarnings = vi.mocked(portfolioWarningsAPI)
 const buyStock = vi.mocked(portfolioAddAPI)
 const sellStock = vi.mocked(portfolioSellAPI)
 const searchStock = vi.mocked(searchStocksBySymbolAPI)
@@ -349,6 +359,40 @@ describe("ChatWidget", () => {
         },
       ],
     } as Awaited<ReturnType<typeof portfolioGetAPI>>)
+    getPortfolioMetrics.mockResolvedValue({
+      data: {
+        totalInvestedAmount: 240,
+        currentValue: 300,
+        gainLossAmount: 60,
+        gainLossPercent: 25,
+        allocations: [
+          {
+            stockId: 1,
+            symbol: "AAPL",
+            companyName: "Apple",
+            industry: "Technology",
+            quantity: 2,
+            averageCostPerShare: 120,
+            currentPrice: 150,
+            currentValue: 300,
+            gainLossAmount: 60,
+            gainLossPercent: 25,
+            allocationPercent: 100,
+          },
+        ],
+      },
+    } as Awaited<ReturnType<typeof portfolioMetricsAPI>>)
+    getPortfolioWarnings.mockResolvedValue({
+      data: [
+        {
+          code: "portfolio.warning.concentration",
+          symbol: "AAPL",
+          industry: null,
+          percent: 100,
+          message: "AAPL is concentrated.",
+        },
+      ],
+    } as Awaited<ReturnType<typeof portfolioWarningsAPI>>)
     renderWidget()
     const user = userEvent.setup()
 
@@ -358,6 +402,64 @@ describe("ChatWidget", () => {
     expect(await screen.findByText(/AAPL: 2 adet/i)).toBeInTheDocument()
     expect(screen.getByText(/güncel değer: \$300\.00/i)).toBeInTheDocument()
     expect(screen.getByText(/sanal bakiye: \$700\.00/i)).toBeInTheDocument()
+    expect(screen.getByText(/toplam hesap değeri: \$1,000\.00/i)).toBeInTheDocument()
+    expect(screen.getByText(/kâr\/zarar: \+\$60\.00 \(\+25\.00%\)/i)).toBeInTheDocument()
+    expect(screen.getByText(/en büyük pozisyon: AAPL · 100\.0%/i)).toBeInTheDocument()
+    expect(screen.getByText(/yoğunlaşma yüksek/i)).toBeInTheDocument()
+  })
+
+  it("does not claim concentration is balanced when warnings are unavailable", async () => {
+    auth.mockReturnValue({
+      user: { userName: "ada", email: "ada@example.com", walletBalance: 700 },
+      updateWalletBalance: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>)
+    getPortfolio.mockResolvedValue({
+      data: [
+        {
+          id: 1,
+          symbol: "AAPL",
+          companyName: "Apple",
+          purchase: 150,
+          lastDiv: 0,
+          industry: "Technology",
+          marketCap: 1,
+          quantity: 2,
+          averagePrice: 120,
+        },
+      ],
+    } as Awaited<ReturnType<typeof portfolioGetAPI>>)
+    getPortfolioMetrics.mockResolvedValue({
+      data: {
+        totalInvestedAmount: 240,
+        currentValue: 300,
+        gainLossAmount: 60,
+        gainLossPercent: 25,
+        allocations: [
+          {
+            stockId: 1,
+            symbol: "AAPL",
+            companyName: "Apple",
+            industry: "Technology",
+            quantity: 2,
+            averageCostPerShare: 120,
+            currentPrice: 150,
+            currentValue: 300,
+            gainLossAmount: 60,
+            gainLossPercent: 25,
+            allocationPercent: 100,
+          },
+        ],
+      },
+    } as Awaited<ReturnType<typeof portfolioMetricsAPI>>)
+    getPortfolioWarnings.mockResolvedValue(undefined)
+    renderWidget()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+    await user.click(screen.getByRole("button", { name: /portföyümü göster/i }))
+    await screen.findByText(/toplam hesap değeri/i)
+
+    expect(screen.queryByText(/hiçbir pozisyon yoğunlaşma uyarısı eşiğini aşmıyor/i)).not.toBeInTheDocument()
   })
 
   it("requires sign-in before accessing private portfolio actions", async () => {

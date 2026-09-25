@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from "react"
 import type { FormEvent } from "react"
 import { LuArrowUpRight, LuHistory, LuMessageCircle, LuSend, LuSparkles, LuSquarePen, LuTrash2, LuX } from "react-icons/lu"
 import { askDolfin } from "../../Services/ChatService"
-import { portfolioAddAPI, portfolioGetAPI, portfolioSellAPI } from "../../Services/PortfolioService"
+import {
+  portfolioAddAPI,
+  portfolioGetAPI,
+  portfolioMetricsAPI,
+  portfolioSellAPI,
+  portfolioWarningsAPI,
+} from "../../Services/PortfolioService"
 import { searchStocksBySymbolAPI } from "../../Services/StockService"
 import { useAuth } from "../../Context/useAuth"
 import { useLanguage } from "../../i18n/useLanguage"
@@ -128,6 +134,9 @@ const ChatWidgetSession = ({ historyOwner }: ChatWidgetSessionProps) => {
   const money = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value)
 
+  const signedMoney = (value: number) => `${value >= 0 ? "+" : ""}${money(value)}`
+  const signedPercent = (value: number) => `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`
+
   const appendAssistantMessage = (content: string, path = "/wallet") => {
     setMessages((current) => [
       ...current,
@@ -153,7 +162,11 @@ const ChatWidgetSession = ({ historyOwner }: ChatWidgetSessionProps) => {
     ])
     setIsSending(true)
     const activeConversation = conversationVersion.current
-    const response = await portfolioGetAPI()
+    const [response, metricsResponse, warningsResponse] = await Promise.all([
+      portfolioGetAPI(),
+      portfolioMetricsAPI(),
+      portfolioWarningsAPI(),
+    ])
     if (activeConversation !== conversationVersion.current) return
 
     if (!response) {
@@ -167,13 +180,59 @@ const ChatWidgetSession = ({ historyOwner }: ChatWidgetSessionProps) => {
       (position) =>
         `${position.symbol}: ${position.quantity} ${t("chat.account.shares")} / ${t("chat.account.currentValue")}: ${money(position.purchase * position.quantity)}`,
     )
-    const totalValue = positions.reduce(
-      (sum, position) => sum + position.purchase * position.quantity,
-      0,
+    const metrics = metricsResponse?.data
+    const warnings = warningsResponse?.data ?? []
+    const largestPosition = metrics?.allocations.length
+      ? metrics.allocations.reduce((largest, allocation) =>
+          allocation.allocationPercent > largest.allocationPercent ? allocation : largest,
+        )
+      : undefined
+    const concentrationWarning = warnings.find(
+      (warning) => warning.code === "portfolio.warning.concentration",
     )
+    const sectorWarning = warnings.find(
+      (warning) => warning.code === "portfolio.warning.sector",
+    )
+    const summaryLines = metrics
+      ? [
+          `${t("chat.account.totalInvested")}: ${money(metrics.totalInvestedAmount)}`,
+          `${t("chat.account.totalValue")}: ${money(metrics.currentValue)}`,
+          `${t("chat.account.gainLoss")}: ${signedMoney(metrics.gainLossAmount)} (${signedPercent(metrics.gainLossPercent)})`,
+          `${t("chat.account.balance")}: ${money(user.walletBalance)}`,
+          `${t("chat.account.accountValue")}: ${money(metrics.currentValue + user.walletBalance)}`,
+          ...(largestPosition
+            ? [
+                `${t("chat.account.largestPosition")}: ${largestPosition.symbol} · ${largestPosition.allocationPercent.toFixed(1)}%`,
+              ]
+            : []),
+          ...(warningsResponse
+            ? [
+                concentrationWarning
+                  ? t("chat.account.concentrationHigh", {
+                      symbol: concentrationWarning.symbol ?? largestPosition?.symbol ?? "—",
+                      percent: concentrationWarning.percent.toFixed(1),
+                    })
+                  : t("chat.account.concentrationBalanced"),
+              ]
+            : []),
+          ...(sectorWarning
+            ? [
+                t("chat.account.sectorConcentration", {
+                  industry: sectorWarning.industry ?? "—",
+                  percent: sectorWarning.percent.toFixed(1),
+                }),
+              ]
+            : []),
+        ]
+      : [
+          `${t("chat.account.totalValue")}: ${money(
+            positions.reduce((sum, position) => sum + position.purchase * position.quantity, 0),
+          )}`,
+          `${t("chat.account.balance")}: ${money(user.walletBalance)}`,
+        ]
     appendAssistantMessage(
       positions.length > 0
-        ? `${t("chat.account.portfolioHeading")}\n${positionLines.join("\n")}\n${t("chat.account.totalValue")}: ${money(totalValue)}\n${t("chat.account.balance")}: ${money(user.walletBalance)}`
+        ? `${t("chat.account.portfolioHeading")}\n${positionLines.join("\n")}\n${summaryLines.join("\n")}`
         : `${t("chat.account.empty")}\n${t("chat.account.balance")}: ${money(user.walletBalance)}`,
     )
     setIsSending(false)
