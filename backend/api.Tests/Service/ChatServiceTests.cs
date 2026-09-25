@@ -37,6 +37,35 @@ public class ChatServiceTests
         Assert.Empty(response.Sources);
     }
 
+    [Fact]
+    public async Task AnswerAsync_ForAnAmbiguousFollowUp_UsesRecentConversationForRetrieval()
+    {
+        var service = CreateService(new ChatOptions());
+        var request = new ChatRequestDto
+        {
+            Message = "Peki bunu nereden yaparım?",
+            Language = "tr",
+            History =
+            [
+                new ChatTurnDto
+                {
+                    Role = "user",
+                    Content = "AAPL için bir fiyat alarmı kurmak istiyorum.",
+                },
+                new ChatTurnDto
+                {
+                    Role = "assistant",
+                    Content = "Fiyat alarmı oluşturma konusunda yardımcı olabilirim.",
+                },
+            ],
+        };
+
+        var response = await service.AnswerAsync(request, CancellationToken.None);
+
+        Assert.Contains("alarm", response.Answer, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(response.Sources, source => source.Title.Contains("alarm", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static ChatService CreateService(ChatOptions options) =>
         new(
             new SiteKnowledgeService(),

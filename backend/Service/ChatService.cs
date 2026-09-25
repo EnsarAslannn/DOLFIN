@@ -30,6 +30,18 @@ public class ChatService : IChatService
     {
         var language = request.Language == "en" ? "en" : "tr";
         var matches = _knowledge.FindRelevant(request.Message, language, 3);
+        if (matches.Count == 0 && request.History.Count > 0)
+        {
+            var contextualQuery = string.Join(
+                '\n',
+                request.History
+                    .TakeLast(4)
+                    .Select(turn => turn.Content)
+                    .Append(request.Message)
+            );
+            matches = _knowledge.FindRelevant(contextualQuery, language, 3);
+        }
+
         if (matches.Count == 0)
         {
             return new ChatResponseDto
