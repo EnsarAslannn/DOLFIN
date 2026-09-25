@@ -175,6 +175,55 @@ describe("ChatWidget", () => {
     expect(screen.getByRole("link", { name: /fiyat alarmları/i })).toHaveAttribute("href", "/wallet")
   })
 
+  it("keeps conversation history isolated between signed-in users", async () => {
+    ask.mockResolvedValue({
+      answer: "Ada için özel portföy cevabı",
+      sources: [],
+      usedAi: false,
+    })
+    auth.mockReturnValue({
+      user: { userName: "ada", email: "ada@example.com", walletBalance: 700 },
+      updateWalletBalance: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>)
+    const view = renderWidget()
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+    await user.type(screen.getByRole("textbox", { name: /sorunuzu yazın/i }), "Portföyümü özetle")
+    await user.click(screen.getByRole("button", { name: /gönder/i }))
+    expect(await screen.findByText("Ada için özel portföy cevabı")).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: /asistanı kapat/i, expanded: true }))
+
+    auth.mockReturnValue({
+      user: { userName: "berk", email: "berk@example.com", walletBalance: 900 },
+      updateWalletBalance: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>)
+    view.rerender(
+      <LanguageProvider>
+        <ChatWidget />
+      </LanguageProvider>,
+    )
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+
+    expect(screen.queryByText("Portföyümü özetle")).not.toBeInTheDocument()
+    expect(screen.queryByText("Ada için özel portföy cevabı")).not.toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: /asistanı kapat/i, expanded: true }))
+
+    auth.mockReturnValue({
+      user: { userName: "ada", email: "ada@example.com", walletBalance: 700 },
+      updateWalletBalance: vi.fn(),
+    } as unknown as ReturnType<typeof useAuth>)
+    view.rerender(
+      <LanguageProvider>
+        <ChatWidget />
+      </LanguageProvider>,
+    )
+    await user.click(screen.getByRole("button", { name: /asistanı aç/i }))
+
+    expect(screen.getByText("Portföyümü özetle")).toBeInTheDocument()
+    expect(screen.getByText("Ada için özel portföy cevabı")).toBeInTheDocument()
+  })
+
   it("ignores invalid saved conversation data", async () => {
     window.localStorage.setItem("dolfin.chat.messages", "not-json")
 

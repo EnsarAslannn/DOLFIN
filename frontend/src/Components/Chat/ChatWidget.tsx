@@ -17,13 +17,17 @@ import {
 
 const EMPTY_MESSAGES: Message[] = []
 
-const ChatWidget = () => {
+type ChatWidgetSessionProps = {
+  historyOwner: string | null
+}
+
+const ChatWidgetSession = ({ historyOwner }: ChatWidgetSessionProps) => {
   const { language, t } = useLanguage()
   const { user, updateWalletBalance } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
   const [isSending, setIsSending] = useState(false)
-  const [history, setHistory] = useState(readChatHistory)
+  const [history, setHistory] = useState(() => readChatHistory(historyOwner))
   const [showHistory, setShowHistory] = useState(false)
   const [confirmClear, setConfirmClear] = useState(false)
   const [showTrade, setShowTrade] = useState(false)
@@ -70,8 +74,8 @@ const ChatWidget = () => {
   }, [messages, isSending])
 
   useEffect(() => {
-    writeChatHistory(history)
-  }, [history])
+    writeChatHistory(history, historyOwner)
+  }, [history, historyOwner])
 
   const setMessages = (update: Message[] | ((current: Message[]) => Message[])) => {
     setHistory((current) => replaceActiveMessages(current, update))
@@ -720,6 +724,13 @@ const ChatWidget = () => {
       </button>
     </div>
   )
+}
+
+const ChatWidget = () => {
+  const { user } = useAuth()
+  const historyOwner = user?.userName ?? null
+
+  return <ChatWidgetSession key={historyOwner ?? "guest"} historyOwner={historyOwner} />
 }
 
 export default ChatWidget

@@ -29,6 +29,11 @@ const MAX_MESSAGES = 50
 const makeId = () =>
   globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
+const storageKeyFor = (owner: string | null) =>
+  owner
+    ? `${HISTORY_STORAGE_KEY}:user:${encodeURIComponent(owner.trim().toLocaleLowerCase("en-US"))}`
+    : `${HISTORY_STORAGE_KEY}:guest`
+
 export const createEmptyConversation = (): ChatConversation => ({
   id: makeId(),
   title: "",
@@ -72,9 +77,12 @@ const readMessages = (value: unknown): ChatMessage[] => {
 const titleFrom = (messages: ChatMessage[]) =>
   messages.find((message) => message.role === "user")?.content.slice(0, 48) ?? ""
 
-export const readChatHistory = (): ChatHistoryState => {
+export const readChatHistory = (owner: string | null = null): ChatHistoryState => {
   try {
-    const stored = window.localStorage.getItem(HISTORY_STORAGE_KEY)
+    const storageKey = storageKeyFor(owner)
+    const stored =
+      window.localStorage.getItem(storageKey) ??
+      (owner === null ? window.localStorage.getItem(HISTORY_STORAGE_KEY) : null)
     if (stored) {
       const parsed: unknown = JSON.parse(stored)
       if (
@@ -131,8 +139,9 @@ export const readChatHistory = (): ChatHistoryState => {
   }
 }
 
-export const writeChatHistory = (state: ChatHistoryState) => {
+export const writeChatHistory = (state: ChatHistoryState, owner: string | null = null) => {
   try {
+    const storageKey = storageKeyFor(owner)
     const conversations = state.conversations.map((conversation) => ({
       ...conversation,
       messages: conversation.messages
@@ -147,14 +156,17 @@ export const writeChatHistory = (state: ChatHistoryState) => {
     }))
 
     if (conversations.every(({ messages }) => messages.length === 0)) {
-      window.localStorage.removeItem(HISTORY_STORAGE_KEY)
+      window.localStorage.removeItem(storageKey)
     } else {
       window.localStorage.setItem(
-        HISTORY_STORAGE_KEY,
+        storageKey,
         JSON.stringify({ ...state, conversations }),
       )
     }
-    window.localStorage.removeItem(LEGACY_STORAGE_KEY)
+    if (owner === null) {
+      window.localStorage.removeItem(HISTORY_STORAGE_KEY)
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY)
+    }
   } catch {
     // Chat remains usable when storage is unavailable or full.
   }
