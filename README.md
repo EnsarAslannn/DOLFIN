@@ -16,10 +16,9 @@ platformu.
 
 [Demoyu izle · 46 sn](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4) — Hisse arama, sanal alım ve portföydeki değişim.
 
-**🔗 Canlı demo:** [dol-fin.com](https://dol-fin.com) — üye olup sanal cüzdanınızla hisse
-senedi alım-satımı ve yorum özelliklerini deneyebilirsiniz.
-
-**📄 Canlı API Dokümantasyonu (Scalar):** [api-production-a1b64.up.railway.app/scalar](https://api-production-a1b64.up.railway.app/scalar)
+Canlı API kapatıldı. Projeyi videodan inceleyebilir veya aşağıdaki kurulum adımlarıyla
+yerelde çalıştırabilirsiniz. Scalar API dokümantasyonu çalışan yerel API'de `/scalar`
+adresinde açılır.
 
 ## 📌 Proje Hakkında
 
@@ -151,8 +150,7 @@ ayrıntıları için [backend/README.md](./backend/README.md), mimari döküm i�
 
 - GitHub Actions — `frontend-ci.yml` ve `backend-ci.yml`, yalnızca ilgili klasörde
   değişiklik olduğunda (`paths:` filtresiyle) tetiklenir
-- Backend: çok aşamalı (multi-stage) Docker image ile Railway üzerinde, `/health` uç
-  noktası deploy healthcheck'i olarak kullanılır
+- Backend: çok aşamalı Docker imajı, sağlık kontrolü için `/health` uç noktası
 
 ## 🚀 Kurulum
 

@@ -15,10 +15,9 @@ track their portfolio, and leave comments on stock pages.
 
 [Watch the demo · 46 sec](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4) — Stock search, a simulated purchase, and the updated portfolio.
 
-**🔗 Live demo:** [dol-fin.com](https://dol-fin.com) — sign up and try out simulated stock
-trading and commenting with your own virtual wallet.
-
-**📄 Live API Docs (Scalar):** [api-production-a1b64.up.railway.app/scalar](https://api-production-a1b64.up.railway.app/scalar)
+The hosted API has been retired. Watch the demo above or follow the setup instructions
+below to run the project locally. Scalar API documentation is available at `/scalar`
+when the local API is running.
 
 ## 📌 About the Project
 
@@ -151,8 +150,7 @@ layout; build/test commands keep working as described above. See
 
 - GitHub Actions — `frontend-ci.yml` and `backend-ci.yml`, each triggered only when its
   own folder changes (via a `paths:` filter)
-- Backend: multi-stage Docker image deployed on Railway, with `/health` used as the
-  deploy healthcheck
+- Backend: multi-stage Docker image with a `/health` endpoint for health checks
 
 ## 🚀 Getting Started
 

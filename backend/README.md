@@ -4,8 +4,8 @@
 
 The backend for [DOL-FIN](https://github.com/EnsarAslannn/DOL-FIN), an enterprise-focused financial management platform: an ASP.NET Core Web API handling authentication, portfolio management, and stock/comment data over a relational PostgreSQL schema.
 
-**Live API:** [api-production-a1b64.up.railway.app](https://api-production-a1b64.up.railway.app) — used by the live app at [dol-fin.com](https://dol-fin.com)
-**Live API Docs (Scalar):** [api-production-a1b64.up.railway.app/scalar](https://api-production-a1b64.up.railway.app/scalar)
+The hosted API has been retired. See the [video demo](../README.en.md#video-demo) for the user flow.
+When running the API locally, open `/scalar` for the interactive documentation.
 
 The frontend (React/TypeScript) lives in a separate repo: [DOL-FIN](https://github.com/EnsarAslannn/DOL-FIN).
 
