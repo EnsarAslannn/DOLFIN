@@ -10,6 +10,12 @@ cüzdanla hisse senedi alım-satımı simüle edebildiği, portföylerini takip 
 hisse senedi sayfalarına yorum bırakabildiği kurumsal odaklı bir finansal yönetim
 platformu.
 
+## Video demosu
+
+[![DOL-FIN ekran kaydını izle](docs/demo/dol-fin-cover.jpg)](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4)
+
+[Demoyu izle · 46 sn](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4) — Hisse arama, sanal alım ve portföydeki değişim.
+
 **🔗 Canlı demo:** [dol-fin.com](https://dol-fin.com) — üye olup sanal cüzdanınızla hisse
 senedi alım-satımı ve yorum özelliklerini deneyebilirsiniz.
 

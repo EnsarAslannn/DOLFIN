@@ -9,6 +9,12 @@ An enterprise-focused financial management platform built on a .NET Web API and 
 (TypeScript) architecture, letting users simulate stock trading with a virtual wallet,
 track their portfolio, and leave comments on stock pages.
 
+## Video demo
+
+[![Watch the DOL-FIN screen recording](docs/demo/dol-fin-cover.jpg)](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4)
+
+[Watch the demo · 46 sec](https://raw.githubusercontent.com/EnsarAslannn/DOLFIN/main/docs/demo/dol-fin.mp4) — Stock search, a simulated purchase, and the updated portfolio.
+
 **🔗 Live demo:** [dol-fin.com](https://dol-fin.com) — sign up and try out simulated stock
 trading and commenting with your own virtual wallet.
 
